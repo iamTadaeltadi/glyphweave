@@ -1,0 +1,16 @@
+[package]
+name = "glyphweave-subset"
+description = "Pure subset planning and pass orchestration for Glyphweave"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+glyphweave-layout = { path = "../layout" }
+glyphweave-outline = { path = "../outline" }
+glyphweave-sfnt = { path = "../sfnt" }
+
+[lints]
+workspace = true
+

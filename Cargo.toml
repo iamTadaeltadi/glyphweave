@@ -1,0 +1,27 @@
+[workspace]
+members = [
+    "crates/cli",
+    "crates/emit",
+    "crates/layout",
+    "crates/outline",
+    "crates/sfnt",
+    "crates/subset",
+    "crates/verify",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.1"
+edition = "2024"
+rust-version = "1.85.0"
+
+[workspace.lints.rust]
+missing_docs = "deny"
+unsafe_code = "forbid"
+unreachable_pub = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+

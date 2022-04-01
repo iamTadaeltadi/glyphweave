@@ -1,0 +1,20 @@
+[package]
+name = "glyphweave-cli"
+description = "Command-line boundary for the Glyphweave font subsetter"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[[bin]]
+name = "glyphweave"
+path = "src/main.rs"
+
+[dependencies]
+glyphweave-emit = { path = "../emit" }
+glyphweave-subset = { path = "../subset" }
+glyphweave-verify = { path = "../verify" }
+
+[lints]
+workspace = true
+

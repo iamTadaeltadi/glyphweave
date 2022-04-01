@@ -1,0 +1,15 @@
+[package]
+name = "glyphweave-emit"
+description = "Canonical OpenType table and SFNT emission for Glyphweave"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+glyphweave-sfnt = { path = "../sfnt" }
+glyphweave-subset = { path = "../subset" }
+
+[lints]
+workspace = true
+
