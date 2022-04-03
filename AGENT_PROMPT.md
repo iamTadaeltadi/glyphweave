@@ -18,8 +18,14 @@ Use red-green-refactor on that one item. Preserve the crate dependency graph, gl
 
 1. Run `just check` until green.
 2. Tick the completed item, append actual lines/tests/coverage, and move the sole `<-- NEXT` marker down one item.
-3. Commit only the completed item as `chore(progress): complete <id>`.
+3. Commit the ledger update as `chore(progress): complete <id>` after the item's atomic code commits.
 4. Push when a remote is configured.
 
 Never reorder `PROGRESS.md`, rename glossary terms after M0 without an ADR, re-decide accepted ADRs, skip the marked item, or expand a passing completed item.
 
+## Atomic history
+
+Follow ADR-0003. Grow the repository past 1,000 commits only through genuine implementation,
+tests, fixtures, required refactors, and API documentation. Prefer at most 80 hand-written changed
+lines per commit, keep affected crate tests green, and never create empty, no-op, or count-only
+commits. A progress item is expected to span many atomic commits.
