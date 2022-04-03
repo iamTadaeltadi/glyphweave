@@ -7,12 +7,14 @@
 
 #![forbid(unsafe_code)]
 
+mod cause;
 mod diagnostic;
 mod reader;
 mod span;
 mod tag;
 
-pub use diagnostic::{Cause, Decoded, Diagnostic, Severity, Stage};
+pub use cause::Cause;
+pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
 pub use reader::Reader;
 pub use span::ByteSpan;
 pub use tag::Tag;
