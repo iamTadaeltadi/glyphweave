@@ -12,9 +12,11 @@ mod diagnostic;
 mod reader;
 mod span;
 mod tag;
+mod version;
 
 pub use cause::Cause;
 pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
 pub use reader::Reader;
 pub use span::ByteSpan;
 pub use tag::Tag;
+pub use version::SfntVersion;
