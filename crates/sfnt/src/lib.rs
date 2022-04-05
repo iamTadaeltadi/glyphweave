@@ -10,6 +10,7 @@
 mod cause;
 mod diagnostic;
 mod reader;
+mod search;
 mod span;
 mod tag;
 mod version;
