@@ -1,6 +1,6 @@
 //! Typed SFNT Table Directory and Table Record values.
 
-use crate::{ByteSpan, Tag};
+use crate::{ByteSpan, SfntVersion, Tag};
 
 /// A validated record locating one top-level table in an SFNT font.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -34,5 +34,82 @@ impl TableRecord {
     #[must_use]
     pub const fn directory_span(self) -> ByteSpan {
         self.directory_span
+    }
+}
+
+/// A decoded and structurally validated SFNT Table Directory.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TableDirectory {
+    pub(crate) version: SfntVersion,
+    pub(crate) span: ByteSpan,
+    pub(crate) records: Vec<TableRecord>,
+}
+
+impl TableDirectory {
+    /// The outline flavor declared by the directory.
+    #[must_use]
+    pub const fn version(&self) -> SfntVersion {
+        self.version
+    }
+
+    /// The checked range occupied by the header and its records.
+    #[must_use]
+    pub const fn span(&self) -> ByteSpan {
+        self.span
+    }
+
+    /// The records in strict ascending Tag order.
+    #[must_use]
+    pub fn records(&self) -> &[TableRecord] {
+        &self.records
+    }
+
+    /// Finds a table by Tag using the directory's validated ordering.
+    #[must_use]
+    pub fn record(&self, tag: Tag) -> Option<&TableRecord> {
+        self.records
+            .binary_search_by_key(&tag, |record| record.tag)
+            .ok()
+            .map(|index| &self.records[index])
+    }
+
+    /// Returns `true` when the directory has no table records.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.records.is_empty()
+    }
+
+    /// The number of table records.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.records.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{TableDirectory, TableRecord};
+    use crate::{ByteSpan, SfntVersion, Tag};
+
+    #[test]
+    fn directory_accessors_preserve_validated_records() {
+        let record = TableRecord {
+            tag: Tag::new(*b"cmap"),
+            checksum: 7,
+            table_span: ByteSpan::sized(32, 4).unwrap(),
+            directory_span: ByteSpan::sized(12, 16).unwrap(),
+        };
+        let directory = TableDirectory {
+            version: SfntVersion::TrueType,
+            span: ByteSpan::sized(0, 28).unwrap(),
+            records: vec![record],
+        };
+        assert_eq!(directory.version(), SfntVersion::TrueType);
+        assert_eq!(directory.span().length(), 28);
+        assert_eq!(directory.records(), &[record]);
+        assert_eq!(directory.record(Tag::new(*b"cmap")), Some(&record));
+        assert_eq!(directory.record(Tag::new(*b"head")), None);
+        assert_eq!(directory.len(), 1);
+        assert!(!directory.is_empty());
     }
 }
