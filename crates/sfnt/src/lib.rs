@@ -9,6 +9,7 @@
 
 mod cause;
 mod diagnostic;
+mod directory;
 mod reader;
 mod search;
 mod span;
@@ -17,6 +18,7 @@ mod version;
 
 pub use cause::Cause;
 pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
+pub use directory::TableRecord;
 pub use reader::Reader;
 pub use span::ByteSpan;
 pub use tag::Tag;
