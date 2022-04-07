@@ -14,6 +14,13 @@ pub enum Cause {
         /// The unrecognized four-byte value.
         raw: u32,
     },
+    /// The record count cannot be represented by the directory search fields.
+    UnrepresentableTableCount {
+        /// The count declared by the directory.
+        count: u16,
+        /// The greatest count encodable by all search fields.
+        maximum: u16,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -36,6 +43,12 @@ impl fmt::Display for Cause {
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }
+            Self::UnrepresentableTableCount { count, maximum } => {
+                write!(
+                    f,
+                    "table count {count} exceeds representable maximum {maximum}"
+                )
+            }
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -57,5 +70,17 @@ mod tests {
     fn unsupported_version_preserves_all_four_bytes() {
         let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
         assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
+    }
+
+    #[test]
+    fn table_count_failure_names_the_limit() {
+        let cause = Cause::UnrepresentableTableCount {
+            count: 4_096,
+            maximum: 4_095,
+        };
+        assert_eq!(
+            cause.to_string(),
+            "table count 4096 exceeds representable maximum 4095"
+        );
     }
 }
