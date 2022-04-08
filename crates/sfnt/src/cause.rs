@@ -28,6 +28,17 @@ pub enum Cause {
         /// The values stored in the font.
         actual: [u16; 3],
     },
+    /// A Table Record points outside the containing font bytes.
+    TableOutOfBounds {
+        /// The offending table.
+        tag: crate::Tag,
+        /// The declared offset from the start of the font file.
+        offset: u32,
+        /// The declared unpadded table length.
+        length: u32,
+        /// The available font length.
+        font_length: usize,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -59,6 +70,15 @@ impl fmt::Display for Cause {
             Self::InvalidSearchParameters { expected, actual } => write!(
                 f,
                 "directory search parameters {actual:?} do not match derived values {expected:?}"
+            ),
+            Self::TableOutOfBounds {
+                tag,
+                offset,
+                length,
+                font_length,
+            } => write!(
+                f,
+                "table {tag} at {offset}+{length} exceeds font length {font_length}"
             ),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
@@ -104,6 +124,20 @@ mod tests {
         assert_eq!(
             cause.to_string(),
             "directory search parameters [64, 2, 144] do not match derived values [128, 3, 80]"
+        );
+    }
+
+    #[test]
+    fn table_bounds_failure_names_the_record() {
+        let cause = Cause::TableOutOfBounds {
+            tag: crate::Tag::new(*b"glyf"),
+            offset: 64,
+            length: 40,
+            font_length: 96,
+        };
+        assert_eq!(
+            cause.to_string(),
+            "table glyf at 64+40 exceeds font length 96"
         );
     }
 }
