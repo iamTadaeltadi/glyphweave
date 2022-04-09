@@ -2,6 +2,8 @@
 
 use crate::{ByteSpan, SfntVersion, Tag};
 
+mod decode;
+
 /// A validated record locating one top-level table in an SFNT font.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TableRecord {
@@ -46,6 +48,16 @@ pub struct TableDirectory {
 }
 
 impl TableDirectory {
+    /// Decodes and validates a Table Directory at an absolute font-file offset.
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware Diagnostic for truncation, unsupported versions, invalid search
+    /// parameters, or a Table Record that points outside `bytes`.
+    pub fn decode(bytes: &[u8], offset: usize) -> crate::Decoded<Self> {
+        decode::decode(bytes, offset)
+    }
+
     /// The outline flavor declared by the directory.
     #[must_use]
     pub const fn version(&self) -> SfntVersion {
