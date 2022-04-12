@@ -43,6 +43,29 @@ impl Tag {
     pub const fn to_u32(self) -> u32 {
         u32::from_be_bytes(self.0)
     }
+
+    /// Returns `true` when the bytes satisfy the OpenType Tag encoding rules.
+    ///
+    /// A valid Tag contains one to four printable ASCII non-space bytes followed only by
+    /// optional trailing spaces.
+    #[must_use]
+    pub fn is_well_formed(self) -> bool {
+        let mut saw_space = false;
+        let mut non_space = 0;
+        for byte in self.0 {
+            if !(0x20..=0x7e).contains(&byte) {
+                return false;
+            }
+            if byte == b' ' {
+                saw_space = true;
+            } else if saw_space {
+                return false;
+            } else {
+                non_space += 1;
+            }
+        }
+        non_space > 0
+    }
 }
 
 impl fmt::Display for Tag {
@@ -102,5 +125,14 @@ mod tests {
     #[test]
     fn debug_wraps_the_rendered_tag() {
         assert_eq!(format!("{:?}", Tag::new(*b"name")), "Tag(name)");
+    }
+
+    #[test]
+    fn well_formed_tags_are_printable_and_trailing_space_padded() {
+        assert!(Tag::new(*b"cmap").is_well_formed());
+        assert!(Tag::new(*b"CFF ").is_well_formed());
+        assert!(!Tag::new(*b"    ").is_well_formed());
+        assert!(!Tag::new(*b"a b ").is_well_formed());
+        assert!(!Tag::new([b'a', b'b', b'c', 0x7f]).is_well_formed());
     }
 }
