@@ -59,6 +59,13 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
 fn decode_record(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<TableRecord> {
     let record_start = reader.offset();
     let tag = reader.tag()?;
+    if !tag.is_well_formed() {
+        return Err(Diagnostic::at(
+            Stage::Decode,
+            ByteSpan::sized(record_start, 4).unwrap_or_else(|| ByteSpan::empty_at(record_start)),
+            Cause::InvalidTableTag { tag },
+        ));
+    }
     let checksum = reader.u32()?;
     let offset = reader.u32()?;
     let length = reader.u32()?;
