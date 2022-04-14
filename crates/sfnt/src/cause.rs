@@ -44,6 +44,11 @@ pub enum Cause {
         /// The four offending bytes.
         tag: crate::Tag,
     },
+    /// Two records declare the same table Tag.
+    DuplicateTableTag {
+        /// The repeated Tag.
+        tag: crate::Tag,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -86,6 +91,7 @@ impl fmt::Display for Cause {
                 "table {tag} at {offset}+{length} exceeds font length {font_length}"
             ),
             Self::InvalidTableTag { tag } => write!(f, "invalid table tag {tag:?}"),
+            Self::DuplicateTableTag { tag } => write!(f, "duplicate table tag {tag}"),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -153,5 +159,13 @@ mod tests {
             tag: crate::Tag::new(*b"a b "),
         };
         assert_eq!(cause.to_string(), "invalid table tag Tag(a b )");
+    }
+
+    #[test]
+    fn duplicate_tag_failure_names_the_tag() {
+        let cause = Cause::DuplicateTableTag {
+            tag: crate::Tag::new(*b"cmap"),
+        };
+        assert_eq!(cause.to_string(), "duplicate table tag cmap");
     }
 }
