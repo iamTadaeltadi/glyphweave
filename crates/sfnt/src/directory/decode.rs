@@ -43,9 +43,28 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
         ));
     }
 
-    let mut records = Vec::with_capacity(usize::from(table_count));
+    let mut records: Vec<TableRecord> = Vec::with_capacity(usize::from(table_count));
     for _ in 0..table_count {
-        records.push(decode_record(bytes, &mut reader)?);
+        let record = decode_record(bytes, &mut reader)?;
+        if let Some(previous) = records.last() {
+            let cause = match previous.tag.cmp(&record.tag) {
+                core::cmp::Ordering::Equal => Some(Cause::DuplicateTableTag { tag: record.tag }),
+                core::cmp::Ordering::Greater => Some(Cause::UnsortedTableTags {
+                    previous: previous.tag,
+                    current: record.tag,
+                }),
+                core::cmp::Ordering::Less => None,
+            };
+            if let Some(cause) = cause {
+                return Err(Diagnostic::at(
+                    Stage::Decode,
+                    ByteSpan::sized(record.directory_span.start(), 4)
+                        .unwrap_or_else(|| ByteSpan::empty_at(record.directory_span.start())),
+                    cause,
+                ));
+            }
+        }
+        records.push(record);
     }
     let span =
         ByteSpan::between(offset, reader.offset()).unwrap_or_else(|| ByteSpan::empty_at(offset));
