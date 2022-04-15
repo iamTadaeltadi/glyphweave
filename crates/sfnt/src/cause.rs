@@ -49,6 +49,13 @@ pub enum Cause {
         /// The repeated Tag.
         tag: crate::Tag,
     },
+    /// Table Records are not in strict ascending Tag order.
+    UnsortedTableTags {
+        /// The Tag immediately before the ordering violation.
+        previous: crate::Tag,
+        /// The Tag that should have sorted before `previous`.
+        current: crate::Tag,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -92,6 +99,9 @@ impl fmt::Display for Cause {
             ),
             Self::InvalidTableTag { tag } => write!(f, "invalid table tag {tag:?}"),
             Self::DuplicateTableTag { tag } => write!(f, "duplicate table tag {tag}"),
+            Self::UnsortedTableTags { previous, current } => {
+                write!(f, "table tag {current} follows larger tag {previous}")
+            }
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -167,5 +177,14 @@ mod tests {
             tag: crate::Tag::new(*b"cmap"),
         };
         assert_eq!(cause.to_string(), "duplicate table tag cmap");
+    }
+
+    #[test]
+    fn unsorted_tag_failure_names_the_adjacent_pair() {
+        let cause = Cause::UnsortedTableTags {
+            previous: crate::Tag::new(*b"head"),
+            current: crate::Tag::new(*b"cmap"),
+        };
+        assert_eq!(cause.to_string(), "table tag cmap follows larger tag head");
     }
 }
