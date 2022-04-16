@@ -56,6 +56,13 @@ pub enum Cause {
         /// The Tag that should have sorted before `previous`.
         current: crate::Tag,
     },
+    /// A top-level table does not begin on a four-byte boundary.
+    MisalignedTable {
+        /// The offending table.
+        tag: crate::Tag,
+        /// Its declared absolute offset.
+        offset: u32,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -101,6 +108,9 @@ impl fmt::Display for Cause {
             Self::DuplicateTableTag { tag } => write!(f, "duplicate table tag {tag}"),
             Self::UnsortedTableTags { previous, current } => {
                 write!(f, "table tag {current} follows larger tag {previous}")
+            }
+            Self::MisalignedTable { tag, offset } => {
+                write!(f, "table {tag} starts at unaligned offset {offset}")
             }
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
@@ -186,5 +196,17 @@ mod tests {
             current: crate::Tag::new(*b"cmap"),
         };
         assert_eq!(cause.to_string(), "table tag cmap follows larger tag head");
+    }
+
+    #[test]
+    fn alignment_failure_names_table_and_offset() {
+        let cause = Cause::MisalignedTable {
+            tag: crate::Tag::new(*b"head"),
+            offset: 29,
+        };
+        assert_eq!(
+            cause.to_string(),
+            "table head starts at unaligned offset 29"
+        );
     }
 }
