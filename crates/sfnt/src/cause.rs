@@ -63,6 +63,15 @@ pub enum Cause {
         /// Its declared absolute offset.
         offset: u32,
     },
+    /// A top-level table occupies bytes used by its Table Directory.
+    TableOverlapsDirectory {
+        /// The offending table.
+        tag: crate::Tag,
+        /// The checked table range.
+        table: crate::ByteSpan,
+        /// The checked directory range.
+        directory: crate::ByteSpan,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -112,6 +121,11 @@ impl fmt::Display for Cause {
             Self::MisalignedTable { tag, offset } => {
                 write!(f, "table {tag} starts at unaligned offset {offset}")
             }
+            Self::TableOverlapsDirectory {
+                tag,
+                table,
+                directory,
+            } => write!(f, "table {tag} at {table} overlaps directory {directory}"),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -207,6 +221,19 @@ mod tests {
         assert_eq!(
             cause.to_string(),
             "table head starts at unaligned offset 29"
+        );
+    }
+
+    #[test]
+    fn directory_overlap_failure_names_both_ranges() {
+        let cause = Cause::TableOverlapsDirectory {
+            tag: crate::Tag::new(*b"cmap"),
+            table: crate::ByteSpan::between(24, 40).unwrap(),
+            directory: crate::ByteSpan::between(0, 28).unwrap(),
+        };
+        assert_eq!(
+            cause.to_string(),
+            "table cmap at 24..40 overlaps directory 0..28"
         );
     }
 }
