@@ -88,6 +88,14 @@ fn decode_record(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<TableRecord> 
     let checksum = reader.u32()?;
     let offset = reader.u32()?;
     let length = reader.u32()?;
+    if offset % 4 != 0 {
+        return Err(Diagnostic::at(
+            Stage::Decode,
+            ByteSpan::sized(record_start + 8, 4)
+                .unwrap_or_else(|| ByteSpan::empty_at(record_start + 8)),
+            Cause::MisalignedTable { tag, offset },
+        ));
+    }
     let table_span = usize::try_from(offset)
         .ok()
         .zip(usize::try_from(length).ok())
