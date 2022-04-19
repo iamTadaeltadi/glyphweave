@@ -68,6 +68,19 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
     }
     let span =
         ByteSpan::between(offset, reader.offset()).unwrap_or_else(|| ByteSpan::empty_at(offset));
+    for record in &records {
+        if record.table_span.overlaps(span) {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                record.table_span,
+                Cause::TableOverlapsDirectory {
+                    tag: record.tag,
+                    table: record.table_span,
+                    directory: span,
+                },
+            ));
+        }
+    }
     Ok(TableDirectory {
         version,
         span,
