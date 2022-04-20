@@ -216,3 +216,27 @@ fn rejects_table_bytes_inside_directory_records() {
         }
     );
 }
+
+#[test]
+fn rejects_overlapping_tables_independent_of_tag_order() {
+    let mut bytes = directory_with_tags(*b"cmap", *b"head");
+    bytes[24..28].copy_from_slice(&8_u32.to_be_bytes());
+    bytes[36..40].copy_from_slice(&48_u32.to_be_bytes());
+    bytes[40..44].copy_from_slice(&8_u32.to_be_bytes());
+    bytes.resize(56, 0);
+
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::OverlappingTables {
+            first: (
+                Tag::new(*b"cmap"),
+                glyphweave_sfnt::ByteSpan::between(44, 52).unwrap(),
+            ),
+            second: (
+                Tag::new(*b"head"),
+                glyphweave_sfnt::ByteSpan::between(48, 56).unwrap(),
+            ),
+        }
+    );
+}
