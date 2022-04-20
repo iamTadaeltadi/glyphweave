@@ -72,6 +72,13 @@ pub enum Cause {
         /// The checked directory range.
         directory: crate::ByteSpan,
     },
+    /// Two distinct top-level tables cover common bytes.
+    OverlappingTables {
+        /// The first table in absolute byte order.
+        first: (crate::Tag, crate::ByteSpan),
+        /// The next table that intersects it.
+        second: (crate::Tag, crate::ByteSpan),
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -126,6 +133,11 @@ impl fmt::Display for Cause {
                 table,
                 directory,
             } => write!(f, "table {tag} at {table} overlaps directory {directory}"),
+            Self::OverlappingTables { first, second } => write!(
+                f,
+                "table {} at {} overlaps table {} at {}",
+                first.0, first.1, second.0, second.1
+            ),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -234,6 +246,24 @@ mod tests {
         assert_eq!(
             cause.to_string(),
             "table cmap at 24..40 overlaps directory 0..28"
+        );
+    }
+
+    #[test]
+    fn table_overlap_failure_names_both_records() {
+        let cause = Cause::OverlappingTables {
+            first: (
+                crate::Tag::new(*b"cmap"),
+                crate::ByteSpan::between(48, 64).unwrap(),
+            ),
+            second: (
+                crate::Tag::new(*b"head"),
+                crate::ByteSpan::between(60, 72).unwrap(),
+            ),
+        };
+        assert_eq!(
+            cause.to_string(),
+            "table cmap at 48..64 overlaps table head at 60..72"
         );
     }
 }
