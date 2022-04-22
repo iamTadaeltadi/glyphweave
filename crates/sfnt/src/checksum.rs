@@ -1,5 +1,7 @@
 //! OpenType unsigned-word checksums.
 
+use crate::Tag;
+
 /// The wrapping sum of big-endian `u32` words in a table.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Checksum(u32);
@@ -14,10 +16,26 @@ impl Checksum {
     /// Computes a checksum, treating a final partial word as zero-padded.
     #[must_use]
     pub fn compute(bytes: &[u8]) -> Self {
+        Self::compute_inner(bytes, false)
+    }
+
+    /// Computes the checksum declared for `tag` in a Table Record.
+    ///
+    /// For `head`, bytes 8 through 11 are treated as zero because they hold the whole-font
+    /// checksum adjustment written after the table checksum is recorded.
+    #[must_use]
+    pub fn compute_for(tag: Tag, bytes: &[u8]) -> Self {
+        Self::compute_inner(bytes, tag == Tag::new(*b"head"))
+    }
+
+    fn compute_inner(bytes: &[u8], zero_adjustment: bool) -> Self {
         let mut sum = 0_u32;
-        for chunk in bytes.chunks(4) {
+        for (word_index, chunk) in bytes.chunks(4).enumerate() {
             let mut word = [0_u8; 4];
             word[..chunk.len()].copy_from_slice(chunk);
+            if zero_adjustment && word_index == 2 {
+                word = [0; 4];
+            }
             sum = sum.wrapping_add(u32::from_be_bytes(word));
         }
         Self(sum)
@@ -49,5 +67,19 @@ mod tests {
     #[test]
     fn empty_table_has_zero_checksum() {
         assert_eq!(Checksum::compute(&[]), Checksum::default());
+    }
+
+    #[test]
+    fn head_checksum_ignores_checksum_adjustment_word() {
+        let bytes = [0, 0, 0, 1, 0, 0, 0, 2, 0xde, 0xad, 0xbe, 0xef];
+        assert_eq!(Checksum::compute(&bytes).raw(), 0xdead_bef2);
+        assert_eq!(
+            Checksum::compute_for(crate::Tag::new(*b"head"), &bytes).raw(),
+            3
+        );
+        assert_eq!(
+            Checksum::compute_for(crate::Tag::new(*b"name"), &bytes),
+            Checksum::compute(&bytes)
+        );
     }
 }
