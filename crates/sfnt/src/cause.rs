@@ -79,6 +79,15 @@ pub enum Cause {
         /// The next table that intersects it.
         second: (crate::Tag, crate::ByteSpan),
     },
+    /// A table's bytes do not match its declared Checksum.
+    InvalidTableChecksum {
+        /// The offending table.
+        tag: crate::Tag,
+        /// The Checksum stored in the Table Record.
+        declared: crate::Checksum,
+        /// The Checksum computed from the table bytes.
+        computed: crate::Checksum,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -137,6 +146,16 @@ impl fmt::Display for Cause {
                 f,
                 "table {} at {} overlaps table {} at {}",
                 first.0, first.1, second.0, second.1
+            ),
+            Self::InvalidTableChecksum {
+                tag,
+                declared,
+                computed,
+            } => write!(
+                f,
+                "table {tag} checksum 0x{:08x} does not match 0x{:08x}",
+                declared.raw(),
+                computed.raw()
             ),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
@@ -264,6 +283,19 @@ mod tests {
         assert_eq!(
             cause.to_string(),
             "table cmap at 48..64 overlaps table head at 60..72"
+        );
+    }
+
+    #[test]
+    fn checksum_failure_renders_fixed_width_hex() {
+        let cause = Cause::InvalidTableChecksum {
+            tag: crate::Tag::new(*b"name"),
+            declared: crate::Checksum::new(1),
+            computed: crate::Checksum::new(0x1234),
+        };
+        assert_eq!(
+            cause.to_string(),
+            "table name checksum 0x00000001 does not match 0x00001234"
         );
     }
 }
