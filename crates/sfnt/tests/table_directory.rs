@@ -48,14 +48,14 @@ fn decodes_table_record_fields_and_spans() {
         0x00, 0x00, // entrySelector
         0x00, 0x00, // rangeShift
         b'h', b'e', b'a', b'd', // tag
-        0x12, 0x34, 0x56, 0x78, // checksum
+        0xde, 0xad, 0xbe, 0xef, // checksum
         0x00, 0x00, 0x00, 0x1c, // offset 28
         0x00, 0x00, 0x00, 0x04, // length 4
         0xde, 0xad, 0xbe, 0xef, // table bytes
     ];
     let directory = TableDirectory::decode(&bytes, 0).unwrap();
     let record = directory.record(Tag::new(*b"head")).unwrap();
-    assert_eq!(record.checksum().raw(), 0x1234_5678);
+    assert_eq!(record.checksum().raw(), 0xdead_beef);
     assert_eq!(
         (record.table_span().start(), record.table_span().end()),
         (28, 32)
@@ -239,4 +239,24 @@ fn rejects_overlapping_tables_independent_of_tag_order() {
             ),
         }
     );
+}
+
+#[test]
+fn rejects_checksum_that_does_not_match_table_bytes() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'n', b'a', b'm', b'e', 0, 0, 0, 0, // zero checksum
+        0, 0, 0, 28, 0, 0, 0, 4, // table span
+        1, 2, 3, 4,
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidTableChecksum {
+            tag: Tag::new(*b"name"),
+            declared: glyphweave_sfnt::Checksum::new(0),
+            computed: glyphweave_sfnt::Checksum::new(0x0102_0304),
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "28..32");
 }
