@@ -260,3 +260,18 @@ fn rejects_checksum_that_does_not_match_table_bytes() {
     );
     assert_eq!(diagnostic.span().unwrap().to_string(), "28..32");
 }
+
+#[test]
+fn head_checksum_treats_adjustment_field_as_zero() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'h', b'e', b'a', b'd', 0, 0, 0, 3, // declared checksum
+        0, 0, 0, 28, 0, 0, 0, 12, // table span
+        0, 0, 0, 1, 0, 0, 0, 2, 0xde, 0xad, 0xbe, 0xef,
+    ];
+    let directory = TableDirectory::decode(&bytes, 0).unwrap();
+    assert_eq!(
+        directory.record(Tag::new(*b"head")).unwrap().checksum(),
+        glyphweave_sfnt::Checksum::new(3)
+    );
+}
