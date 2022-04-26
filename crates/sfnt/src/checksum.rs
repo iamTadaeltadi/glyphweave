@@ -3,6 +3,13 @@
 use crate::Tag;
 
 /// The wrapping sum of big-endian `u32` words in a table.
+///
+/// ```
+/// use glyphweave_sfnt::Checksum;
+///
+/// let checksum = Checksum::compute(&[1, 2, 3, 4, 5]);
+/// assert_eq!(checksum.raw(), 0x0602_0304);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Checksum(u32);
 
