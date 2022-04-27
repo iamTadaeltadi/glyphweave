@@ -40,6 +40,15 @@ impl TableRecord {
 }
 
 /// A decoded and structurally validated SFNT Table Directory.
+///
+/// ```
+/// use glyphweave_sfnt::{SfntVersion, TableDirectory};
+///
+/// let bytes = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+/// let directory = TableDirectory::decode(&bytes, 0).unwrap();
+/// assert_eq!(directory.version(), SfntVersion::TrueType);
+/// assert!(directory.is_empty());
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TableDirectory {
     pub(crate) version: SfntVersion,
