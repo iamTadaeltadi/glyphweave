@@ -5,6 +5,19 @@ use crate::{ByteSpan, Checksum, SfntVersion, Tag};
 mod decode;
 
 /// A validated record locating one top-level table in an SFNT font.
+///
+/// ```
+/// use glyphweave_sfnt::{TableDirectory, Tag};
+///
+/// let bytes = [
+///     0, 1, 0, 0, 0, 1, 0, 16, 0, 0, 0, 0,
+///     b'n', b'a', b'm', b'e', 0, 0, 0, 0,
+///     0, 0, 0, 28, 0, 0, 0, 0,
+/// ];
+/// let directory = TableDirectory::decode(&bytes, 0).unwrap();
+/// let record = directory.record(Tag::new(*b"name")).unwrap();
+/// assert_eq!(record.table_span().to_string(), "28..28");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TableRecord {
     pub(crate) tag: Tag,
