@@ -50,6 +50,16 @@ impl TableRecord {
     pub const fn directory_span(self) -> ByteSpan {
         self.directory_span
     }
+
+    /// Borrows the table's unpadded bytes from its containing font.
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware Diagnostic if `font` is not the byte sequence this record was
+    /// validated against and is too short for the table span.
+    pub fn bytes(self, font: &[u8]) -> crate::Decoded<&[u8]> {
+        self.table_span.slice(font)
+    }
 }
 
 /// A decoded and structurally validated SFNT Table Directory.

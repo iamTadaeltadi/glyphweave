@@ -56,6 +56,7 @@ fn decodes_table_record_fields_and_spans() {
     let directory = TableDirectory::decode(&bytes, 0).unwrap();
     let record = directory.record(Tag::new(*b"head")).unwrap();
     assert_eq!(record.checksum().raw(), 0xdead_beef);
+    assert_eq!(record.bytes(&bytes).unwrap(), &[0xde, 0xad, 0xbe, 0xef]);
     assert_eq!(
         (record.table_span().start(), record.table_span().end()),
         (28, 32)
