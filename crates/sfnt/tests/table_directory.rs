@@ -14,6 +14,19 @@ fn directory_with_tags(first: [u8; 4], second: [u8; 4]) -> Vec<u8> {
 }
 
 #[test]
+fn permits_distinct_empty_tables_at_same_offset() {
+    let bytes = directory_with_tags(*b"cmap", *b"head");
+    let directory = TableDirectory::decode(&bytes, 0).unwrap();
+    assert_eq!(directory.len(), 2);
+    assert!(
+        directory
+            .records()
+            .iter()
+            .all(|record| record.table_span().to_string() == "44..44")
+    );
+}
+
+#[test]
 fn decodes_empty_truetype_directory() {
     let bytes = [
         0x00, 0x01, 0x00, 0x00, // TrueType
