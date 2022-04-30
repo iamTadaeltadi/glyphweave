@@ -66,6 +66,22 @@ fn decodes_cff_directory_at_absolute_offset() {
 }
 
 #[test]
+fn record_offsets_remain_absolute_for_collection_faces() {
+    let bytes = [
+        b't', b't', b'c', b'f', // collection-owned prefix
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // directory header
+        b'n', b'a', b'm', b'e', 1, 2, 3, 4, // tag and checksum
+        0, 0, 0, 32, 0, 0, 0, 4, // absolute table span
+        1, 2, 3, 4,
+    ];
+    let directory = TableDirectory::decode(&bytes, 4).unwrap();
+    let record = directory.record(Tag::new(*b"name")).unwrap();
+    assert_eq!(directory.span().to_string(), "4..32");
+    assert_eq!(record.directory_span().to_string(), "16..32");
+    assert_eq!(record.table_span().to_string(), "32..36");
+}
+
+#[test]
 fn decodes_table_record_fields_and_spans() {
     let bytes = [
         0x00, 0x01, 0x00, 0x00, // TrueType
