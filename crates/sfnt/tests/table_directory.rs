@@ -320,6 +320,25 @@ fn head_checksum_treats_adjustment_field_as_zero() {
 }
 
 #[test]
+fn checksum_zero_pads_unaligned_table_length() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'n', b'a', b'm', b'e', 0x06, 0x02, 0x03, 0x04, // checksum
+        0, 0, 0, 28, 0, 0, 0, 5, // table span
+        1, 2, 3, 4, 5,
+    ];
+    let directory = TableDirectory::decode(&bytes, 0).unwrap();
+    assert_eq!(
+        directory
+            .record(Tag::new(*b"name"))
+            .unwrap()
+            .bytes(&bytes)
+            .unwrap(),
+        &[1, 2, 3, 4, 5]
+    );
+}
+
+#[test]
 fn reports_truncated_directory_header_without_advancing() {
     let diagnostic = TableDirectory::decode(&[0x00, 0x01, 0x00], 0).unwrap_err();
     assert_eq!(
