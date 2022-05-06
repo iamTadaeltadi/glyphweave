@@ -9,6 +9,7 @@
 
 mod cause;
 mod checksum;
+mod collection;
 mod collection_signature;
 mod collection_version;
 mod diagnostic;
@@ -23,6 +24,7 @@ mod version;
 
 pub use cause::Cause;
 pub use checksum::Checksum;
+pub use collection::FontCollection;
 pub use collection_signature::CollectionSignature;
 pub use collection_version::CollectionVersion;
 pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
