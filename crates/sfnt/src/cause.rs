@@ -9,6 +9,11 @@ use core::fmt;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Cause {
+    /// Font Collection decoding did not find the required `ttcf` identification Tag.
+    InvalidCollectionTag {
+        /// The four bytes found at the beginning of the input.
+        found: crate::Tag,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -107,6 +112,9 @@ pub enum Cause {
 impl fmt::Display for Cause {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
+            Self::InvalidCollectionTag { found } => {
+                write!(f, "expected collection tag ttcf but found {found:?}")
+            }
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }

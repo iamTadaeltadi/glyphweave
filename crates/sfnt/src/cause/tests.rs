@@ -1,6 +1,17 @@
 use super::Cause;
 
 #[test]
+fn invalid_collection_tag_names_the_found_bytes() {
+    let cause = Cause::InvalidCollectionTag {
+        found: crate::Tag::new(*b"OTTO"),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "expected collection tag ttcf but found Tag(OTTO)"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
