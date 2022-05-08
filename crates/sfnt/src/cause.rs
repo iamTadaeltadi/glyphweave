@@ -21,6 +21,8 @@ pub enum Cause {
         /// The header's minor version.
         minor: u16,
     },
+    /// A TTC Header advertises no font resources.
+    EmptyFontCollection,
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -125,6 +127,7 @@ impl fmt::Display for Cause {
             Self::UnsupportedCollectionVersion { major, minor } => {
                 write!(f, "unsupported collection version {major}.{minor}")
             }
+            Self::EmptyFontCollection => f.write_str("font collection contains no faces"),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }

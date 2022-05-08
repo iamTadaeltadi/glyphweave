@@ -18,6 +18,14 @@ fn unsupported_collection_version_preserves_both_parts() {
 }
 
 #[test]
+fn empty_collection_failure_is_explicit() {
+    assert_eq!(
+        Cause::EmptyFontCollection.to_string(),
+        "font collection contains no faces"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
