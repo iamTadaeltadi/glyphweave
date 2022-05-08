@@ -12,6 +12,12 @@ fn invalid_collection_tag_names_the_found_bytes() {
 }
 
 #[test]
+fn unsupported_collection_version_preserves_both_parts() {
+    let cause = Cause::UnsupportedCollectionVersion { major: 2, minor: 1 };
+    assert_eq!(cause.to_string(), "unsupported collection version 2.1");
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
