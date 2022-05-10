@@ -39,6 +39,13 @@ pub enum Cause {
         /// The declared absolute signature offset.
         offset: u32,
     },
+    /// A collection signature does not occupy the final declared byte range.
+    CollectionSignatureNotAtEnd {
+        /// The checked signature range.
+        signature: crate::ByteSpan,
+        /// The complete collection byte length.
+        font_length: usize,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -155,6 +162,13 @@ impl fmt::Display for Cause {
             } => write!(
                 f,
                 "invalid collection signature descriptor tag=0x{tag:08x} length={length} offset={offset}"
+            ),
+            Self::CollectionSignatureNotAtEnd {
+                signature,
+                font_length,
+            } => write!(
+                f,
+                "collection signature at {signature} must end at file length {font_length}"
             ),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
