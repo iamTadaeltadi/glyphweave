@@ -30,6 +30,15 @@ pub enum Cause {
         /// The greatest number of directory offsets available in the input.
         maximum: usize,
     },
+    /// Version 2.0 DSIG fields are neither all null nor a valid aligned descriptor.
+    InvalidCollectionSignatureDescriptor {
+        /// The raw signature Tag field.
+        tag: u32,
+        /// The declared signature length.
+        length: u32,
+        /// The declared absolute signature offset.
+        offset: u32,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -138,6 +147,14 @@ impl fmt::Display for Cause {
             Self::CollectionFaceCountOutOfBounds { count, maximum } => write!(
                 f,
                 "collection face count {count} exceeds available offset capacity {maximum}"
+            ),
+            Self::InvalidCollectionSignatureDescriptor {
+                tag,
+                length,
+                offset,
+            } => write!(
+                f,
+                "invalid collection signature descriptor tag=0x{tag:08x} length={length} offset={offset}"
             ),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")

@@ -38,6 +38,19 @@ fn collection_count_failure_names_available_capacity() {
 }
 
 #[test]
+fn signature_descriptor_failure_preserves_raw_fields() {
+    let cause = Cause::InvalidCollectionSignatureDescriptor {
+        tag: 0x4241_4421,
+        length: 12,
+        offset: 41,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "invalid collection signature descriptor tag=0x42414421 length=12 offset=41"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
