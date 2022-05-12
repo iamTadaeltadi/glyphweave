@@ -1,6 +1,8 @@
 //! Integration tests for bounded Font Collection decoding and Face selection.
 
-use glyphweave_sfnt::{CollectionVersion, FaceIndex, FontCollection, SfntVersion};
+use glyphweave_sfnt::{
+    ByteSpan, Cause, CollectionVersion, FaceIndex, FontCollection, SfntVersion, Tag,
+};
 
 fn push_u16(bytes: &mut Vec<u8>, value: u16) {
     bytes.extend_from_slice(&value.to_be_bytes());
@@ -66,4 +68,16 @@ fn decodes_version_two_signature_descriptor() {
     let signature = collection.signature().unwrap();
     assert_eq!(signature.span().to_string(), "40..48");
     assert_eq!(signature.bytes(&bytes).unwrap(), &bytes[40..]);
+}
+
+#[test]
+fn rejects_non_collection_identification_tag() {
+    let diagnostic = FontCollection::decode(b"OTTO-not-a-collection").unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(0, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCollectionTag {
+            found: Tag::new(*b"OTTO")
+        }
+    );
 }
