@@ -108,3 +108,23 @@ fn rejects_collection_without_faces() {
     assert_eq!(diagnostic.span(), ByteSpan::sized(8, 4));
     assert_eq!(diagnostic.cause(), Cause::EmptyFontCollection);
 }
+
+#[test]
+fn rejects_face_count_larger_than_available_header() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 2);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 28);
+    bytes.extend_from_slice(&[0; 12]);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(8, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::CollectionFaceCountOutOfBounds {
+            count: 2,
+            maximum: 1
+        }
+    );
+}
