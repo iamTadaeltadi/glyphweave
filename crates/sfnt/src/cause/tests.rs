@@ -63,6 +63,19 @@ fn signature_position_failure_names_the_file_end() {
 }
 
 #[test]
+fn duplicate_directory_failure_names_both_faces() {
+    let cause = Cause::DuplicateFaceDirectoryOffset {
+        first: crate::FaceIndex::new(1),
+        second: crate::FaceIndex::new(3),
+        offset: 64,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face indices 1 and 3 share directory offset 64"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
