@@ -185,3 +185,25 @@ fn rejects_signature_range_that_is_not_the_file_tail() {
         );
     }
 }
+
+#[test]
+fn rejects_duplicate_face_directory_offsets() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 20);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::DuplicateFaceDirectoryOffset {
+            first: FaceIndex::new(0),
+            second: FaceIndex::new(1),
+            offset: 20
+        }
+    );
+}
