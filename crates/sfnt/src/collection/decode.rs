@@ -73,6 +73,23 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
                 },
             )
         })?;
+        if directory_offset < header_span.end() {
+            let index = FaceIndex::new(u32::try_from(raw_index).unwrap_or(u32::MAX));
+            let directory = ByteSpan::sized(directory_offset, 12)
+                .unwrap_or_else(|| ByteSpan::empty_at(directory_offset));
+            let field_start = 12usize.saturating_add(raw_index.saturating_mul(4));
+            let field =
+                ByteSpan::sized(field_start, 4).unwrap_or_else(|| ByteSpan::empty_at(field_start));
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                field,
+                Cause::FaceDirectoryOverlapsCollectionHeader {
+                    index,
+                    directory,
+                    header: header_span,
+                },
+            ));
+        }
         let directory = TableDirectory::decode(bytes, directory_offset)?;
         faces.push(Face {
             index: FaceIndex::new(u32::try_from(raw_index).unwrap_or(u32::MAX)),
