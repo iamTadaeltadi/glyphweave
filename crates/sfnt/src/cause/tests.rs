@@ -89,6 +89,24 @@ fn collection_header_overlap_names_the_face() {
 }
 
 #[test]
+fn overlapping_directory_failure_names_both_faces() {
+    let cause = Cause::OverlappingFaceDirectories {
+        first: (
+            crate::FaceIndex::FIRST,
+            crate::ByteSpan::sized(20, 28).unwrap(),
+        ),
+        second: (
+            crate::FaceIndex::new(1),
+            crate::ByteSpan::sized(40, 12).unwrap(),
+        ),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face 0 directory at 20..48 overlaps face 1 directory at 40..52"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
