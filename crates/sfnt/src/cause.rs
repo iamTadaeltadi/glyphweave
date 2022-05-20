@@ -71,6 +71,17 @@ pub enum Cause {
         /// The next intersecting directory.
         second: (crate::FaceIndex, crate::ByteSpan),
     },
+    /// A Face table occupies TTC Header bytes.
+    TableOverlapsCollectionHeader {
+        /// The Face that references the table.
+        face: crate::FaceIndex,
+        /// The offending table.
+        tag: crate::Tag,
+        /// The table range.
+        table: crate::ByteSpan,
+        /// The TTC Header range.
+        header: crate::ByteSpan,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -216,6 +227,15 @@ impl Cause {
                 "face {} directory at {} overlaps face {} directory at {}",
                 first.0, first.1, second.0, second.1
             ),
+            Self::TableOverlapsCollectionHeader {
+                face,
+                tag,
+                table,
+                header,
+            } => write!(
+                f,
+                "face {face} table {tag} at {table} overlaps collection header {header}"
+            ),
             _ => return None,
         };
         Some(rendered)
@@ -236,7 +256,8 @@ impl fmt::Display for Cause {
             | Self::CollectionSignatureNotAtEnd { .. }
             | Self::DuplicateFaceDirectoryOffset { .. }
             | Self::FaceDirectoryOverlapsCollectionHeader { .. }
-            | Self::OverlappingFaceDirectories { .. } => unreachable!(),
+            | Self::OverlappingFaceDirectories { .. }
+            | Self::TableOverlapsCollectionHeader { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }
