@@ -97,12 +97,40 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
             directory,
         });
     }
+    validate_directory_spans(&faces)?;
     Ok(FontCollection {
         version,
         header_span,
         faces,
         signature,
     })
+}
+
+fn validate_directory_spans(faces: &[Face]) -> Decoded<()> {
+    let mut by_offset: Vec<_> = faces.iter().collect();
+    by_offset.sort_unstable_by_key(|face| {
+        (
+            face.directory.span().start(),
+            face.directory.span().end(),
+            face.index,
+        )
+    });
+    for pair in by_offset.windows(2) {
+        let [first, second] = pair else { continue };
+        let first_span = first.directory.span();
+        let second_span = second.directory.span();
+        if first_span.overlaps(second_span) {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                first_span.join(second_span),
+                Cause::OverlappingFaceDirectories {
+                    first: (first.index, first_span),
+                    second: (second.index, second_span),
+                },
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn validate_unique_offsets(offsets: &[u32]) -> Decoded<()> {
