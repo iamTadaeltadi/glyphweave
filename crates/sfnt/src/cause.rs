@@ -82,6 +82,19 @@ pub enum Cause {
         /// The TTC Header range.
         header: crate::ByteSpan,
     },
+    /// A table referenced by one Face occupies another Face's directory bytes.
+    TableOverlapsFaceDirectory {
+        /// The Face that references the table.
+        face: crate::FaceIndex,
+        /// The offending table.
+        tag: crate::Tag,
+        /// The table range.
+        table: crate::ByteSpan,
+        /// The Face whose directory is covered.
+        directory_face: crate::FaceIndex,
+        /// The covered directory range.
+        directory: crate::ByteSpan,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -236,6 +249,16 @@ impl Cause {
                 f,
                 "face {face} table {tag} at {table} overlaps collection header {header}"
             ),
+            Self::TableOverlapsFaceDirectory {
+                face,
+                tag,
+                table,
+                directory_face,
+                directory,
+            } => write!(
+                f,
+                "face {face} table {tag} at {table} overlaps face {directory_face} directory {directory}"
+            ),
             _ => return None,
         };
         Some(rendered)
@@ -257,7 +280,8 @@ impl fmt::Display for Cause {
             | Self::DuplicateFaceDirectoryOffset { .. }
             | Self::FaceDirectoryOverlapsCollectionHeader { .. }
             | Self::OverlappingFaceDirectories { .. }
-            | Self::TableOverlapsCollectionHeader { .. } => unreachable!(),
+            | Self::TableOverlapsCollectionHeader { .. }
+            | Self::TableOverlapsFaceDirectory { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }
