@@ -106,6 +106,13 @@ pub enum Cause {
         /// The file-level DSIG range.
         signature: crate::ByteSpan,
     },
+    /// Tables from different Faces partially overlap instead of sharing an exact range.
+    OverlappingFaceTables {
+        /// The first table in absolute byte order.
+        first: (crate::FaceIndex, crate::Tag, crate::ByteSpan),
+        /// The next intersecting table.
+        second: (crate::FaceIndex, crate::Tag, crate::ByteSpan),
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -279,6 +286,11 @@ impl Cause {
                 f,
                 "face {face} table {tag} at {table} overlaps collection signature {signature}"
             ),
+            Self::OverlappingFaceTables { first, second } => write!(
+                f,
+                "face {} table {} at {} overlaps face {} table {} at {}",
+                first.0, first.1, first.2, second.0, second.1, second.2
+            ),
             _ => return None,
         };
         Some(rendered)
@@ -302,7 +314,8 @@ impl fmt::Display for Cause {
             | Self::OverlappingFaceDirectories { .. }
             | Self::TableOverlapsCollectionHeader { .. }
             | Self::TableOverlapsFaceDirectory { .. }
-            | Self::TableOverlapsCollectionSignature { .. } => unreachable!(),
+            | Self::TableOverlapsCollectionSignature { .. }
+            | Self::OverlappingFaceTables { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }

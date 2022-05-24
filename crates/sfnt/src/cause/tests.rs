@@ -150,6 +150,26 @@ fn table_signature_overlap_names_the_face_and_table() {
 }
 
 #[test]
+fn cross_face_table_overlap_names_both_records() {
+    let cause = Cause::OverlappingFaceTables {
+        first: (
+            crate::FaceIndex::FIRST,
+            crate::Tag::new(*b"glyf"),
+            crate::ByteSpan::sized(100, 40).unwrap(),
+        ),
+        second: (
+            crate::FaceIndex::new(1),
+            crate::Tag::new(*b"glyf"),
+            crate::ByteSpan::sized(120, 40).unwrap(),
+        ),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face 0 table glyf at 100..140 overlaps face 1 table glyf at 120..160"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
