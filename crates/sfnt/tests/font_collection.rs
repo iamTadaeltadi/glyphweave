@@ -351,3 +351,43 @@ fn rejects_face_table_covering_collection_signature() {
         }
     );
 }
+
+#[test]
+fn rejects_partially_overlapping_tables_across_faces() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 48);
+    for offset in [76, 80] {
+        push_u32(&mut bytes, 0x0001_0000);
+        push_u16(&mut bytes, 1);
+        push_u16(&mut bytes, 16);
+        push_u16(&mut bytes, 0);
+        push_u16(&mut bytes, 0);
+        bytes.extend_from_slice(b"name");
+        push_u32(&mut bytes, 0);
+        push_u32(&mut bytes, offset);
+        push_u32(&mut bytes, 8);
+    }
+    bytes.extend_from_slice(&[0; 12]);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(76, 12));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::OverlappingFaceTables {
+            first: (
+                FaceIndex::new(0),
+                Tag::new(*b"name"),
+                ByteSpan::sized(76, 8).unwrap()
+            ),
+            second: (
+                FaceIndex::new(1),
+                Tag::new(*b"name"),
+                ByteSpan::sized(80, 8).unwrap()
+            )
+        }
+    );
+}

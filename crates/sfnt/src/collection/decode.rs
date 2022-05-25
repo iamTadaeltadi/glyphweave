@@ -101,12 +101,52 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
     validate_tables_outside_header(&faces, header_span)?;
     validate_tables_outside_directories(&faces)?;
     validate_tables_outside_signature(&faces, signature)?;
+    validate_shared_table_spans(&faces)?;
     Ok(FontCollection {
         version,
         header_span,
         faces,
         signature,
     })
+}
+
+fn validate_shared_table_spans(faces: &[Face]) -> Decoded<()> {
+    let mut tables: Vec<_> = faces
+        .iter()
+        .flat_map(|face| {
+            face.directory
+                .records()
+                .iter()
+                .filter(|record| !record.table_span().is_empty())
+                .map(move |record| (face, record))
+        })
+        .collect();
+    tables.sort_unstable_by_key(|(face, record)| {
+        (
+            record.table_span().start(),
+            record.table_span().end(),
+            face.index,
+            record.tag(),
+        )
+    });
+    for pair in tables.windows(2) {
+        let [(first_face, first), (second_face, second)] = pair else {
+            continue;
+        };
+        let first_span = first.table_span();
+        let second_span = second.table_span();
+        if first_span != second_span && first_span.overlaps(second_span) {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                first_span.join(second_span),
+                Cause::OverlappingFaceTables {
+                    first: (first_face.index, first.tag(), first_span),
+                    second: (second_face.index, second.tag(), second_span),
+                },
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn validate_tables_outside_signature(
