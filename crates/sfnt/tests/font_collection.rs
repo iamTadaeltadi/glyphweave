@@ -421,3 +421,33 @@ fn permits_exact_table_sharing_across_faces() {
         second.record(Tag::new(*b"name")).unwrap().table_span()
     );
 }
+
+#[test]
+fn preserves_face_order_when_directory_offsets_descend() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 32);
+    push_u32(&mut bytes, 20);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+    push_empty_directory(&mut bytes, u32::from_be_bytes(*b"OTTO"));
+
+    let collection = FontCollection::decode(&bytes).unwrap();
+    assert_eq!(
+        collection
+            .face(FaceIndex::new(0))
+            .unwrap()
+            .directory_offset(),
+        32
+    );
+    assert_eq!(
+        collection
+            .face(FaceIndex::new(1))
+            .unwrap()
+            .directory_offset(),
+        20
+    );
+    assert_eq!(collection.faces()[0].index(), FaceIndex::new(0));
+    assert_eq!(collection.faces()[1].index(), FaceIndex::new(1));
+}
