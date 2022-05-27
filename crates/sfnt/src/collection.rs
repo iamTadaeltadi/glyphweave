@@ -1,6 +1,9 @@
 //! A fully validated OpenType Font Collection.
 
-use crate::{ByteSpan, CollectionSignature, CollectionVersion, Face, FaceIndex};
+use crate::cause::Cause;
+use crate::{
+    ByteSpan, CollectionSignature, CollectionVersion, Decoded, Diagnostic, Face, FaceIndex, Stage,
+};
 
 mod decode;
 
@@ -50,6 +53,23 @@ impl FontCollection {
             .and_then(|index| self.faces.get(index))
     }
 
+    /// Selects a Face by its zero-based Face Index.
+    ///
+    /// # Errors
+    ///
+    /// Returns a Diagnostic when the requested index is not present.
+    pub fn select(&self, index: FaceIndex) -> Decoded<&Face> {
+        self.face(index).ok_or_else(|| {
+            Diagnostic::failure(
+                Stage::Decode,
+                Cause::FaceIndexOutOfBounds {
+                    index,
+                    face_count: self.faces.len(),
+                },
+            )
+        })
+    }
+
     /// The number of Faces in this collection.
     #[must_use]
     pub fn len(&self) -> usize {
@@ -75,7 +95,7 @@ impl FontCollection {
 mod tests {
     use super::FontCollection;
     use crate::{
-        ByteSpan, CollectionSignature, CollectionVersion, Face, FaceIndex, SfntVersion,
+        ByteSpan, Cause, CollectionSignature, CollectionVersion, Face, FaceIndex, SfntVersion,
         TableDirectory,
     };
 
@@ -107,6 +127,14 @@ mod tests {
             collection.faces().first()
         );
         assert_eq!(collection.face(FaceIndex::new(1)), None);
+        let missing = collection.select(FaceIndex::new(1)).unwrap_err();
+        assert_eq!(
+            missing.cause(),
+            Cause::FaceIndexOutOfBounds {
+                index: FaceIndex::new(1),
+                face_count: 1
+            }
+        );
         assert_eq!(collection.len(), 1);
         assert!(!collection.is_empty());
         assert_eq!(collection.signature(), Some(signature));
