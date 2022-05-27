@@ -23,6 +23,13 @@ pub enum Cause {
     },
     /// A TTC Header advertises no font resources.
     EmptyFontCollection,
+    /// A requested Face Index is not present in the font file.
+    FaceIndexOutOfBounds {
+        /// The requested zero-based index.
+        index: crate::FaceIndex,
+        /// The number of available Faces.
+        face_count: usize,
+    },
     /// The advertised Face count cannot fit in the available TTC Header bytes.
     CollectionFaceCountOutOfBounds {
         /// The number of Faces declared by the header.
@@ -218,6 +225,10 @@ impl Cause {
                 write!(f, "unsupported collection version {major}.{minor}")
             }
             Self::EmptyFontCollection => f.write_str("font collection contains no faces"),
+            Self::FaceIndexOutOfBounds { index, face_count } => write!(
+                f,
+                "face index {index} is out of bounds for {face_count} face(s)"
+            ),
             Self::CollectionFaceCountOutOfBounds { count, maximum } => write!(
                 f,
                 "collection face count {count} exceeds available offset capacity {maximum}"
@@ -306,6 +317,7 @@ impl fmt::Display for Cause {
             Self::InvalidCollectionTag { .. }
             | Self::UnsupportedCollectionVersion { .. }
             | Self::EmptyFontCollection
+            | Self::FaceIndexOutOfBounds { .. }
             | Self::CollectionFaceCountOutOfBounds { .. }
             | Self::InvalidCollectionSignatureDescriptor { .. }
             | Self::CollectionSignatureNotAtEnd { .. }
