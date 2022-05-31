@@ -495,3 +495,23 @@ fn selects_requested_face_from_collection() {
     assert_eq!(face.directory_offset(), 32);
     assert_eq!(face.directory().version(), SfntVersion::OpenTypeCff);
 }
+
+#[test]
+fn rejects_missing_collection_face_index() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 16);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+
+    let diagnostic = Face::select(&bytes, FaceIndex::new(2)).unwrap_err();
+    assert_eq!(diagnostic.span(), None);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::FaceIndexOutOfBounds {
+            index: FaceIndex::new(2),
+            face_count: 1
+        }
+    );
+}
