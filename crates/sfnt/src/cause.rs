@@ -53,6 +53,13 @@ pub enum Cause {
         /// The complete collection byte length.
         font_length: usize,
     },
+    /// A file-level DSIG range occupies TTC Header bytes.
+    CollectionSignatureOverlapsHeader {
+        /// The declared signature range.
+        signature: crate::ByteSpan,
+        /// The TTC Header range.
+        header: crate::ByteSpan,
+    },
     /// Two Face Indices point to the same Table Directory.
     DuplicateFaceDirectoryOffset {
         /// The first Face Index using the offset.
@@ -248,6 +255,10 @@ impl Cause {
                 f,
                 "collection signature at {signature} must end at file length {font_length}"
             ),
+            Self::CollectionSignatureOverlapsHeader { signature, header } => write!(
+                f,
+                "collection signature at {signature} overlaps collection header {header}"
+            ),
             Self::DuplicateFaceDirectoryOffset {
                 first,
                 second,
@@ -321,6 +332,7 @@ impl fmt::Display for Cause {
             | Self::CollectionFaceCountOutOfBounds { .. }
             | Self::InvalidCollectionSignatureDescriptor { .. }
             | Self::CollectionSignatureNotAtEnd { .. }
+            | Self::CollectionSignatureOverlapsHeader { .. }
             | Self::DuplicateFaceDirectoryOffset { .. }
             | Self::FaceDirectoryOverlapsCollectionHeader { .. }
             | Self::OverlappingFaceDirectories { .. }
