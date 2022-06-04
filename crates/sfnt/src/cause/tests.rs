@@ -87,6 +87,19 @@ fn signature_header_overlap_names_both_ranges() {
 }
 
 #[test]
+fn signature_directory_overlap_names_the_face() {
+    let cause = Cause::CollectionSignatureOverlapsFaceDirectory {
+        signature: crate::ByteSpan::sized(32, 16).unwrap(),
+        face: crate::FaceIndex::new(1),
+        directory: crate::ByteSpan::sized(28, 28).unwrap(),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "collection signature at 32..48 overlaps face 1 directory 28..56"
+    );
+}
+
+#[test]
 fn duplicate_directory_failure_names_both_faces() {
     let cause = Cause::DuplicateFaceDirectoryOffset {
         first: crate::FaceIndex::new(1),
