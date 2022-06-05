@@ -98,6 +98,7 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
         });
     }
     validate_directory_spans(&faces)?;
+    validate_signature_metadata(header_span, &faces, signature)?;
     validate_tables_outside_header(&faces, header_span)?;
     validate_tables_outside_directories(&faces)?;
     validate_tables_outside_signature(&faces, signature)?;
@@ -108,6 +109,41 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
         faces,
         signature,
     })
+}
+
+fn validate_signature_metadata(
+    header: ByteSpan,
+    faces: &[Face],
+    signature: Option<CollectionSignature>,
+) -> Decoded<()> {
+    let Some(signature) = signature else {
+        return Ok(());
+    };
+    if signature.span().overlaps(header) {
+        return Err(Diagnostic::at(
+            Stage::Decode,
+            signature.span().join(header),
+            Cause::CollectionSignatureOverlapsHeader {
+                signature: signature.span(),
+                header,
+            },
+        ));
+    }
+    for face in faces {
+        let directory = face.directory.span();
+        if signature.span().overlaps(directory) {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                signature.span().join(directory),
+                Cause::CollectionSignatureOverlapsFaceDirectory {
+                    signature: signature.span(),
+                    face: face.index,
+                    directory,
+                },
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn validate_shared_table_spans(faces: &[Face]) -> Decoded<()> {
