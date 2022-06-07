@@ -49,6 +49,13 @@ impl Cause {
                 f,
                 "collection signature at {signature} overlaps face {face} directory {directory}"
             ),
+            _ => return self.fmt_collection_overlap(f),
+        };
+        Some(rendered)
+    }
+
+    fn fmt_collection_overlap(self, f: &mut fmt::Formatter<'_>) -> Option<fmt::Result> {
+        let rendered = match self {
             Self::DuplicateFaceDirectoryOffset {
                 first,
                 second,
@@ -64,6 +71,14 @@ impl Cause {
             } => write!(
                 f,
                 "face {index} directory at {directory} overlaps collection header {header}"
+            ),
+            Self::FaceDirectoryOutOfBounds {
+                index,
+                offset,
+                font_length,
+            } => write!(
+                f,
+                "face {index} directory at {offset} exceeds font length {font_length}"
             ),
             Self::OverlappingFaceDirectories { first, second } => write!(
                 f,
@@ -126,6 +141,7 @@ impl fmt::Display for Cause {
             | Self::CollectionSignatureOverlapsFaceDirectory { .. }
             | Self::DuplicateFaceDirectoryOffset { .. }
             | Self::FaceDirectoryOverlapsCollectionHeader { .. }
+            | Self::FaceDirectoryOutOfBounds { .. }
             | Self::OverlappingFaceDirectories { .. }
             | Self::TableOverlapsCollectionHeader { .. }
             | Self::TableOverlapsFaceDirectory { .. }
