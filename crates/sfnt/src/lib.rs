@@ -32,7 +32,7 @@ pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
 pub use directory::{TableDirectory, TableRecord};
 pub use face::Face;
 pub use face_index::FaceIndex;
-pub use glyph_id::GlyphId;
+pub use glyph_id::{GlyphId, NewGlyphId};
 pub use reader::Reader;
 pub use span::ByteSpan;
 pub use tag::Tag;
