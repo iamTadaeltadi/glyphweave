@@ -42,6 +42,13 @@ impl GlyphSet {
         self.glyphs.contains(&glyph)
     }
 
+    /// Retains an input Glyph ID.
+    ///
+    /// Returns `true` when the glyph was newly inserted.
+    pub fn insert(&mut self, glyph: GlyphId) -> bool {
+        self.glyphs.insert(glyph)
+    }
+
     /// Visits retained Glyph IDs in ascending order.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = GlyphId> + DoubleEndedIterator + '_ {
