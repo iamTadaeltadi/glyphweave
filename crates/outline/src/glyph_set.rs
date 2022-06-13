@@ -49,6 +49,13 @@ impl GlyphSet {
         self.glyphs.insert(glyph)
     }
 
+    /// Stops retaining a non-`.notdef` Glyph ID.
+    ///
+    /// Returns `true` when a member was removed. `.notdef` is never removed.
+    pub fn remove(&mut self, glyph: GlyphId) -> bool {
+        !glyph.is_notdef() && self.glyphs.remove(&glyph)
+    }
+
     /// Visits retained Glyph IDs in ascending order.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = GlyphId> + DoubleEndedIterator + '_ {
