@@ -38,3 +38,12 @@ fn removal_preserves_notdef() {
     assert!(!glyphs.remove(GlyphId::NOTDEF));
     assert_eq!(glyphs, GlyphSet::new());
 }
+
+#[test]
+fn collection_deduplicates_and_sorts_glyphs() {
+    let glyphs: GlyphSet = [7, 2, 7, 1].into_iter().map(GlyphId::new).collect();
+    assert_eq!(
+        glyphs.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 2, 7]
+    );
+}
