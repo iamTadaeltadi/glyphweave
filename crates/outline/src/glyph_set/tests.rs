@@ -47,3 +47,13 @@ fn collection_deduplicates_and_sorts_glyphs() {
         [0, 1, 2, 7]
     );
 }
+
+#[test]
+fn retention_predicate_cannot_discard_notdef() {
+    let mut glyphs: GlyphSet = (0..6).map(GlyphId::new).collect();
+    glyphs.retain(|glyph| glyph.raw() % 2 == 1);
+    assert_eq!(
+        glyphs.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 3, 5]
+    );
+}
