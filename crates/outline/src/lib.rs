@@ -6,5 +6,7 @@
 #![forbid(unsafe_code)]
 
 mod glyph_set;
+mod remap;
 
 pub use glyph_set::GlyphSet;
+pub use remap::Remap;
