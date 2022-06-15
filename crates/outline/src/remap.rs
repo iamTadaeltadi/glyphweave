@@ -60,3 +60,6 @@ impl Remap {
         false
     }
 }
+
+#[cfg(test)]
+mod tests;
