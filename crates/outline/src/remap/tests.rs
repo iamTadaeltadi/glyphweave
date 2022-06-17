@@ -42,3 +42,18 @@ fn discarded_and_out_of_range_ids_are_undefined() {
     assert_eq!(remap.glyph_id(NewGlyphId::new(3)), None);
     assert_eq!(remap.glyph_id(NewGlyphId::new(u16::MAX)), None);
 }
+
+#[test]
+fn iteration_exposes_both_mapping_directions() {
+    let glyphs: GlyphSet = [30, 4].into_iter().map(GlyphId::new).collect();
+    let remap = Remap::new(&glyphs);
+    let pairs: Vec<_> = remap
+        .iter()
+        .map(|(old, new)| (old.raw(), new.raw()))
+        .collect();
+    assert_eq!(pairs, [(0, 0), (4, 1), (30, 2)]);
+    assert_eq!(
+        remap.iter().next_back(),
+        Some((GlyphId::new(30), NewGlyphId::new(2)))
+    );
+}

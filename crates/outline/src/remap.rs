@@ -46,6 +46,21 @@ impl Remap {
         self.reverse.get(usize::from(new_glyph.raw())).copied()
     }
 
+    /// Visits `(GlyphId, NewGlyphId)` pairs in emitted Glyph ID order.
+    #[must_use]
+    pub fn iter(
+        &self,
+    ) -> impl ExactSizeIterator<Item = (GlyphId, NewGlyphId)> + DoubleEndedIterator + '_ {
+        self.reverse
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(index, glyph)| {
+                let raw = u16::try_from(index).unwrap_or(u16::MAX);
+                (glyph, NewGlyphId::new(raw))
+            })
+    }
+
     /// Returns the number of mappings.
     #[must_use]
     pub fn len(&self) -> usize {
