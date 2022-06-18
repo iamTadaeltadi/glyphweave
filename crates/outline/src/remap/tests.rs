@@ -57,3 +57,19 @@ fn iteration_exposes_both_mapping_directions() {
         Some((GlyphId::new(30), NewGlyphId::new(2)))
     );
 }
+
+#[test]
+fn complete_u16_universe_remains_representable() {
+    let glyphs: GlyphSet = (0..=u16::MAX).map(GlyphId::new).collect();
+    let remap = Remap::new(&glyphs);
+    assert_eq!(remap.len(), usize::from(u16::MAX) + 1);
+    assert_eq!(
+        remap.new_glyph_id(GlyphId::new(u16::MAX)),
+        Some(NewGlyphId::new(u16::MAX))
+    );
+    assert_eq!(
+        remap.glyph_id(NewGlyphId::new(u16::MAX)),
+        Some(GlyphId::new(u16::MAX))
+    );
+    assert!(remap.iter().all(|(old, new)| old.raw() == new.raw()));
+}
