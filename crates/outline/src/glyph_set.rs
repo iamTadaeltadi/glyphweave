@@ -8,6 +8,16 @@ use glyphweave_sfnt::GlyphId;
 ///
 /// A Glyph Set is never empty: [`GlyphId::NOTDEF`] is inserted at construction and cannot be
 /// removed through the public API. Iteration follows ascending input Glyph ID order.
+///
+/// ```
+/// use glyphweave_outline::GlyphSet;
+/// use glyphweave_sfnt::GlyphId;
+///
+/// let glyphs: GlyphSet = [GlyphId::new(9), GlyphId::new(3)].into_iter().collect();
+/// let retained: Vec<_> = glyphs.iter().map(GlyphId::raw).collect();
+///
+/// assert_eq!(retained, [0, 3, 9]);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GlyphSet {
     glyphs: BTreeSet<GlyphId>,
