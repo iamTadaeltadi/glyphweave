@@ -4,3 +4,7 @@
 //! encoding final SFNT bytes.
 
 #![forbid(unsafe_code)]
+
+mod codepoint_set;
+
+pub use codepoint_set::CodepointSet;
