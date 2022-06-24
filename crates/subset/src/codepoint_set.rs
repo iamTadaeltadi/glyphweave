@@ -50,3 +50,6 @@ impl<'a> IntoIterator for &'a CodepointSet {
         self.codepoints.iter().copied()
     }
 }
+
+#[cfg(test)]
+mod tests;
