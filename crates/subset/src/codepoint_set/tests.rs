@@ -17,3 +17,14 @@ fn borrowed_iteration_is_exact_and_double_ended() {
     assert_eq!(iter.next_back(), None);
     assert_eq!(codepoints.iter().next(), None);
 }
+
+#[test]
+fn insertion_and_removal_report_membership_changes() {
+    let mut codepoints = CodepointSet::new();
+    assert!(codepoints.insert('🦀'));
+    assert!(!codepoints.insert('🦀'));
+    assert!(codepoints.contains('🦀'));
+    assert!(codepoints.remove('🦀'));
+    assert!(!codepoints.remove('🦀'));
+    assert!(codepoints.is_empty());
+}

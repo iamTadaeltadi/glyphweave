@@ -35,6 +35,20 @@ impl CodepointSet {
         self.codepoints.contains(&codepoint)
     }
 
+    /// Requests a Unicode scalar value.
+    ///
+    /// Returns `true` when the value was newly inserted.
+    pub fn insert(&mut self, codepoint: char) -> bool {
+        self.codepoints.insert(codepoint)
+    }
+
+    /// Stops requesting a Unicode scalar value.
+    ///
+    /// Returns `true` when the value was present.
+    pub fn remove(&mut self, codepoint: char) -> bool {
+        self.codepoints.remove(&codepoint)
+    }
+
     /// Visits requested Unicode scalar values in ascending numeric order.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = char> + DoubleEndedIterator + '_ {
