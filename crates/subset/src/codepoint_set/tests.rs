@@ -28,3 +28,13 @@ fn insertion_and_removal_report_membership_changes() {
     assert!(!codepoints.remove('🦀'));
     assert!(codepoints.is_empty());
 }
+
+#[test]
+fn retention_filters_requested_scalars() {
+    let mut codepoints = CodepointSet::new();
+    for codepoint in ['A', 'β', '中', '🦀'] {
+        codepoints.insert(codepoint);
+    }
+    codepoints.retain(char::is_ascii);
+    assert_eq!(codepoints.iter().collect::<Vec<_>>(), ['A']);
+}
