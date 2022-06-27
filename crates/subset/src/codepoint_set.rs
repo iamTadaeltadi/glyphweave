@@ -3,6 +3,13 @@
 use std::collections::BTreeSet;
 
 /// The unique Unicode scalar values requested for a subset.
+///
+/// ```
+/// use glyphweave_subset::CodepointSet;
+///
+/// let codepoints: CodepointSet = ['🦀', 'A', 'A'].into_iter().collect();
+/// assert_eq!(codepoints.iter().collect::<Vec<_>>(), ['A', '🦀']);
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct CodepointSet {
     codepoints: BTreeSet<char>,
