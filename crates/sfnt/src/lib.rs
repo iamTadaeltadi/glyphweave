@@ -8,6 +8,7 @@
 #![forbid(unsafe_code)]
 
 mod cause;
+mod character_map;
 mod checksum;
 mod collection;
 mod collection_signature;
@@ -24,6 +25,7 @@ mod tag;
 mod version;
 
 pub use cause::Cause;
+pub use character_map::CharacterMap;
 pub use checksum::Checksum;
 pub use collection::FontCollection;
 pub use collection_signature::CollectionSignature;
