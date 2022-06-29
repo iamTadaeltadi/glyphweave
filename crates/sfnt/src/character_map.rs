@@ -68,5 +68,21 @@ impl CharacterMap {
     }
 }
 
+impl Extend<(char, GlyphId)> for CharacterMap {
+    fn extend<T: IntoIterator<Item = (char, GlyphId)>>(&mut self, mappings: T) {
+        for (codepoint, glyph) in mappings {
+            self.insert(codepoint, glyph);
+        }
+    }
+}
+
+impl FromIterator<(char, GlyphId)> for CharacterMap {
+    fn from_iter<T: IntoIterator<Item = (char, GlyphId)>>(mappings: T) -> Self {
+        let mut map = Self::new();
+        map.extend(mappings);
+        map
+    }
+}
+
 #[cfg(test)]
 mod tests;

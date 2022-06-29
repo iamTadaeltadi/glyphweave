@@ -40,3 +40,19 @@ fn inserting_notdef_canonicalizes_to_an_absent_mapping() {
     assert!(map.is_empty());
     assert_eq!(map.glyph_id('A'), GlyphId::NOTDEF);
 }
+
+#[test]
+fn collection_canonicalizes_and_sorts_mappings() {
+    let map: CharacterMap = [
+        ('🦀', GlyphId::new(8)),
+        ('A', GlyphId::new(2)),
+        ('中', GlyphId::NOTDEF),
+        ('A', GlyphId::new(3)),
+    ]
+    .into_iter()
+    .collect();
+    assert_eq!(
+        map.iter().collect::<Vec<_>>(),
+        [('A', GlyphId::new(3)), ('🦀', GlyphId::new(8))]
+    );
+}
