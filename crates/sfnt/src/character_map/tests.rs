@@ -20,3 +20,23 @@ fn empty_mapping_iteration_is_exact_and_double_ended() {
     assert_eq!(mappings.next_back(), None);
     assert_eq!(mappings.next(), None);
 }
+
+#[test]
+fn insertion_replaces_and_removes_explicit_mappings() {
+    let mut map = CharacterMap::new();
+    assert_eq!(map.insert('A', GlyphId::new(7)), None);
+    assert_eq!(map.glyph_id('A'), GlyphId::new(7));
+    assert_eq!(map.insert('A', GlyphId::new(9)), Some(GlyphId::new(7)));
+    assert_eq!(map.remove('A'), Some(GlyphId::new(9)));
+    assert_eq!(map.remove('A'), None);
+    assert_eq!(map.glyph_id('A'), GlyphId::NOTDEF);
+}
+
+#[test]
+fn inserting_notdef_canonicalizes_to_an_absent_mapping() {
+    let mut map = CharacterMap::new();
+    map.insert('A', GlyphId::new(7));
+    assert_eq!(map.insert('A', GlyphId::NOTDEF), Some(GlyphId::new(7)));
+    assert!(map.is_empty());
+    assert_eq!(map.glyph_id('A'), GlyphId::NOTDEF);
+}

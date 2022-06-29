@@ -40,6 +40,23 @@ impl CharacterMap {
             .unwrap_or(GlyphId::NOTDEF)
     }
 
+    /// Assigns an input Glyph ID to a Unicode scalar value.
+    ///
+    /// Assigning `.notdef` removes any explicit entry because missing mappings already resolve to
+    /// glyph zero. Returns the previous explicit non-`.notdef` mapping, if one existed.
+    pub fn insert(&mut self, codepoint: char, glyph: GlyphId) -> Option<GlyphId> {
+        if glyph.is_notdef() {
+            self.mappings.remove(&codepoint)
+        } else {
+            self.mappings.insert(codepoint, glyph)
+        }
+    }
+
+    /// Removes and returns an explicit mapping.
+    pub fn remove(&mut self, codepoint: char) -> Option<GlyphId> {
+        self.mappings.remove(&codepoint)
+    }
+
     /// Visits explicit mappings in ascending Unicode scalar order.
     #[must_use]
     pub fn iter(
