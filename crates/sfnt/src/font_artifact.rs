@@ -3,6 +3,14 @@
 use std::{fmt, sync::Arc};
 
 /// An immutable owned font byte sequence.
+///
+/// ```
+/// use glyphweave_sfnt::FontArtifact;
+///
+/// let artifact = FontArtifact::new(vec![0, 1, 0, 0]);
+/// let shared = artifact.clone();
+/// assert_eq!(shared.as_bytes(), [0, 1, 0, 0]);
+/// ```
 #[derive(Clone, Default, PartialEq, Eq, Hash)]
 pub struct FontArtifact {
     bytes: Arc<[u8]>,
