@@ -69,6 +69,22 @@ impl SubsetPlan {
     pub const fn remap(&self) -> &Remap {
         &self.remap
     }
+
+    /// Returns the table decision for `tag`, defaulting to [`Retention::Drop`].
+    #[must_use]
+    pub fn retention(&self, tag: Tag) -> Retention {
+        self.retentions.get(&tag).copied().unwrap_or_default()
+    }
+
+    /// Visits explicit retained-table decisions in ascending Tag order.
+    #[must_use]
+    pub fn retentions(
+        &self,
+    ) -> impl ExactSizeIterator<Item = (Tag, Retention)> + DoubleEndedIterator + '_ {
+        self.retentions
+            .iter()
+            .map(|(&tag, &retention)| (tag, retention))
+    }
 }
 
 #[cfg(test)]
