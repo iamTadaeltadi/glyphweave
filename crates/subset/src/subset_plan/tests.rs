@@ -1,5 +1,5 @@
 use glyphweave_outline::GlyphSet;
-use glyphweave_sfnt::{FaceIndex, GlyphId, Tag};
+use glyphweave_sfnt::{CharacterMap, FaceIndex, GlyphId, Tag};
 
 use super::SubsetPlan;
 use crate::{CodepointSet, Retention};
@@ -42,4 +42,23 @@ fn table_decisions_are_canonical_sorted_and_default_drop() {
         plan.retentions().collect::<Vec<_>>(),
         [(glyf, Retention::Rewrite)]
     );
+}
+
+#[test]
+fn initial_plan_resolves_requested_codepoints_and_notdef() {
+    let codepoints: CodepointSet = ['A', 'B', '🦀'].into_iter().collect();
+    let character_map: CharacterMap = [
+        ('A', GlyphId::new(12)),
+        ('🦀', GlyphId::new(900)),
+        ('Z', GlyphId::new(99)),
+    ]
+    .into_iter()
+    .collect();
+    let plan = SubsetPlan::from_character_map(FaceIndex::FIRST, codepoints, &character_map, []);
+
+    assert_eq!(
+        plan.glyphs().iter().collect::<Vec<_>>(),
+        [GlyphId::NOTDEF, GlyphId::new(12), GlyphId::new(900)]
+    );
+    assert_eq!(plan.remap().len(), 3);
 }
