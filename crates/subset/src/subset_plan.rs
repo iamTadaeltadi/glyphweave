@@ -8,6 +8,18 @@ use glyphweave_sfnt::{CharacterMap, FaceIndex, Tag};
 use crate::{CodepointSet, Retention};
 
 /// A validated immutable description of one deterministic subset operation.
+///
+/// ```
+/// use glyphweave_sfnt::{CharacterMap, FaceIndex, GlyphId};
+/// use glyphweave_subset::{CodepointSet, SubsetPlan};
+///
+/// let requested: CodepointSet = ['A'].into_iter().collect();
+/// let map: CharacterMap = [('A', GlyphId::new(5))].into_iter().collect();
+/// let plan = SubsetPlan::from_character_map(FaceIndex::FIRST, requested, &map, []);
+///
+/// assert!(plan.glyphs().contains(GlyphId::NOTDEF));
+/// assert!(plan.glyphs().contains(GlyphId::new(5)));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SubsetPlan {
     face_index: FaceIndex,
