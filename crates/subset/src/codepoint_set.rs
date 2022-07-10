@@ -57,8 +57,8 @@ impl CodepointSet {
     }
 
     /// Retains only Unicode scalar values accepted by `predicate`.
-    pub fn retain(&mut self, predicate: impl FnMut(&char) -> bool) {
-        self.codepoints.retain(predicate);
+    pub fn retain(&mut self, mut predicate: impl FnMut(char) -> bool) {
+        self.codepoints.retain(|codepoint| predicate(*codepoint));
     }
 
     /// Visits requested Unicode scalar values in ascending numeric order.

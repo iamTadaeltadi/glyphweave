@@ -35,7 +35,7 @@ fn retention_filters_requested_scalars() {
     for codepoint in ['A', 'β', '中', '🦀'] {
         codepoints.insert(codepoint);
     }
-    codepoints.retain(char::is_ascii);
+    codepoints.retain(|codepoint| codepoint.is_ascii());
     assert_eq!(codepoints.iter().collect::<Vec<_>>(), ['A']);
 }
 
