@@ -29,6 +29,14 @@ fn bounded_span() -> impl Strategy<Value = (Vec<u8>, ByteSpan)> {
         })
 }
 
+fn span_pair() -> impl Strategy<Value = (ByteSpan, ByteSpan)> {
+    (0usize..4096, 0usize..4096, 0usize..4096, 0usize..4096).prop_map(|(a, b, c, d)| {
+        let first = ByteSpan::between(a.min(b), a.max(b)).unwrap();
+        let second = ByteSpan::between(c.min(d), c.max(d)).unwrap();
+        (first, second)
+    })
+}
+
 proptest! {
     #![proptest_config(fixed_config())]
 
@@ -38,5 +46,20 @@ proptest! {
         prop_assert_eq!(observed, &bytes[span.start()..span.end()]);
         prop_assert_eq!(observed.len(), span.length());
         prop_assert_eq!(observed.is_empty(), span.is_empty());
+    }
+
+
+    #[test]
+    fn span_join_and_overlap_match_interval_algebra((first, second) in span_pair()) {
+        let joined = first.join(second);
+        prop_assert_eq!(joined, second.join(first));
+        prop_assert_eq!(joined.start(), first.start().min(second.start()));
+        prop_assert_eq!(joined.end(), first.end().max(second.end()));
+
+        let intersection_start = first.start().max(second.start());
+        let intersection_end = first.end().min(second.end());
+        let expected_overlap = intersection_start < intersection_end;
+        prop_assert_eq!(first.overlaps(second), expected_overlap);
+        prop_assert_eq!(first.overlaps(second), second.overlaps(first));
     }
 }
