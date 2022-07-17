@@ -46,4 +46,27 @@ proptest! {
             prop_assert_eq!(reader.offset(), before);
         }
     }
+
+    #[test]
+    fn scalar_reads_preserve_big_endian_values(
+        byte in any::<u8>(),
+        word in any::<u16>(),
+        signed in any::<i16>(),
+        double_word in any::<u32>(),
+        tag_bytes in any::<[u8; 4]>(),
+    ) {
+        let mut bytes = vec![byte];
+        bytes.extend_from_slice(&word.to_be_bytes());
+        bytes.extend_from_slice(&signed.to_be_bytes());
+        bytes.extend_from_slice(&double_word.to_be_bytes());
+        bytes.extend_from_slice(&tag_bytes);
+
+        let mut reader = Reader::new(&bytes);
+        prop_assert_eq!(reader.u8().unwrap(), byte);
+        prop_assert_eq!(reader.u16().unwrap(), word);
+        prop_assert_eq!(reader.i16().unwrap(), signed);
+        prop_assert_eq!(reader.u32().unwrap(), double_word);
+        prop_assert_eq!(reader.tag().unwrap().to_bytes(), tag_bytes);
+        prop_assert!(reader.is_empty());
+    }
 }
