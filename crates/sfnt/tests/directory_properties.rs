@@ -1,6 +1,6 @@
 //! Deterministic generated SFNT Table Directories.
 
-use glyphweave_sfnt::{ByteSpan, Checksum, SfntVersion, TableDirectory, Tag};
+use glyphweave_sfnt::{ByteSpan, Cause, Checksum, SfntVersion, TableDirectory, Tag};
 use proptest::{
     collection,
     prelude::*,
@@ -83,6 +83,12 @@ fn generated_font() -> impl Strategy<Value = GeneratedFont> {
     })
 }
 
+fn generated_font_with_payload() -> impl Strategy<Value = GeneratedFont> {
+    generated_font().prop_filter("at least one nonempty table", |font| {
+        font.tables.iter().any(|(_, payload)| !payload.is_empty())
+    })
+}
+
 proptest! {
     #![proptest_config(fixed_config())]
 
@@ -99,5 +105,33 @@ proptest! {
             prop_assert_eq!(record.table_span().start() % 4, 0);
             prop_assert_eq!(directory.record(*expected_tag), Some(record));
         }
+    }
+
+
+    #[test]
+    fn payload_corruption_is_always_detected(
+        mut font in generated_font_with_payload(),
+        selector in any::<usize>(),
+    ) {
+        let directory = TableDirectory::decode(&font.bytes, 0).unwrap();
+        let records = directory
+            .records()
+            .iter()
+            .copied()
+            .filter(|record| !record.table_span().is_empty())
+            .collect::<Vec<_>>();
+        let record = records[selector % records.len()];
+        font.bytes[record.table_span().start()] ^= 0xff;
+
+        let diagnostic = TableDirectory::decode(&font.bytes, 0).unwrap_err();
+        let computed = Checksum::compute(record.table_span().slice(&font.bytes).unwrap());
+        prop_assert_eq!(
+            diagnostic.cause(),
+            Cause::InvalidTableChecksum {
+                tag: record.tag(),
+                declared: record.checksum(),
+                computed,
+            },
+        );
     }
 }
