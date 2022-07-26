@@ -104,4 +104,14 @@ proptest! {
         .unwrap();
         prop_assert_eq!(&selected, &collection.faces()[selected_index]);
     }
+
+
+    #[test]
+    fn every_generated_collection_prefix_is_rejected(
+        generated in generated_collection(),
+        selector in any::<usize>(),
+    ) {
+        let prefix_length = selector % generated.bytes.len();
+        prop_assert!(FontCollection::decode(&generated.bytes[..prefix_length]).is_err());
+    }
 }
