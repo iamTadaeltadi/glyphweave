@@ -1,6 +1,6 @@
 //! Deterministic properties for typed font indices.
 
-use glyphweave_sfnt::{GlyphId, NewGlyphId};
+use glyphweave_sfnt::{FaceIndex, GlyphId, NewGlyphId};
 use proptest::{
     prelude::*,
     test_runner::{Config, RngSeed},
@@ -31,5 +31,14 @@ proptest! {
         prop_assert_eq!(new.is_notdef(), first == 0);
         prop_assert_eq!(old.cmp(&GlyphId::new(second)), first.cmp(&second));
         prop_assert_eq!(new.cmp(&NewGlyphId::new(second)), first.cmp(&second));
+    }
+
+
+    #[test]
+    fn face_indices_preserve_unsigned_identity(first in any::<u32>(), second in any::<u32>()) {
+        let index = FaceIndex::new(first);
+        prop_assert_eq!(index.raw(), first);
+        prop_assert_eq!(index.cmp(&FaceIndex::new(second)), first.cmp(&second));
+        prop_assert_eq!(index == FaceIndex::FIRST, first == 0);
     }
 }
