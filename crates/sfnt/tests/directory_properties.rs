@@ -105,6 +105,13 @@ proptest! {
             prop_assert_eq!(record.table_span().start() % 4, 0);
             prop_assert_eq!(directory.record(*expected_tag), Some(record));
         }
+        for (index, first) in directory.records().iter().enumerate() {
+            prop_assert!(first.table_span().end() <= font.bytes.len());
+            prop_assert!(!first.table_span().overlaps(directory.span()));
+            for second in &directory.records()[index + 1..] {
+                prop_assert!(!first.table_span().overlaps(second.table_span()));
+            }
+        }
     }
 
 
