@@ -5,6 +5,37 @@ use core::fmt;
 use super::Cause;
 
 impl Cause {
+    fn fmt_cmap(self, f: &mut fmt::Formatter<'_>) -> Option<fmt::Result> {
+        let rendered = match self {
+            Self::UnsupportedCmapFormat { found } => {
+                write!(f, "expected cmap format 4 but found format {found}")
+            }
+            Self::InvalidCmapLength {
+                declared,
+                minimum,
+                available,
+            } => write!(
+                f,
+                "cmap format 4 length {declared} needs at least {minimum} byte(s) with {available} available"
+            ),
+            Self::InvalidCmapSegmentCount { encoded } => {
+                write!(
+                    f,
+                    "cmap format 4 segCountX2 {encoded} is not positive and even"
+                )
+            }
+            Self::InvalidCmapSearchParameters { expected, actual } => write!(
+                f,
+                "cmap format 4 search parameters {actual:?} do not match derived values {expected:?}"
+            ),
+            Self::InvalidCmapReservedPad { found } => {
+                write!(f, "cmap format 4 reservedPad must be zero but is {found}")
+            }
+            _ => return None,
+        };
+        Some(rendered)
+    }
+
     fn fmt_collection(self, f: &mut fmt::Formatter<'_>) -> Option<fmt::Result> {
         let rendered = match self {
             Self::InvalidCollectionTag { found } => {
@@ -126,6 +157,9 @@ impl Cause {
 
 impl fmt::Display for Cause {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(rendered) = self.fmt_cmap(f) {
+            return rendered;
+        }
         if let Some(rendered) = self.fmt_collection(f) {
             return rendered;
         }
@@ -146,7 +180,12 @@ impl fmt::Display for Cause {
             | Self::TableOverlapsCollectionHeader { .. }
             | Self::TableOverlapsFaceDirectory { .. }
             | Self::TableOverlapsCollectionSignature { .. }
-            | Self::OverlappingFaceTables { .. } => unreachable!(),
+            | Self::OverlappingFaceTables { .. }
+            | Self::UnsupportedCmapFormat { .. }
+            | Self::InvalidCmapLength { .. }
+            | Self::InvalidCmapSegmentCount { .. }
+            | Self::InvalidCmapSearchParameters { .. }
+            | Self::InvalidCmapReservedPad { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }

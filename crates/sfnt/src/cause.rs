@@ -145,6 +145,37 @@ pub enum Cause {
         /// The next intersecting table.
         second: (crate::FaceIndex, crate::Tag, crate::ByteSpan),
     },
+    /// A `cmap` subtable used a format other than the expected format 4.
+    UnsupportedCmapFormat {
+        /// The encoded subtable format.
+        found: u16,
+    },
+    /// A format-4 declared length cannot contain its arrays or exceeds available bytes.
+    InvalidCmapLength {
+        /// The encoded byte length.
+        declared: u16,
+        /// The minimum byte length implied by the segment count.
+        minimum: usize,
+        /// The bytes available from the subtable offset.
+        available: usize,
+    },
+    /// A format-4 `segCountX2` field is zero or odd.
+    InvalidCmapSegmentCount {
+        /// The invalid encoded value.
+        encoded: u16,
+    },
+    /// Format-4 search fields disagree with values derived from the segment count.
+    InvalidCmapSearchParameters {
+        /// The derived `(searchRange, entrySelector, rangeShift)` values.
+        expected: [u16; 3],
+        /// The values stored in the subtable.
+        actual: [u16; 3],
+    },
+    /// The required format-4 reserved padding word was nonzero.
+    InvalidCmapReservedPad {
+        /// The encoded reserved value.
+        found: u16,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
