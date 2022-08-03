@@ -31,6 +31,32 @@ impl Cause {
             Self::InvalidCmapReservedPad { found } => {
                 write!(f, "cmap format 4 reservedPad must be zero but is {found}")
             }
+            Self::InvalidCmapSegment {
+                index,
+                start,
+                end,
+                previous_end,
+            } => write!(
+                f,
+                "cmap format 4 segment {index} range {start:#06x}..={end:#06x} is invalid after {previous_end:?}"
+            ),
+            Self::InvalidCmapSentinel { start, end, glyph } => write!(
+                f,
+                "cmap format 4 sentinel {start:#06x}..={end:#06x} resolves to glyph {glyph}"
+            ),
+            Self::InvalidCmapRangeOffset {
+                segment,
+                codepoint,
+                target,
+                glyph_array,
+            } => write!(
+                f,
+                "cmap format 4 segment {segment} code {codepoint:#06x} targets byte {target} outside glyph array {glyph_array}"
+            ),
+            Self::CmapSurrogateMapping { codepoint, glyph } => write!(
+                f,
+                "cmap format 4 surrogate {codepoint:#06x} resolves to glyph {glyph}"
+            ),
             _ => return None,
         };
         Some(rendered)
@@ -185,7 +211,11 @@ impl fmt::Display for Cause {
             | Self::InvalidCmapLength { .. }
             | Self::InvalidCmapSegmentCount { .. }
             | Self::InvalidCmapSearchParameters { .. }
-            | Self::InvalidCmapReservedPad { .. } => unreachable!(),
+            | Self::InvalidCmapReservedPad { .. }
+            | Self::InvalidCmapSegment { .. }
+            | Self::InvalidCmapSentinel { .. }
+            | Self::InvalidCmapRangeOffset { .. }
+            | Self::CmapSurrogateMapping { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }
