@@ -310,4 +310,7 @@ pub enum Cause {
 }
 
 #[cfg(test)]
+mod cmap_tests;
+
+#[cfg(test)]
 mod tests;
