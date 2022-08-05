@@ -48,3 +48,56 @@ fn cmap_reserved_pad_failure_names_found_word() {
         "cmap format 4 reservedPad must be zero but is 1"
     );
 }
+
+#[test]
+fn cmap_segment_failure_names_range_and_predecessor() {
+    let cause = Cause::InvalidCmapSegment {
+        index: 2,
+        start: 0x0030,
+        end: 0x0020,
+        previous_end: Some(0x001f),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 4 segment 2 range 0x0030..=0x0020 is invalid after Some(31)"
+    );
+}
+
+#[test]
+fn cmap_sentinel_failure_names_range_and_glyph() {
+    let cause = Cause::InvalidCmapSentinel {
+        start: 0xffff,
+        end: 0xffff,
+        glyph: crate::GlyphId::new(7),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 4 sentinel 0xffff..=0xffff resolves to glyph 7"
+    );
+}
+
+#[test]
+fn cmap_range_offset_failure_names_target_and_legal_span() {
+    let cause = Cause::InvalidCmapRangeOffset {
+        segment: 1,
+        codepoint: 0x0041,
+        target: 88,
+        glyph_array: crate::ByteSpan::sized(100, 20).expect("test span is representable"),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 4 segment 1 code 0x0041 targets byte 88 outside glyph array 100..120"
+    );
+}
+
+#[test]
+fn cmap_surrogate_failure_names_codepoint_and_glyph() {
+    let cause = Cause::CmapSurrogateMapping {
+        codepoint: 0xd800,
+        glyph: crate::GlyphId::new(5),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 4 surrogate 0xd800 resolves to glyph 5"
+    );
+}
