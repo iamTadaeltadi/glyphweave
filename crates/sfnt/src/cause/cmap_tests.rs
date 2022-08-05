@@ -22,6 +22,14 @@ fn cmap_length_failure_names_all_bounds() {
 }
 
 #[test]
+fn cmap_odd_length_failure_names_declared_value() {
+    assert_eq!(
+        Cause::OddCmapLength { declared: 25 }.to_string(),
+        "cmap format 4 length 25 is not even"
+    );
+}
+
+#[test]
 fn cmap_segment_count_failure_names_encoded_value() {
     assert_eq!(
         Cause::InvalidCmapSegmentCount { encoded: 3 }.to_string(),
