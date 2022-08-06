@@ -43,6 +43,10 @@ impl Cause {
                 f,
                 "cmap format 4 segment {index} range {start:#06x}..={end:#06x} is invalid after {previous_end:?}"
             ),
+            Self::InvalidCmapSentinelRange { start, end } => write!(
+                f,
+                "cmap format 4 final segment {start:#06x}..={end:#06x} is not the 0xffff sentinel"
+            ),
             Self::InvalidCmapSentinel { start, end, glyph } => write!(
                 f,
                 "cmap format 4 sentinel {start:#06x}..={end:#06x} resolves to glyph {glyph}"
@@ -217,6 +221,7 @@ impl fmt::Display for Cause {
             | Self::InvalidCmapSearchParameters { .. }
             | Self::InvalidCmapReservedPad { .. }
             | Self::InvalidCmapSegment { .. }
+            | Self::InvalidCmapSentinelRange { .. }
             | Self::InvalidCmapSentinel { .. }
             | Self::InvalidCmapRangeOffset { .. }
             | Self::CmapSurrogateMapping { .. } => unreachable!(),

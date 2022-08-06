@@ -85,6 +85,18 @@ fn cmap_sentinel_failure_names_range_and_glyph() {
 }
 
 #[test]
+fn cmap_sentinel_range_failure_names_final_range() {
+    let cause = Cause::InvalidCmapSentinelRange {
+        start: 0xfffe,
+        end: 0xffff,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 4 final segment 0xfffe..=0xffff is not the 0xffff sentinel"
+    );
+}
+
+#[test]
 fn cmap_range_offset_failure_names_target_and_legal_span() {
     let cause = Cause::InvalidCmapRangeOffset {
         segment: 1,

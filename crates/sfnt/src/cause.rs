@@ -192,7 +192,14 @@ pub enum Cause {
         /// The preceding segment's end code, when this is not the first segment.
         previous_end: Option<u16>,
     },
-    /// The required final format-4 sentinel does not map `0xFFFF` to `.notdef`.
+    /// The final format-4 segment is not the required `0xFFFF..=0xFFFF` range.
+    InvalidCmapSentinelRange {
+        /// The final segment start code.
+        start: u16,
+        /// The final segment end code.
+        end: u16,
+    },
+    /// The required final format-4 sentinel maps `0xFFFF` to a nonzero glyph.
     InvalidCmapSentinel {
         /// The final segment start code.
         start: u16,
