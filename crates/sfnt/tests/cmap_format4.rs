@@ -33,3 +33,26 @@ fn direct_delta_segments_resolve_at_an_absolute_offset() {
     assert_eq!(decoded.character_map().glyph_id('C'), GlyphId::new(5));
     assert_eq!(decoded.character_map().glyph_id('D'), GlyphId::NOTDEF);
 }
+
+#[test]
+fn range_offset_segments_apply_delta_only_to_nonzero_glyph_words() {
+    let mut bytes = vec![0xde, 0xad];
+    append_words(
+        &mut bytes,
+        &[
+            4, 38, 0, 4, 4, 1, 0, // header
+            0x0043, 0xffff, // endCode
+            0,      // reservedPad
+            0x0041, 0xffff, // startCode
+            2, 1, // idDelta
+            4, 0, // idRangeOffset
+            10, 0, 12, // glyphIdArray
+        ],
+    );
+
+    let decoded = CmapFormat4::decode(&bytes, 2).expect("valid range format-4 subtable");
+    assert_eq!(decoded.character_map().len(), 2);
+    assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(12));
+    assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::NOTDEF);
+    assert_eq!(decoded.character_map().glyph_id('C'), GlyphId::new(14));
+}
