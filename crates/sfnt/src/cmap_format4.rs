@@ -1,6 +1,8 @@
 //! Decoded Unicode BMP mappings from a `cmap` format 4 subtable.
 
-use crate::{ByteSpan, CharacterMap};
+mod decode;
+
+use crate::{ByteSpan, CharacterMap, Decoded};
 
 /// A validated and eagerly resolved `cmap` format 4 subtable.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -12,6 +14,16 @@ pub struct CmapFormat4 {
 }
 
 impl CmapFormat4 {
+    /// Decodes and eagerly resolves a format-4 subtable at an absolute byte offset.
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware decode Diagnostic when the header, segment arrays, sentinel, range
+    /// offsets, or resolved Unicode mappings violate the format-4 invariants.
+    pub fn decode(bytes: &[u8], offset: usize) -> Decoded<Self> {
+        decode::decode(bytes, offset)
+    }
+
     /// Returns the complete declared subtable Byte Span.
     #[must_use]
     pub const fn span(&self) -> ByteSpan {
