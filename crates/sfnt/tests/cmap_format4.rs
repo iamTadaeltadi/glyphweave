@@ -1,11 +1,28 @@
 //! Integration coverage for bounded `cmap` format 4 decoding.
 
-use glyphweave_sfnt::{ByteSpan, CmapFormat4, GlyphId};
+use glyphweave_sfnt::{ByteSpan, Cause, CmapFormat4, GlyphId};
 
 fn append_words(bytes: &mut Vec<u8>, words: &[u16]) {
     for word in words {
         bytes.extend_from_slice(&word.to_be_bytes());
     }
+}
+
+fn minimal_words() -> Vec<u16> {
+    vec![
+        4, 24, 0, 2, 2, 0, 0,      // header
+        0xffff, // endCode
+        0,      // reservedPad
+        0xffff, // startCode
+        1,      // idDelta
+        0,      // idRangeOffset
+    ]
+}
+
+fn decode_words(words: &[u16]) -> glyphweave_sfnt::Decoded<CmapFormat4> {
+    let mut bytes = Vec::with_capacity(words.len() * 2);
+    append_words(&mut bytes, words);
+    CmapFormat4::decode(&bytes, 0)
 }
 
 #[test]
@@ -55,4 +72,17 @@ fn range_offset_segments_apply_delta_only_to_nonzero_glyph_words() {
     assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(12));
     assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::NOTDEF);
     assert_eq!(decoded.character_map().glyph_id('C'), GlyphId::new(14));
+}
+
+#[test]
+fn format_other_than_four_is_rejected_at_the_format_word() {
+    let mut words = minimal_words();
+    words[0] = 12;
+
+    let diagnostic = decode_words(&words).expect_err("format 12 is not format 4");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnsupportedCmapFormat { found: 12 }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(0, 2));
 }
