@@ -86,3 +86,20 @@ fn format_other_than_four_is_rejected_at_the_format_word() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(0, 2));
 }
+
+#[test]
+fn declared_length_must_hold_the_minimum_sentinel_arrays() {
+    let mut words = minimal_words();
+    words[1] = 22;
+
+    let diagnostic = decode_words(&words).expect_err("22 bytes cannot hold format 4");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapLength {
+            declared: 22,
+            minimum: 24,
+            available: 24,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
+}
