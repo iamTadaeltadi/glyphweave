@@ -182,3 +182,16 @@ fn declared_length_must_hold_every_segment_array() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
 }
+
+#[test]
+fn reserved_padding_word_must_be_zero() {
+    let mut words = minimal_words();
+    words[8] = 1;
+
+    let diagnostic = decode_words(&words).expect_err("reservedPad is nonzero");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapReservedPad { found: 1 }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 2));
+}
