@@ -289,3 +289,14 @@ fn nonzero_surrogate_mapping_is_rejected() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(24, 2));
 }
+
+#[test]
+fn notdef_surrogate_mapping_is_canonicalized_to_absence() {
+    let mut words = direct_delta_words();
+    words[7] = 0xd800;
+    words[10] = 0xd800;
+    words[12] = 0x2800;
+
+    let decoded = decode_words(&words).expect("zero surrogate mapping is absent");
+    assert!(decoded.character_map().is_empty());
+}
