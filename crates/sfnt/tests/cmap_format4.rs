@@ -319,3 +319,21 @@ fn range_offset_must_be_even() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(28, 2));
 }
+
+#[test]
+fn range_offset_cannot_reinterpret_segment_arrays_as_glyphs() {
+    let mut words = range_offset_words();
+    words[14] = 2;
+
+    let diagnostic = decode_words(&words).expect_err("target precedes glyphIdArray");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapRangeOffset {
+            segment: 0,
+            codepoint: 0x0041,
+            target: 30,
+            glyph_array: ByteSpan::sized(32, 6).unwrap(),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(28, 2));
+}
