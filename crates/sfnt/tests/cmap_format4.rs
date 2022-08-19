@@ -337,3 +337,21 @@ fn range_offset_cannot_reinterpret_segment_arrays_as_glyphs() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(28, 2));
 }
+
+#[test]
+fn every_range_target_must_fit_inside_the_declared_subtable() {
+    let mut words = range_offset_words();
+    words[14] = 6;
+
+    let diagnostic = decode_words(&words).expect_err("last glyph word is out of bounds");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapRangeOffset {
+            segment: 0,
+            codepoint: 0x0043,
+            target: 38,
+            glyph_array: ByteSpan::sized(32, 6).unwrap(),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(28, 2));
+}
