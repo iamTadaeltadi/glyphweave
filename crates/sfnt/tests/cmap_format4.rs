@@ -4,7 +4,9 @@
 pub mod support;
 
 use glyphweave_sfnt::{ByteSpan, CmapFormat4, GlyphId};
-use support::{append_words, decode_words, direct_delta_words, minimal_words, range_offset_words};
+use support::{
+    append_words, decode_words, direct_delta_words, encode_words, minimal_words, range_offset_words,
+};
 
 #[test]
 fn direct_delta_segments_resolve_at_an_absolute_offset() {
@@ -53,4 +55,13 @@ fn sentinel_only_subtable_resolves_to_an_empty_character_map() {
     let decoded = decode_words(&minimal_words()).expect("minimal format-4 subtable is valid");
     assert_eq!(decoded.segment_count(), 1);
     assert!(decoded.character_map().is_empty());
+}
+
+#[test]
+fn declared_span_excludes_neighboring_bytes() {
+    let mut bytes = encode_words(&minimal_words());
+    bytes.extend_from_slice(&[0xaa, 0xbb]);
+
+    let decoded = CmapFormat4::decode(&bytes, 0).expect("neighbor bytes are not subtable data");
+    assert_eq!(decoded.span(), ByteSpan::sized(0, 24).unwrap());
 }
