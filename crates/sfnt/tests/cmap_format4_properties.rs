@@ -30,6 +30,22 @@ const fn direct_words(start: u16, end: u16, delta: u16, language: u16) -> [u16; 
     ]
 }
 
+fn range_words(start: u16, glyphs: &[u16], delta: u16) -> Vec<u16> {
+    let width = u16::try_from(glyphs.len() - 1).unwrap();
+    let end = start + width;
+    let length = u16::try_from(32 + glyphs.len() * 2).unwrap();
+    let mut words = vec![
+        4, length, 0, 4, 4, 1, 0, // header
+        end, 0xffff, // endCode
+        0,      // reservedPad
+        start, 0xffff, // startCode
+        delta, 1, // idDelta
+        4, 0, // idRangeOffset
+    ];
+    words.extend_from_slice(glyphs);
+    words
+}
+
 proptest! {
     #![proptest_config(fixed_config())]
 
@@ -70,6 +86,36 @@ proptest! {
         let mut expected_length = 0;
         for codepoint in start..=end {
             let expected = GlyphId::new(codepoint.wrapping_add(delta));
+            let scalar = char::from_u32(u32::from(codepoint)).unwrap();
+            prop_assert_eq!(decoded.character_map().glyph_id(scalar), expected);
+            if !expected.is_notdef() {
+                expected_length += 1;
+            }
+        }
+        prop_assert_eq!(decoded.character_map().len(), expected_length);
+    }
+
+    #[test]
+    fn generated_range_segments_match_glyph_array_resolution(
+        start in 0u16..=0xd7bf,
+        glyphs in collection::vec(any::<u16>(), 1..65),
+        delta in any::<u16>(),
+        prefix in collection::vec(any::<u8>(), 0..33),
+    ) {
+        let words = range_words(start, &glyphs, delta);
+        let mut bytes = prefix;
+        let offset = bytes.len();
+        support::append_words(&mut bytes, &words);
+
+        let decoded = CmapFormat4::decode(&bytes, offset).unwrap();
+        let mut expected_length = 0;
+        for (relative, raw_glyph) in glyphs.into_iter().enumerate() {
+            let codepoint = start + u16::try_from(relative).unwrap();
+            let expected = if raw_glyph == 0 {
+                GlyphId::NOTDEF
+            } else {
+                GlyphId::new(raw_glyph.wrapping_add(delta))
+            };
             let scalar = char::from_u32(u32::from(codepoint)).unwrap();
             prop_assert_eq!(decoded.character_map().glyph_id(scalar), expected);
             if !expected.is_notdef() {
