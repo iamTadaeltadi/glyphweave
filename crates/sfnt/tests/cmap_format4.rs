@@ -65,3 +65,20 @@ fn declared_span_excludes_neighboring_bytes() {
     let decoded = CmapFormat4::decode(&bytes, 0).expect("neighbor bytes are not subtable data");
     assert_eq!(decoded.span(), ByteSpan::sized(0, 24).unwrap());
 }
+
+#[test]
+fn each_range_offset_uses_the_address_of_its_own_word() {
+    let words = [
+        4, 44, 0, 6, 4, 1, 2, // header
+        0x0041, 0x005a, 0xffff, // endCode
+        0,      // reservedPad
+        0x0041, 0x005a, 0xffff, // startCode
+        1, 2, 1, // idDelta
+        6, 6, 0, // idRangeOffset
+        5, 7, // glyphIdArray
+    ];
+
+    let decoded = decode_words(&words).expect("two ranged segments are valid");
+    assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(6));
+    assert_eq!(decoded.character_map().glyph_id('Z'), GlyphId::new(9));
+}
