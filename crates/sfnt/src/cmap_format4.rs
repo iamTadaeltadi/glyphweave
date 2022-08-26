@@ -16,6 +16,22 @@ pub struct CmapFormat4 {
 impl CmapFormat4 {
     /// Decodes and eagerly resolves a format-4 subtable at an absolute byte offset.
     ///
+    /// ```
+    /// use glyphweave_sfnt::CmapFormat4;
+    ///
+    /// let sentinel_only = [
+    ///     0, 4, 0, 24, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, // header
+    ///     0xff, 0xff, // endCode
+    ///     0, 0, // reservedPad
+    ///     0xff, 0xff, // startCode
+    ///     0, 1, // idDelta
+    ///     0, 0, // idRangeOffset
+    /// ];
+    /// let decoded = CmapFormat4::decode(&sentinel_only, 0)?;
+    /// assert!(decoded.character_map().is_empty());
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Returns a span-aware decode Diagnostic when the header, segment arrays, sentinel, range
