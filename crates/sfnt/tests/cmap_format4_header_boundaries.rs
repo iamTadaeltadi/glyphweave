@@ -14,7 +14,10 @@ fn format_other_than_four_is_rejected_at_the_format_word() {
     let diagnostic = decode_words(&words).expect_err("format 12 is not format 4");
     assert_eq!(
         diagnostic.cause(),
-        Cause::UnsupportedCmapFormat { found: 12 }
+        Cause::UnsupportedCmapFormat {
+            expected: 4,
+            found: 12,
+        }
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(0, 2));
 }

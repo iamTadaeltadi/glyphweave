@@ -3,7 +3,11 @@ use super::Cause;
 #[test]
 fn cmap_format_failure_names_expected_and_found_formats() {
     assert_eq!(
-        Cause::UnsupportedCmapFormat { found: 12 }.to_string(),
+        Cause::UnsupportedCmapFormat {
+            expected: 4,
+            found: 12,
+        }
+        .to_string(),
         "expected cmap format 4 but found format 12"
     );
 }
