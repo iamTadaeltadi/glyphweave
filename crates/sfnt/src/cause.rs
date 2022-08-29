@@ -166,6 +166,29 @@ pub enum Cause {
         /// The odd encoded byte length.
         declared: u16,
     },
+    /// A format-12 declared length cannot contain its header or exceeds available bytes.
+    InvalidCmap12Length {
+        /// The encoded byte length.
+        declared: u32,
+        /// The fixed minimum byte length.
+        minimum: usize,
+        /// The bytes available from the subtable offset.
+        available: usize,
+    },
+    /// A format-12 declared length disagrees with its fixed-width group count.
+    Cmap12LengthMismatch {
+        /// The encoded byte length.
+        declared: u32,
+        /// The exact byte length implied by the group count.
+        expected: u64,
+        /// The encoded number of groups.
+        groups: u32,
+    },
+    /// The required format-12 reserved word was nonzero.
+    InvalidCmap12Reserved {
+        /// The encoded reserved value.
+        found: u16,
+    },
     /// A format-4 `segCountX2` field is zero or odd.
     InvalidCmapSegmentCount {
         /// The invalid encoded value.
