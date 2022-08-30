@@ -189,6 +189,35 @@ pub enum Cause {
         /// The encoded reserved value.
         found: u16,
     },
+    /// A format-12 group is inverted, not ordered, or overlaps its predecessor.
+    InvalidCmap12Group {
+        /// The zero-based group index.
+        index: u32,
+        /// The group's inclusive start character code.
+        start: u32,
+        /// The group's inclusive end character code.
+        end: u32,
+        /// The preceding group's end code, when this is not the first group.
+        previous_end: Option<u32>,
+    },
+    /// A sequential format-12 mapping cannot be represented as a Glyph ID.
+    Cmap12GlyphOutOfRange {
+        /// The zero-based group index.
+        group: u32,
+        /// The character code whose mapping first exceeds the Glyph ID domain.
+        codepoint: u32,
+        /// The calculated glyph value.
+        glyph: u64,
+    },
+    /// A cmap entry maps a non-scalar Unicode value to a nonzero glyph.
+    CmapNonScalarMapping {
+        /// The cmap subtable format.
+        format: u16,
+        /// The invalid Unicode value.
+        codepoint: u32,
+        /// The invalid nonzero Glyph ID.
+        glyph: crate::GlyphId,
+    },
     /// A format-4 `segCountX2` field is zero or odd.
     InvalidCmapSegmentCount {
         /// The invalid encoded value.

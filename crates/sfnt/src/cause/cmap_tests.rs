@@ -68,6 +68,46 @@ fn cmap_twelve_reserved_failure_names_found_word() {
 }
 
 #[test]
+fn cmap_twelve_group_failure_names_range_and_predecessor() {
+    let cause = Cause::InvalidCmap12Group {
+        index: 2,
+        start: 0x10020,
+        end: 0x10010,
+        previous_end: Some(0xffff),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 12 group 2 range 0x00010020..=0x00010010 is invalid after Some(65535)"
+    );
+}
+
+#[test]
+fn cmap_twelve_glyph_failure_names_group_code_and_value() {
+    let cause = Cause::Cmap12GlyphOutOfRange {
+        group: 1,
+        codepoint: 0x10000,
+        glyph: 65_536,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 12 group 1 code 0x00010000 resolves to glyph 65536 outside the 16-bit range"
+    );
+}
+
+#[test]
+fn cmap_non_scalar_failure_names_format_code_and_glyph() {
+    let cause = Cause::CmapNonScalarMapping {
+        format: 12,
+        codepoint: 0x11_0000,
+        glyph: crate::GlyphId::new(7),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 12 code 0x00110000 resolves to glyph 7 but is not a Unicode scalar"
+    );
+}
+
+#[test]
 fn cmap_segment_count_failure_names_encoded_value() {
     assert_eq!(
         Cause::InvalidCmapSegmentCount { encoded: 3 }.to_string(),
