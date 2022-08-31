@@ -4,7 +4,7 @@
 pub mod support;
 
 use glyphweave_sfnt::{ByteSpan, CmapFormat12, GlyphId};
-use support::encode_groups;
+use support::{decode_groups, encode_groups};
 
 #[test]
 fn sequential_groups_resolve_bmp_and_supplementary_mappings() {
@@ -23,4 +23,12 @@ fn sequential_groups_resolve_bmp_and_supplementary_mappings() {
     assert_eq!(decoded.character_map().glyph_id('C'), GlyphId::new(5));
     assert_eq!(decoded.character_map().glyph_id('🦀'), GlyphId::new(70));
     assert_eq!(decoded.character_map().glyph_id('🦁'), GlyphId::new(71));
+}
+
+#[test]
+fn empty_group_array_resolves_to_an_empty_character_map() {
+    let decoded = decode_groups(0, &[]).expect("empty format-12 group array is valid");
+    assert_eq!(decoded.span(), ByteSpan::sized(0, 16).unwrap());
+    assert_eq!(decoded.group_count(), 0);
+    assert!(decoded.character_map().is_empty());
 }
