@@ -68,3 +68,38 @@ fn declared_length_cannot_exceed_available_bytes() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
 }
+
+#[test]
+fn declared_length_cannot_include_bytes_after_the_group_array() {
+    let mut bytes = encode_groups(0, &[]);
+    bytes.extend_from_slice(&[0; 4]);
+    bytes[4..8].copy_from_slice(&20_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat12::decode(&bytes, 0).expect_err("four trailing bytes are declared");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap12LengthMismatch {
+            declared: 20,
+            expected: 16,
+            groups: 0,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+}
+
+#[test]
+fn group_count_must_fit_the_declared_length() {
+    let mut bytes = encode_groups(0, &[]);
+    bytes[12..16].copy_from_slice(&1_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat12::decode(&bytes, 0).expect_err("one group needs 12 bytes");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap12LengthMismatch {
+            declared: 16,
+            expected: 28,
+            groups: 1,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+}
