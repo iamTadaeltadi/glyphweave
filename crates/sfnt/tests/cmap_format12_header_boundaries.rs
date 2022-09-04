@@ -103,3 +103,14 @@ fn group_count_must_fit_the_declared_length() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
 }
+
+#[test]
+fn every_strict_prefix_of_a_valid_subtable_is_rejected() {
+    let bytes = encode_groups(0, &[(0x1f980, 0x1f981, 70)]);
+    for length in 0..bytes.len() {
+        assert!(
+            CmapFormat12::decode(&bytes[..length], 0).is_err(),
+            "prefix of {length} bytes unexpectedly decoded"
+        );
+    }
+}
