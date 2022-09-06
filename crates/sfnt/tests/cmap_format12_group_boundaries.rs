@@ -37,3 +37,18 @@ fn groups_cannot_overlap_their_predecessor() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(28, 12));
 }
+
+#[test]
+fn starting_glyph_must_fit_the_glyph_id_domain() {
+    let diagnostic =
+        decode_groups(0, &[(0x0041, 0x0041, 65_536)]).expect_err("starting glyph exceeds u16");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap12GlyphOutOfRange {
+            group: 0,
+            codepoint: 0x0041,
+            glyph: 65_536,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
+}
