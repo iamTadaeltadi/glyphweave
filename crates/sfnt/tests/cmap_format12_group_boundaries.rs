@@ -3,7 +3,7 @@
 #[path = "support/cmap_format12.rs"]
 pub mod support;
 
-use glyphweave_sfnt::{ByteSpan, Cause};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId};
 use support::decode_groups;
 
 #[test]
@@ -66,4 +66,12 @@ fn sequential_glyph_range_cannot_cross_the_glyph_id_boundary() {
         }
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
+}
+
+#[test]
+fn sequential_glyph_range_can_end_at_the_glyph_id_maximum() {
+    let decoded =
+        decode_groups(0, &[(0x0041, 0x0042, 65_534)]).expect("last mapping is exactly u16 max");
+    assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(65_534));
+    assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::new(65_535));
 }
