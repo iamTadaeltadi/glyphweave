@@ -52,3 +52,18 @@ fn starting_glyph_must_fit_the_glyph_id_domain() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
 }
+
+#[test]
+fn sequential_glyph_range_cannot_cross_the_glyph_id_boundary() {
+    let diagnostic = decode_groups(0, &[(0x0041, 0x0043, 65_534)])
+        .expect_err("third sequential glyph exceeds u16");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap12GlyphOutOfRange {
+            group: 0,
+            codepoint: 0x0043,
+            glyph: 65_536,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
+}
