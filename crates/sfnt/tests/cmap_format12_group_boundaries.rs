@@ -97,3 +97,18 @@ fn notdef_surrogate_mapping_is_canonicalized_to_absence() {
         decode_groups(0, &[(0xd800, 0xd800, 0)]).expect("zero surrogate mapping is absent");
     assert!(decoded.character_map().is_empty());
 }
+
+#[test]
+fn nonzero_mapping_above_unicode_maximum_is_rejected() {
+    let diagnostic = decode_groups(0, &[(0x11_0000, 0x11_0000, 7)])
+        .expect_err("value above Unicode maximum is not a scalar");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::CmapNonScalarMapping {
+            format: 12,
+            codepoint: 0x11_0000,
+            glyph: GlyphId::new(7),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
+}
