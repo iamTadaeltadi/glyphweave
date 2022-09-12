@@ -16,6 +16,21 @@ pub struct CmapFormat12 {
 impl CmapFormat12 {
     /// Decodes and eagerly resolves a format-12 subtable at an absolute byte offset.
     ///
+    /// ```
+    /// use glyphweave_sfnt::CmapFormat12;
+    ///
+    /// let empty = [
+    ///     0, 12, // format
+    ///     0, 0, // reserved
+    ///     0, 0, 0, 16, // length
+    ///     0, 0, 0, 0, // language
+    ///     0, 0, 0, 0, // numGroups
+    /// ];
+    /// let decoded = CmapFormat12::decode(&empty, 0)?;
+    /// assert!(decoded.character_map().is_empty());
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Returns a span-aware decode Diagnostic when the header, group ordering, sequential Glyph
