@@ -9,6 +9,12 @@ const HEADER_LENGTH_U64: u64 = 16;
 const GROUP_LENGTH: u64 = 12;
 const FIRST_INVALID_GLYPH: u64 = 65_536;
 
+#[derive(Clone, Copy, Debug)]
+struct SequentialGlyphs {
+    start: u16,
+    end: u16,
+}
+
 pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<CmapFormat12> {
     let available = bytes.len().saturating_sub(offset);
     let mut reader = Reader::at(bytes, offset)?;
@@ -43,16 +49,8 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<CmapFormat12> {
         ));
     }
     let declared_length = declared_length.unwrap_or(HEADER_LENGTH);
-    let span = ByteSpan::sized(offset, declared_length).ok_or_else(|| {
-        failure(
-            field_span(offset, 4, 4),
-            Cause::InvalidCmap12Length {
-                declared,
-                minimum: HEADER_LENGTH,
-                available,
-            },
-        )
-    })?;
+    let span =
+        ByteSpan::sized(offset, declared_length).unwrap_or_else(|| ByteSpan::empty_at(offset));
     let language = reader.u32()?;
     let group_count = reader.u32()?;
     let expected_length = u64::from(group_count) * GROUP_LENGTH + HEADER_LENGTH_U64;
@@ -95,15 +93,8 @@ fn decode_groups(reader: &mut Reader<'_>, group_count: u32) -> Decoded<Character
                 },
             ));
         }
-        validate_glyph_range(index, start, end, start_glyph, group_span)?;
-        resolve_group(
-            &mut character_map,
-            index,
-            start,
-            end,
-            start_glyph,
-            group_span,
-        )?;
+        let glyphs = validate_glyph_range(index, start, end, start_glyph, group_span)?;
+        resolve_group(&mut character_map, start, end, glyphs, group_span)?;
         previous_end = Some(end);
     }
     Ok(character_map)
@@ -115,10 +106,10 @@ fn validate_glyph_range(
     end: u32,
     start_glyph: u32,
     span: ByteSpan,
-) -> Decoded<()> {
+) -> Decoded<SequentialGlyphs> {
     let final_glyph = u64::from(start_glyph) + u64::from(end - start);
-    if u16::try_from(final_glyph).is_ok() {
-        return Ok(());
+    if let (Ok(start), Ok(end)) = (u16::try_from(start_glyph), u16::try_from(final_glyph)) {
+        return Ok(SequentialGlyphs { start, end });
     }
     let first_invalid_offset = FIRST_INVALID_GLYPH.saturating_sub(u64::from(start_glyph));
     let codepoint = u64::from(start)
@@ -136,24 +127,13 @@ fn validate_glyph_range(
 
 fn resolve_group(
     character_map: &mut CharacterMap,
-    group: u32,
     start: u32,
     end: u32,
-    start_glyph: u32,
+    glyphs: SequentialGlyphs,
     span: ByteSpan,
 ) -> Decoded<()> {
-    for codepoint in start..=end {
-        let raw_glyph = start_glyph + (codepoint - start);
-        let glyph = GlyphId::new(u16::try_from(raw_glyph).map_err(|_| {
-            failure(
-                span,
-                Cause::Cmap12GlyphOutOfRange {
-                    group,
-                    codepoint,
-                    glyph: u64::from(raw_glyph),
-                },
-            )
-        })?);
+    for (codepoint, raw_glyph) in (start..=end).zip(glyphs.start..=glyphs.end) {
+        let glyph = GlyphId::new(raw_glyph);
         if glyph.is_notdef() {
             continue;
         }
