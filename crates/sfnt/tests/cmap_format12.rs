@@ -40,3 +40,11 @@ fn zero_start_glyph_is_missing_but_later_glyphs_remain_sequential() {
     assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::NOTDEF);
     assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::new(1));
 }
+
+#[test]
+fn adjacent_nonoverlapping_groups_are_valid() {
+    let decoded = decode_groups(0, &[(0x0041, 0x0041, 8), (0x0042, 0x0042, 9)])
+        .expect("adjacent groups are strictly ordered");
+    assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(8));
+    assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::new(9));
+}
