@@ -1,7 +1,9 @@
 //! Bounded parsing and eager resolution of format-12 sequential groups.
 
 use super::CmapFormat12;
-use crate::{ByteSpan, Cause, CharacterMap, Decoded, Diagnostic, GlyphId, Reader, Stage};
+use crate::{
+    ByteSpan, Cause, CharacterMap, CmapCause, Decoded, Diagnostic, GlyphId, Reader, Stage,
+};
 
 const FORMAT: u16 = 12;
 const HEADER_LENGTH: usize = 16;
@@ -22,7 +24,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<CmapFormat12> {
     if format != FORMAT {
         return Err(failure(
             field_span(offset, 0, 2),
-            Cause::UnsupportedCmapFormat {
+            CmapCause::UnsupportedCmapFormat {
                 expected: FORMAT,
                 found: format,
             },
@@ -32,7 +34,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<CmapFormat12> {
     if reserved != 0 {
         return Err(failure(
             field_span(offset, 2, 2),
-            Cause::InvalidCmap12Reserved { found: reserved },
+            CmapCause::InvalidCmap12Reserved { found: reserved },
         ));
     }
 
@@ -41,7 +43,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<CmapFormat12> {
     if declared_length.is_none_or(|length| length < HEADER_LENGTH || length > available) {
         return Err(failure(
             field_span(offset, 4, 4),
-            Cause::InvalidCmap12Length {
+            CmapCause::InvalidCmap12Length {
                 declared,
                 minimum: HEADER_LENGTH,
                 available,
@@ -57,7 +59,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<CmapFormat12> {
     if u64::from(declared) != expected_length {
         return Err(failure(
             field_span(offset, 4, 4),
-            Cause::Cmap12LengthMismatch {
+            CmapCause::Cmap12LengthMismatch {
                 declared,
                 expected: expected_length,
                 groups: group_count,
@@ -85,7 +87,7 @@ fn decode_groups(reader: &mut Reader<'_>, group_count: u32) -> Decoded<Character
         if start > end || previous_end.is_some_and(|preceding| start <= preceding) {
             return Err(failure(
                 group_span,
-                Cause::InvalidCmap12Group {
+                CmapCause::InvalidCmap12Group {
                     index,
                     start,
                     end,
@@ -117,7 +119,7 @@ fn validate_glyph_range(
         .min(u64::from(end));
     Err(failure(
         span,
-        Cause::Cmap12GlyphOutOfRange {
+        CmapCause::Cmap12GlyphOutOfRange {
             group,
             codepoint: u32::try_from(codepoint).unwrap_or(end),
             glyph: u64::from(start_glyph) + (codepoint - u64::from(start)),
@@ -140,7 +142,7 @@ fn resolve_group(
         let Some(scalar) = char::from_u32(codepoint) else {
             return Err(failure(
                 span,
-                Cause::CmapNonScalarMapping {
+                CmapCause::CmapNonScalarMapping {
                     format: FORMAT,
                     codepoint,
                     glyph,
@@ -152,8 +154,8 @@ fn resolve_group(
     Ok(())
 }
 
-const fn failure(span: ByteSpan, cause: Cause) -> Diagnostic {
-    Diagnostic::at(Stage::Decode, span, cause)
+const fn failure(span: ByteSpan, cause: CmapCause) -> Diagnostic {
+    Diagnostic::at(Stage::Decode, span, Cause::Cmap(cause))
 }
 
 fn field_span(base: usize, relative: usize, length: usize) -> ByteSpan {
