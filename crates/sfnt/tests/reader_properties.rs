@@ -52,12 +52,14 @@ proptest! {
         byte in any::<u8>(),
         word in any::<u16>(),
         signed in any::<i16>(),
+        three_bytes in any::<[u8; 3]>(),
         double_word in any::<u32>(),
         tag_bytes in any::<[u8; 4]>(),
     ) {
         let mut bytes = vec![byte];
         bytes.extend_from_slice(&word.to_be_bytes());
         bytes.extend_from_slice(&signed.to_be_bytes());
+        bytes.extend_from_slice(&three_bytes);
         bytes.extend_from_slice(&double_word.to_be_bytes());
         bytes.extend_from_slice(&tag_bytes);
 
@@ -65,6 +67,12 @@ proptest! {
         prop_assert_eq!(reader.u8().unwrap(), byte);
         prop_assert_eq!(reader.u16().unwrap(), word);
         prop_assert_eq!(reader.i16().unwrap(), signed);
+        prop_assert_eq!(reader.u24().unwrap(), u32::from_be_bytes([
+            0,
+            three_bytes[0],
+            three_bytes[1],
+            three_bytes[2],
+        ]));
         prop_assert_eq!(reader.u32().unwrap(), double_word);
         prop_assert_eq!(reader.tag().unwrap().to_bytes(), tag_bytes);
         prop_assert!(reader.is_empty());

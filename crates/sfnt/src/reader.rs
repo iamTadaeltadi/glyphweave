@@ -100,6 +100,16 @@ impl<'a> Reader<'a> {
         Ok(i16::from_be_bytes(self.take::<2>()?))
     }
 
+    /// Reads a big-endian unsigned 24-bit integer into a `u32`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`Cause::UnexpectedEnd`] Diagnostic when fewer than three bytes remain.
+    pub fn u24(&mut self) -> Result<u32, Diagnostic> {
+        let [high, middle, low] = self.take::<3>()?;
+        Ok(u32::from_be_bytes([0, high, middle, low]))
+    }
+
     /// Reads a big-endian unsigned 32-bit integer.
     ///
     /// # Errors
@@ -214,13 +224,16 @@ mod tests {
 
     #[test]
     fn reads_big_endian_scalars_in_order() {
-        let bytes = [0x12, 0x34, 0x56, 0xff, 0xfe, 0x00, 0x00, 0x01, 0x00];
+        let bytes = [
+            0x12, 0x34, 0x56, 0xff, 0xfe, 0xab, 0xcd, 0xef, 0x00, 0x00, 0x01, 0x00,
+        ];
         let mut reader = Reader::new(&bytes);
         assert_eq!(reader.u8().unwrap(), 0x12);
         assert_eq!(reader.u16().unwrap(), 0x3456);
         assert_eq!(reader.i16().unwrap(), -2);
+        assert_eq!(reader.u24().unwrap(), 0x00ab_cdef);
         assert_eq!(reader.u32().unwrap(), 0x0000_0100);
-        assert_eq!(reader.offset(), 9);
+        assert_eq!(reader.offset(), 12);
     }
 
     #[test]
