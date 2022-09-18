@@ -27,6 +27,7 @@ mod span;
 mod tag;
 mod variation_mapping;
 mod variation_selector;
+mod variation_selector_map;
 mod version;
 
 pub use cause::{Cause, CmapCause};
@@ -48,4 +49,5 @@ pub use span::ByteSpan;
 pub use tag::Tag;
 pub use variation_mapping::VariationMapping;
 pub use variation_selector::VariationSelector;
+pub use variation_selector_map::VariationSelectorMap;
 pub use version::SfntVersion;
