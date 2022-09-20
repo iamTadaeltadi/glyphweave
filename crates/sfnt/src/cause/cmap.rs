@@ -2,6 +2,15 @@
 
 mod display;
 
+/// The kind of nested mapping table referenced by a format-14 selector record.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Cmap14TableKind {
+    /// A compressed list of base-scalar ranges that delegate to the ordinary Character Map.
+    Default,
+    /// A list of base scalars with explicit non-default Glyph IDs.
+    NonDefault,
+}
+
 /// A format-specific cause produced by a `cmap` decoder.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
@@ -140,5 +149,92 @@ pub enum CmapCause {
         codepoint: u16,
         /// The invalid nonzero Glyph ID.
         glyph: crate::GlyphId,
+    },
+    /// A format-14 declared length cannot contain its header or exceeds available bytes.
+    InvalidCmap14Length {
+        /// The encoded byte length.
+        declared: u32,
+        /// The minimum byte length required at this point in decoding.
+        minimum: usize,
+        /// The bytes available from the subtable offset.
+        available: usize,
+    },
+    /// The format-14 selector count cannot fit in the declared record array.
+    Cmap14SelectorCountOutOfBounds {
+        /// The encoded number of Variation Selector records.
+        count: u32,
+        /// The greatest record count that fits in the declared length.
+        maximum: usize,
+    },
+    /// A format-14 selector is not typed, strictly ordered, or unique.
+    InvalidCmap14VariationSelector {
+        /// The zero-based selector-record index.
+        index: u32,
+        /// The encoded 24-bit selector value.
+        selector: u32,
+        /// The preceding selector value, when this is not the first record.
+        previous: Option<u32>,
+    },
+    /// A nonzero format-14 nested-table offset does not locate a valid count field.
+    InvalidCmap14Offset {
+        /// The selector whose record contains the offset.
+        selector: u32,
+        /// The referenced nested-table kind.
+        kind: Cmap14TableKind,
+        /// The encoded offset relative to the format-14 subtable.
+        offset: u32,
+        /// The first legal relative target byte after the selector records.
+        records_end: usize,
+        /// The declared format-14 byte length.
+        declared_length: usize,
+    },
+    /// A nested format-14 entry count cannot fit before the declared subtable end.
+    Cmap14EntryCountOutOfBounds {
+        /// The selector whose record references the nested table.
+        selector: u32,
+        /// The referenced nested-table kind.
+        kind: Cmap14TableKind,
+        /// The encoded entry count.
+        count: u32,
+        /// The greatest entry count that fits at the referenced offset.
+        maximum: usize,
+    },
+    /// A default UVS range is not scalar, ordered, disjoint, or 24-bit bounded.
+    InvalidCmap14DefaultRange {
+        /// The selector associated with the range.
+        selector: u32,
+        /// The zero-based range index within its nested table.
+        index: u32,
+        /// The encoded inclusive range start.
+        start: u32,
+        /// The calculated inclusive range end.
+        end: u32,
+        /// The preceding range end, when this is not the first range.
+        previous_end: Option<u32>,
+    },
+    /// A non-default UVS mapping is not a scalar, strictly ordered, or unique.
+    InvalidCmap14NonDefaultMapping {
+        /// The selector associated with the mapping.
+        selector: u32,
+        /// The zero-based mapping index within its nested table.
+        index: u32,
+        /// The encoded base character value.
+        codepoint: u32,
+        /// The preceding base value, when this is not the first mapping.
+        previous: Option<u32>,
+    },
+    /// One sequence is listed in both default and non-default tables for its selector.
+    ConflictingCmap14Mapping {
+        /// The shared Variation Selector value.
+        selector: u32,
+        /// The base character listed in both mapping categories.
+        codepoint: u32,
+    },
+    /// Two format-14 nested tables partially overlap or alias as different kinds.
+    OverlappingCmap14Tables {
+        /// The first target in absolute byte order.
+        first: (Cmap14TableKind, crate::ByteSpan),
+        /// The next target that conflicts with it.
+        second: (Cmap14TableKind, crate::ByteSpan),
     },
 }
