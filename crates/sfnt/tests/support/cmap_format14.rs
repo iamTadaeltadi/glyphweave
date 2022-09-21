@@ -34,6 +34,16 @@ pub fn push_u32(bytes: &mut Vec<u8>, value: u32) {
     bytes.extend_from_slice(&value.to_be_bytes());
 }
 
+/// Encodes a format-14 header with no selector records.
+#[must_use]
+pub fn encode_empty() -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(10);
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, 10);
+    push_u32(&mut bytes, 0);
+    bytes
+}
+
 /// Encodes one selector record with adjacent default and non-default target tables.
 ///
 /// # Panics
