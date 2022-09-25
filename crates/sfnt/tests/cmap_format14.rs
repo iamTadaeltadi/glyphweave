@@ -44,3 +44,29 @@ fn default_and_non_default_sequences_resolve_distinctly() {
         Some(VariationMapping::NonDefault(GlyphId::new(19)))
     );
 }
+
+#[test]
+fn relative_targets_resolve_from_an_absolute_subtable_offset() {
+    let subtable = encode_selector(
+        0xe0100,
+        &[DefaultRange {
+            start: 0x4e00,
+            additional: 1,
+        }],
+        &[],
+    );
+    let mut bytes = vec![0xaa; 13];
+    let offset = bytes.len();
+    bytes.extend_from_slice(&subtable);
+
+    let decoded = CmapFormat14::decode(&bytes, offset).expect("relative target uses subtable base");
+    let selector = VariationSelector::new('\u{e0100}').unwrap();
+    assert_eq!(decoded.span().start(), offset);
+    assert_eq!(decoded.span().length(), subtable.len());
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{4e01}', selector),
+        Some(VariationMapping::Default)
+    );
+}
