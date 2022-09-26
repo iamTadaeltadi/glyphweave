@@ -1,0 +1,23 @@
+//! Variation Selector record coverage for `cmap` format 14 decoding.
+
+#[path = "support/cmap_format14.rs"]
+pub mod support;
+
+use glyphweave_sfnt::{ByteSpan, Cause, CmapCause, CmapFormat14};
+use support::encode_selector;
+
+#[test]
+fn ordinary_unicode_scalar_is_not_a_variation_selector() {
+    let bytes = encode_selector(u32::from('A'), &[], &[]);
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("A is not a Variation Selector");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14VariationSelector {
+            index: 0,
+            selector: u32::from('A'),
+            previous: None,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(10, 3));
+}
