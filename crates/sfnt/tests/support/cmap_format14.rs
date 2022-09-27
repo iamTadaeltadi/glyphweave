@@ -44,6 +44,27 @@ pub fn encode_empty() -> Vec<u8> {
     bytes
 }
 
+/// Encodes selector records whose nested-table offsets are both absent.
+///
+/// # Panics
+///
+/// Panics only when the in-memory selector array exceeds the format's 32-bit fields.
+#[must_use]
+pub fn encode_selectors(selectors: &[u32]) -> Vec<u8> {
+    let count = u32::try_from(selectors.len()).expect("fixture count fits u32");
+    let length = 10_u32 + count * 11;
+    let mut bytes = Vec::new();
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, length);
+    push_u32(&mut bytes, count);
+    for &selector in selectors {
+        push_u24(&mut bytes, selector);
+        push_u32(&mut bytes, 0);
+        push_u32(&mut bytes, 0);
+    }
+    bytes
+}
+
 /// Encodes one selector record with adjacent default and non-default target tables.
 ///
 /// # Panics
