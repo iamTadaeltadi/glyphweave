@@ -21,3 +21,19 @@ fn ordinary_unicode_scalar_is_not_a_variation_selector() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(10, 3));
 }
+
+#[test]
+fn selector_value_cannot_exceed_the_unicode_domain() {
+    let bytes = encode_selector(0x11_0000, &[], &[]);
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("selector is above Unicode");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14VariationSelector {
+            index: 0,
+            selector: 0x11_0000,
+            previous: None,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(10, 3));
+}
