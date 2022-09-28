@@ -69,3 +69,12 @@ fn duplicate_selector_records_are_rejected() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(21, 3));
 }
+
+#[test]
+fn boundary_selectors_may_omit_both_mapping_tables() {
+    let bytes = encode_selectors(&[0xfe00, 0xfe0f, 0xe0100, 0xe01ef]);
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("all selector boundaries are valid");
+    assert_eq!(decoded.selector_record_count(), 4);
+    assert!(decoded.variation_selector_map().is_empty());
+}
