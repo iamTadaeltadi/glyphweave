@@ -43,3 +43,21 @@ fn non_default_offset_must_locate_a_complete_count() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(17, 4));
 }
+
+#[test]
+fn default_range_count_cannot_exceed_target_capacity() {
+    let mut bytes = encode_selector(0xfe0f, &[], &[]);
+    bytes[21..25].copy_from_slice(&2_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("two ranges do not fit");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::Cmap14EntryCountOutOfBounds {
+            selector: 0xfe0f,
+            kind: Cmap14TableKind::Default,
+            count: 2,
+            maximum: 1,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(21, 4));
+}
