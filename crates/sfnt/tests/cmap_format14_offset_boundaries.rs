@@ -61,3 +61,21 @@ fn default_range_count_cannot_exceed_target_capacity() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(21, 4));
 }
+
+#[test]
+fn non_default_mapping_count_cannot_exceed_target_capacity() {
+    let mut bytes = encode_selector(0xfe0f, &[], &[]);
+    bytes[25..29].copy_from_slice(&1_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("one mapping does not fit");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::Cmap14EntryCountOutOfBounds {
+            selector: 0xfe0f,
+            kind: Cmap14TableKind::NonDefault,
+            count: 1,
+            maximum: 0,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
+}
