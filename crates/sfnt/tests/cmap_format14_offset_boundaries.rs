@@ -135,5 +135,29 @@ fn selector_records_may_share_an_exact_default_table() {
             Some(VariationMapping::Default)
         );
     }
+
     assert_eq!(decoded.variation_selector_map().default_range_count(), 2);
+}
+
+#[test]
+fn nested_tables_cannot_partially_overlap() {
+    let mut bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0,
+            additional: 0,
+        }],
+        &[],
+    );
+    bytes[17..21].copy_from_slice(&25_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("target tables overlap");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::OverlappingCmap14Tables {
+            first: (Cmap14TableKind::Default, ByteSpan::sized(21, 8).unwrap(),),
+            second: (Cmap14TableKind::NonDefault, ByteSpan::sized(25, 4).unwrap(),),
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
 }
