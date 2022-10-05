@@ -72,3 +72,28 @@ fn adjacent_default_ranges_remain_separately_compressed() {
     );
     assert_eq!(decoded.variation_selector_map().default_range_count(), 2);
 }
+
+#[test]
+fn default_range_cannot_enter_the_surrogate_area() {
+    let bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0xd7ff,
+            additional: 1,
+        }],
+        &[],
+    );
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("range ends at a surrogate");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14DefaultRange {
+            selector: 0xfe0f,
+            index: 0,
+            start: 0xd7ff,
+            end: 0xd800,
+            previous_end: None,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
+}
