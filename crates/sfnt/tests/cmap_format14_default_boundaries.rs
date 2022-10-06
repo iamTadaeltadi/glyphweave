@@ -97,3 +97,28 @@ fn default_range_cannot_enter_the_surrogate_area() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
 }
+
+#[test]
+fn default_range_start_cannot_exceed_unicode_maximum() {
+    let bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x11_0000,
+            additional: 0,
+        }],
+        &[],
+    );
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("range starts above Unicode");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14DefaultRange {
+            selector: 0xfe0f,
+            index: 0,
+            start: 0x11_0000,
+            end: 0x11_0000,
+            previous_end: None,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
+}
