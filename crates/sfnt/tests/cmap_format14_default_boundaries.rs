@@ -122,3 +122,28 @@ fn default_range_start_cannot_exceed_unicode_maximum() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
 }
+
+#[test]
+fn default_range_end_cannot_overflow_twenty_four_bits() {
+    let bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x00ff_ffff,
+            additional: 1,
+        }],
+        &[],
+    );
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("range exceeds 24 bits");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14DefaultRange {
+            selector: 0xfe0f,
+            index: 0,
+            start: 0x00ff_ffff,
+            end: 0x0100_0000,
+            previous_end: None,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
+}
