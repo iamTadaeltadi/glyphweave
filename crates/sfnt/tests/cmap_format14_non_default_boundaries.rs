@@ -107,3 +107,24 @@ fn explicit_notdef_mapping_remains_a_supported_sequence() {
     );
     assert!(!decoded.variation_selector_map().is_empty());
 }
+
+#[test]
+fn maximal_scalar_and_glyph_are_valid_non_default_values() {
+    let bytes = encode_selector(
+        0xe0100,
+        &[],
+        &[NonDefaultMapping {
+            base: 0x10_ffff,
+            glyph: u16::MAX,
+        }],
+    );
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("maximum values are representable");
+    let selector = VariationSelector::new('\u{e0100}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{10ffff}', selector),
+        Some(VariationMapping::NonDefault(GlyphId::new(u16::MAX)))
+    );
+}
