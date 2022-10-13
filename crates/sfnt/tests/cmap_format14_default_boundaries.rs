@@ -168,3 +168,28 @@ fn unicode_maximum_is_a_valid_default_range_boundary() {
         Some(VariationMapping::Default)
     );
 }
+
+#[test]
+fn maximal_default_range_stays_compressed() {
+    let bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x4e00,
+            additional: u8::MAX,
+        }],
+        &[],
+    );
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("256-scalar range is valid");
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    let map = decoded.variation_selector_map();
+    assert_eq!(map.default_range_count(), 1);
+    assert_eq!(
+        map.mapping('\u{4eff}', selector),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(
+        map.default_ranges().collect::<Vec<_>>(),
+        vec![(selector, '\u{4e00}'..='\u{4eff}')]
+    );
+}
