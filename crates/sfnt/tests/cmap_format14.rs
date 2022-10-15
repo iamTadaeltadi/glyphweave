@@ -4,7 +4,7 @@
 pub mod support;
 
 use glyphweave_sfnt::{CharacterMap, CmapFormat14, GlyphId, VariationMapping, VariationSelector};
-use support::{DefaultRange, NonDefaultMapping, encode_selector};
+use support::{DefaultRange, NonDefaultMapping, encode_selector, push_u16, push_u24, push_u32};
 
 #[test]
 fn default_and_non_default_sequences_resolve_distinctly() {
@@ -118,4 +118,47 @@ fn selector_record_may_reference_only_non_default_sequences() {
         Some(VariationMapping::NonDefault(GlyphId::new(19)))
     );
     assert_eq!(decoded.variation_selector_map().default_range_count(), 0);
+}
+
+#[test]
+fn multiple_selectors_resolve_independent_target_tables() {
+    let mut bytes = Vec::new();
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, 49);
+    push_u32(&mut bytes, 2);
+    push_u24(&mut bytes, 0xfe0f);
+    push_u32(&mut bytes, 32);
+    push_u32(&mut bytes, 0);
+    push_u24(&mut bytes, 0xe0100);
+    push_u32(&mut bytes, 0);
+    push_u32(&mut bytes, 40);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0x2764);
+    bytes.push(0);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0x82a6);
+    push_u16(&mut bytes, 19);
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("independent selector targets");
+    let standardized = VariationSelector::new('\u{fe0f}').unwrap();
+    let ideographic = VariationSelector::new('\u{e0100}').unwrap();
+    assert_eq!(decoded.selector_record_count(), 2);
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{2764}', standardized),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{82a6}', ideographic),
+        Some(VariationMapping::NonDefault(GlyphId::new(19)))
+    );
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{82a6}', standardized),
+        None
+    );
 }
