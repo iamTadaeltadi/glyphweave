@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn default_mapping_delegates_to_the_base_character() {
-        let ordinary: CharacterMap = [('A', GlyphId::new(7))].into_iter().collect();
+        let ordinary: CharacterMap = std::iter::once(('A', GlyphId::new(7))).collect();
         assert_eq!(
             VariationMapping::Default.glyph_id('A', &ordinary),
             GlyphId::new(7)
@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn non_default_mapping_ignores_the_base_character() {
-        let ordinary: CharacterMap = [('A', GlyphId::new(7))].into_iter().collect();
+        let ordinary: CharacterMap = std::iter::once(('A', GlyphId::new(7))).collect();
         assert_eq!(
             VariationMapping::NonDefault(GlyphId::new(19)).glyph_id('A', &ordinary),
             GlyphId::new(19)
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn explicit_notdef_mapping_remains_supported() {
-        let ordinary: CharacterMap = [('A', GlyphId::new(7))].into_iter().collect();
+        let ordinary: CharacterMap = std::iter::once(('A', GlyphId::new(7))).collect();
         assert_eq!(
             VariationMapping::NonDefault(GlyphId::NOTDEF).glyph_id('A', &ordinary),
             GlyphId::NOTDEF
