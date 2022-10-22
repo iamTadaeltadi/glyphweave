@@ -32,7 +32,7 @@ mod variation_selector;
 mod variation_selector_map;
 mod version;
 
-pub use cause::{Cause, Cmap14TableKind, CmapCause};
+pub use cause::{Cause, Cmap14TableKind, CmapCause, OutlineCause};
 pub use character_map::CharacterMap;
 pub use checksum::Checksum;
 pub use cmap_format4::CmapFormat4;

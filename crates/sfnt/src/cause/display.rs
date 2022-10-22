@@ -148,6 +148,7 @@ impl fmt::Display for Cause {
             | Self::TableOverlapsCollectionSignature { .. }
             | Self::OverlappingFaceTables { .. } => unreachable!(),
             Self::Cmap(cause) => cause.fmt(f),
+            Self::Outline(cause) => cause.fmt(f),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }

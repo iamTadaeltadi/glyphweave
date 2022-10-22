@@ -2,8 +2,10 @@
 
 mod cmap;
 mod display;
+mod outline;
 
 pub use cmap::{Cmap14TableKind, CmapCause};
+pub use outline::OutlineCause;
 
 /// The domain-specific cause of a Diagnostic.
 ///
@@ -150,6 +152,8 @@ pub enum Cause {
     },
     /// A character-map subtable violated a format-specific invariant.
     Cmap(CmapCause),
+    /// A TrueType outline table violated an outline-specific invariant.
+    Outline(OutlineCause),
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -247,6 +251,9 @@ pub enum Cause {
 
 #[cfg(test)]
 mod cmap_tests;
+
+#[cfg(test)]
+mod outline_tests;
 
 #[cfg(test)]
 mod tests;
