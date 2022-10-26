@@ -17,6 +17,11 @@ pub enum OutlineCause {
         /// The unpadded length declared by the `loca` Table Record.
         actual: usize,
     },
+    /// The first `loca` entry leaves unreferenced bytes before glyph zero.
+    NonzeroLocaStart {
+        /// The first relative `glyf` offset.
+        offset: u32,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -31,6 +36,9 @@ impl fmt::Display for OutlineCause {
                 f,
                 "{format:?} loca length {actual} does not equal {expected} bytes required by {glyph_count} glyph(s)"
             ),
+            Self::NonzeroLocaStart { offset } => {
+                write!(f, "loca first offset {offset} does not start glyf at zero")
+            }
         }
     }
 }
