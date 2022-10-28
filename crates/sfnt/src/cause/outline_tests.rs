@@ -25,3 +25,17 @@ fn loca_start_failure_names_the_leading_gap() {
         "loca first offset 4 does not start glyf at zero"
     );
 }
+
+#[test]
+fn decreasing_loca_failure_names_both_offsets() {
+    let cause = Cause::Outline(OutlineCause::DecreasingLocaOffset {
+        index: 2,
+        offset: 4,
+        previous: 8,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "loca offset 2 value 4 precedes previous offset 8"
+    );
+}
