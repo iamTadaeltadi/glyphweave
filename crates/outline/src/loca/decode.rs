@@ -55,8 +55,18 @@ pub(super) fn decode(
         ));
     }
     for (preceding_index, pair) in offsets.windows(2).enumerate() {
+        let index = preceding_index + 1;
+        if pair[1] % 2 != 0 {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                entry_span(table_span, index, width),
+                Cause::Outline(OutlineCause::MisalignedLocaOffset {
+                    index: u32::try_from(index).unwrap_or(u32::MAX),
+                    offset: pair[1],
+                }),
+            ));
+        }
         if pair[1] < pair[0] {
-            let index = preceding_index + 1;
             return Err(Diagnostic::at(
                 Stage::Decode,
                 entry_span(table_span, index, width),
