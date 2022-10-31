@@ -66,6 +66,17 @@ pub(super) fn decode(
                 }),
             ));
         }
+        if usize::try_from(pair[1]).map_or(true, |offset| offset > glyf_span.length()) {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                entry_span(table_span, index, width),
+                Cause::Outline(OutlineCause::LocaOffsetOutOfBounds {
+                    index: u32::try_from(index).unwrap_or(u32::MAX),
+                    offset: pair[1],
+                    glyf_length: glyf_span.length(),
+                }),
+            ));
+        }
         if pair[1] < pair[0] {
             return Err(Diagnostic::at(
                 Stage::Decode,
