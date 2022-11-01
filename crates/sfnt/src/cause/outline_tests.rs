@@ -66,3 +66,17 @@ fn out_of_bounds_loca_failure_names_the_glyf_limit() {
         "loca offset 1 value 12 exceeds glyf length 10"
     );
 }
+
+#[test]
+fn loca_end_failure_names_the_sentinel_and_glyf_length() {
+    let cause = Cause::Outline(OutlineCause::LocaEndMismatch {
+        index: 3,
+        offset: 8,
+        glyf_length: 10,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "loca sentinel 3 value 8 does not equal glyf length 10"
+    );
+}
