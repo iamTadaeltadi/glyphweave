@@ -47,3 +47,27 @@ fn long_entries_preserve_full_offsets_at_an_absolute_table_position() {
         ByteSpan::between(21, 27)
     );
 }
+
+#[test]
+fn repeated_offsets_preserve_empty_glyphs_on_both_sides_of_data() {
+    let mut bytes = vec![0, 0, 0, 0, 0, 2, 0, 2];
+    bytes.extend_from_slice(&[0xaa; 4]);
+    let table_span = ByteSpan::sized(0, 8).unwrap();
+    let glyf_span = ByteSpan::sized(8, 4).unwrap();
+
+    let decoded = Loca::decode(&bytes, table_span, glyf_span, 3, LocaFormat::Short)
+        .expect("equal consecutive locations are valid");
+
+    assert_eq!(
+        decoded.glyph_span(GlyphId::NOTDEF),
+        Some(ByteSpan::empty_at(8))
+    );
+    assert_eq!(
+        decoded.glyph_span(GlyphId::new(1)),
+        ByteSpan::between(8, 12)
+    );
+    assert_eq!(
+        decoded.glyph_span(GlyphId::new(2)),
+        Some(ByteSpan::empty_at(12))
+    );
+}
