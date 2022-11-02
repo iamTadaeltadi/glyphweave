@@ -12,7 +12,7 @@ fn loca_length_failure_names_format_count_and_lengths() {
 
     assert_eq!(
         cause.to_string(),
-        "Short loca length 6 does not equal 8 bytes required by 3 glyph(s)"
+        "short loca length 6 does not equal 8 bytes required by 3 glyph(s)"
     );
 }
 

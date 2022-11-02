@@ -1,5 +1,7 @@
 //! The closed `head.indexToLocFormat` domain.
 
+use core::fmt;
+
 /// The entry width used by a TrueType `loca` table.
 ///
 /// ```
@@ -38,6 +40,15 @@ impl LocaFormat {
     }
 }
 
+impl fmt::Display for LocaFormat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Short => f.write_str("short"),
+            Self::Long => f.write_str("long"),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::LocaFormat;
@@ -60,5 +71,11 @@ mod tests {
         for format in [LocaFormat::Short, LocaFormat::Long] {
             assert_eq!(LocaFormat::new(format.value()), Some(format));
         }
+    }
+
+    #[test]
+    fn display_uses_specification_names() {
+        assert_eq!(LocaFormat::Short.to_string(), "short");
+        assert_eq!(LocaFormat::Long.to_string(), "long");
     }
 }

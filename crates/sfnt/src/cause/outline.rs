@@ -68,7 +68,7 @@ impl fmt::Display for OutlineCause {
                 actual,
             } => write!(
                 f,
-                "{format:?} loca length {actual} does not equal {expected} bytes required by {glyph_count} glyph(s)"
+                "{format} loca length {actual} does not equal {expected} bytes required by {glyph_count} glyph(s)"
             ),
             Self::NonzeroLocaStart { offset } => {
                 write!(f, "loca first offset {offset} does not start glyf at zero")
