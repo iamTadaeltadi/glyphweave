@@ -71,3 +71,17 @@ fn repeated_offsets_preserve_empty_glyphs_on_both_sides_of_data() {
         Some(ByteSpan::empty_at(12))
     );
 }
+
+#[test]
+fn zero_glyph_input_still_requires_and_preserves_one_sentinel() {
+    let bytes = [0_u8; 4];
+    let table_span = ByteSpan::sized(0, 4).unwrap();
+    let glyf_span = ByteSpan::empty_at(4);
+
+    let decoded = Loca::decode(&bytes, table_span, glyf_span, 0, LocaFormat::Long)
+        .expect("loca relation is structurally empty");
+
+    assert_eq!(decoded.glyph_count(), 0);
+    assert_eq!(decoded.offsets(), [0]);
+    assert_eq!(decoded.glyph_span(GlyphId::NOTDEF), None);
+}
