@@ -60,3 +60,19 @@ fn loca_span_must_be_in_bounds_before_entries_are_observed() {
         Cause::SpanOutOfBounds { end: 6, length: 5 }
     );
 }
+
+#[test]
+fn glyf_span_must_be_in_bounds_before_offsets_are_resolved() {
+    let bytes = [0_u8; 3];
+    let table_span = ByteSpan::sized(0, 2).unwrap();
+    let glyf_span = ByteSpan::sized(2, 2).unwrap();
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 0, LocaFormat::Short)
+        .expect_err("the paired glyf span exceeds available bytes");
+
+    assert_eq!(diagnostic.span(), Some(glyf_span));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::SpanOutOfBounds { end: 4, length: 3 }
+    );
+}
