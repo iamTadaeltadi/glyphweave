@@ -85,3 +85,21 @@ fn zero_glyph_input_still_requires_and_preserves_one_sentinel() {
     assert_eq!(decoded.offsets(), [0]);
     assert_eq!(decoded.glyph_span(GlyphId::NOTDEF), None);
 }
+
+#[test]
+fn short_format_reaches_its_maximal_even_glyf_offset() {
+    let mut bytes = vec![0, 0, 0xff, 0xff];
+    let glyf_length = usize::from(u16::MAX) * 2;
+    bytes.resize(4 + glyf_length, 0xaa);
+    let table_span = ByteSpan::sized(0, 4).unwrap();
+    let glyf_span = ByteSpan::sized(4, glyf_length).unwrap();
+
+    let decoded = Loca::decode(&bytes, table_span, glyf_span, 1, LocaFormat::Short)
+        .expect("maximum short offset is representable");
+
+    assert_eq!(decoded.offsets(), [0, 131_070]);
+    assert_eq!(
+        decoded.glyph_span(GlyphId::NOTDEF).map(ByteSpan::length),
+        Some(glyf_length)
+    );
+}
