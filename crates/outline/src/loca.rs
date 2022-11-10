@@ -5,6 +5,11 @@ mod decode;
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LocaFormat};
 
 /// Validated `loca` offsets paired with the `glyf` table they delimit.
+///
+/// The canonical offsets are byte counts relative to [`Loca::glyf_span`], regardless of whether
+/// the source used short half-offsets or long byte offsets. There is one more offset than the
+/// reported Glyph count so every in-range Glyph ID has a complete half-open Byte Span. Consecutive
+/// equal offsets preserve a glyph without outline data as an empty span.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Loca {
     pub(crate) table_span: ByteSpan,
@@ -67,7 +72,7 @@ impl Loca {
         self.glyph_count
     }
 
-    /// Returns all relative offsets, including the final sentinel.
+    /// Returns all canonical byte offsets relative to `glyf`, including the final sentinel.
     #[must_use]
     pub fn offsets(&self) -> &[u32] {
         &self.offsets
