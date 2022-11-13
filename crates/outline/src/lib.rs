@@ -8,9 +8,11 @@
 mod glyph_bounds;
 mod glyph_set;
 mod loca;
+mod point;
 mod remap;
 
 pub use glyph_bounds::GlyphBounds;
 pub use glyph_set::GlyphSet;
 pub use loca::Loca;
+pub use point::Point;
 pub use remap::Remap;
