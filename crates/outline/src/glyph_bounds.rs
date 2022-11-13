@@ -54,3 +54,6 @@ impl GlyphBounds {
         self.maximum_y
     }
 }
+
+#[cfg(test)]
+mod tests;
