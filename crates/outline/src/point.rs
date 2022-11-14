@@ -33,3 +33,6 @@ impl Point {
         self.on_curve
     }
 }
+
+#[cfg(test)]
+mod tests;
