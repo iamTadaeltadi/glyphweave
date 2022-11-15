@@ -46,6 +46,18 @@ impl SimpleGlyph {
         &self.points
     }
 
+    /// Returns one contour's points when `index` is in range.
+    #[must_use]
+    pub fn contour(&self, index: usize) -> Option<&[Point]> {
+        let end = usize::try_from(*self.contour_ends.get(index)?).ok()?;
+        let start = if index == 0 {
+            0
+        } else {
+            usize::try_from(*self.contour_ends.get(index - 1)?).ok()?
+        };
+        self.points.get(start..end)
+    }
+
     /// Returns the uninterpreted TrueType instruction program.
     #[must_use]
     pub fn instructions(&self) -> &[u8] {
@@ -58,3 +70,6 @@ impl SimpleGlyph {
         self.overlapping_contours
     }
 }
+
+#[cfg(test)]
+mod tests;
