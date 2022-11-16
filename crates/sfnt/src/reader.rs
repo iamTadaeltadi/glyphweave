@@ -24,13 +24,18 @@ use crate::tag::Tag;
 pub struct Reader<'a> {
     bytes: &'a [u8],
     offset: usize,
+    end: usize,
 }
 
 impl<'a> Reader<'a> {
     /// Creates a reader positioned at the start of `bytes`.
     #[must_use]
     pub const fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, offset: 0 }
+        Self {
+            bytes,
+            offset: 0,
+            end: bytes.len(),
+        }
     }
 
     /// Creates a reader positioned at `offset` within `bytes`.
@@ -40,7 +45,11 @@ impl<'a> Reader<'a> {
     /// Returns a [`Cause::SpanOutOfBounds`] Diagnostic when `offset` is past the end of `bytes`.
     pub fn at(bytes: &'a [u8], offset: usize) -> Result<Self, Diagnostic> {
         if offset <= bytes.len() {
-            Ok(Self { bytes, offset })
+            Ok(Self {
+                bytes,
+                offset,
+                end: bytes.len(),
+            })
         } else {
             let span = ByteSpan::between(bytes.len(), offset)
                 .unwrap_or_else(|| ByteSpan::empty_at(bytes.len()));
@@ -55,6 +64,23 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// Creates a reader confined to one absolute checked span in `bytes`.
+    ///
+    /// Reads cannot cross the span's end even when more input bytes follow it. Diagnostics retain
+    /// absolute offsets into `bytes`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`Cause::SpanOutOfBounds`] Diagnostic when `span` exceeds `bytes`.
+    pub fn within(bytes: &'a [u8], span: ByteSpan) -> Result<Self, Diagnostic> {
+        span.slice(bytes)?;
+        Ok(Self {
+            bytes,
+            offset: span.start(),
+            end: span.end(),
+        })
+    }
+
     /// The current cursor offset.
     #[must_use]
     pub const fn offset(&self) -> usize {
@@ -64,13 +90,13 @@ impl<'a> Reader<'a> {
     /// The number of bytes remaining after the cursor.
     #[must_use]
     pub const fn remaining(&self) -> usize {
-        self.bytes.len() - self.offset
+        self.end - self.offset
     }
 
     /// Returns `true` when no bytes remain after the cursor.
     #[must_use]
     pub const fn is_empty(&self) -> bool {
-        self.offset >= self.bytes.len()
+        self.offset >= self.end
     }
 
     /// Reads one unsigned byte.
@@ -135,7 +161,7 @@ impl<'a> Reader<'a> {
     /// Returns a [`Cause::UnexpectedEnd`] Diagnostic when fewer than `length` bytes remain.
     pub fn array(&mut self, length: usize) -> Result<&'a [u8], Diagnostic> {
         match self.offset.checked_add(length) {
-            Some(end) if end <= self.bytes.len() => {
+            Some(end) if end <= self.end => {
                 let slice = &self.bytes[self.offset..end];
                 self.offset = end;
                 Ok(slice)
@@ -168,7 +194,7 @@ impl<'a> Reader<'a> {
     /// Reads `N` bytes into a fixed array, advancing the cursor only on success.
     fn take<const N: usize>(&mut self) -> Result<[u8; N], Diagnostic> {
         match self.offset.checked_add(N) {
-            Some(end) if end <= self.bytes.len() => {
+            Some(end) if end <= self.end => {
                 let mut buffer = [0u8; N];
                 buffer.copy_from_slice(&self.bytes[self.offset..end]);
                 self.offset = end;
@@ -181,7 +207,7 @@ impl<'a> Reader<'a> {
     /// Builds the truncation Diagnostic for a read of `needed` bytes at the current offset.
     fn unexpected_end(&self, needed: usize) -> Diagnostic {
         let available = self.remaining();
-        let span = ByteSpan::between(self.offset, self.bytes.len())
+        let span = ByteSpan::between(self.offset, self.end)
             .unwrap_or_else(|| ByteSpan::empty_at(self.offset));
         Diagnostic::at(
             Stage::Decode,
