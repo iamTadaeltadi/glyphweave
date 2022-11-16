@@ -249,6 +249,38 @@ mod tests {
     }
 
     #[test]
+    fn within_starts_and_ends_at_absolute_span_boundaries() {
+        let bytes = [0xaa, 0xbb, 0xcc, 0xdd, 0xee];
+        let span = crate::ByteSpan::between(1, 4).unwrap();
+        let mut reader = Reader::within(&bytes, span).unwrap();
+
+        assert_eq!(reader.offset(), 1);
+        assert_eq!(reader.remaining(), 3);
+        assert_eq!(reader.u16().unwrap(), 0xbbcc);
+        let diagnostic = reader.u16().unwrap_err();
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::UnexpectedEnd {
+                needed: 2,
+                available: 1
+            }
+        );
+        assert_eq!(diagnostic.span(), crate::ByteSpan::between(3, 4));
+    }
+
+    #[test]
+    fn within_rejects_a_span_past_the_input() {
+        let span = crate::ByteSpan::between(1, 4).unwrap();
+        let diagnostic = Reader::within(&[0, 1, 2], span).unwrap_err();
+
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::SpanOutOfBounds { end: 4, length: 3 }
+        );
+        assert_eq!(diagnostic.span(), Some(span));
+    }
+
+    #[test]
     fn reads_big_endian_scalars_in_order() {
         let bytes = [
             0x12, 0x34, 0x56, 0xff, 0xfe, 0xab, 0xcd, 0xef, 0x00, 0x00, 0x01, 0x00,
