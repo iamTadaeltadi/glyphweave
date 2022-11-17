@@ -56,6 +56,24 @@ pub enum OutlineCause {
         /// The unpadded `glyf` table length.
         glyf_length: usize,
     },
+    /// Simple-glyph decoding was requested for a glyph without description bytes.
+    EmptyGlyphDescription,
+    /// A negative contour count identifies a composite rather than a simple glyph.
+    CompositeGlyphForSimpleDecoder {
+        /// The signed contour count read from the Glyph Header.
+        number_of_contours: i16,
+    },
+    /// The Glyph Header records an inverted bounding axis.
+    InvalidGlyphBounds {
+        /// The recorded minimum horizontal coordinate.
+        minimum_x: i16,
+        /// The recorded minimum vertical coordinate.
+        minimum_y: i16,
+        /// The recorded maximum horizontal coordinate.
+        maximum_x: i16,
+        /// The recorded maximum vertical coordinate.
+        maximum_y: i16,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -99,6 +117,22 @@ impl fmt::Display for OutlineCause {
             } => write!(
                 f,
                 "loca sentinel {index} value {offset} does not equal glyf length {glyf_length}"
+            ),
+            Self::EmptyGlyphDescription => {
+                f.write_str("simple glyph decoder received an empty glyph description")
+            }
+            Self::CompositeGlyphForSimpleDecoder { number_of_contours } => write!(
+                f,
+                "simple glyph decoder received composite contour count {number_of_contours}"
+            ),
+            Self::InvalidGlyphBounds {
+                minimum_x,
+                minimum_y,
+                maximum_x,
+                maximum_y,
+            } => write!(
+                f,
+                "glyph bounds ({minimum_x}, {minimum_y})..({maximum_x}, {maximum_y}) are inverted"
             ),
         }
     }
