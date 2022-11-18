@@ -80,3 +80,40 @@ fn loca_end_failure_names_the_sentinel_and_glyf_length() {
         "loca sentinel 3 value 8 does not equal glyf length 10"
     );
 }
+
+#[test]
+fn empty_glyph_failure_distinguishes_absent_outline_data() {
+    let cause = Cause::Outline(OutlineCause::EmptyGlyphDescription);
+
+    assert_eq!(
+        cause.to_string(),
+        "simple glyph decoder received an empty glyph description"
+    );
+}
+
+#[test]
+fn composite_glyph_failure_preserves_the_signed_contour_count() {
+    let cause = Cause::Outline(OutlineCause::CompositeGlyphForSimpleDecoder {
+        number_of_contours: -1,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple glyph decoder received composite contour count -1"
+    );
+}
+
+#[test]
+fn invalid_bounds_failure_names_both_corners() {
+    let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
+        minimum_x: 9,
+        minimum_y: 7,
+        maximum_x: -3,
+        maximum_y: -5,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "glyph bounds (9, 7)..(-3, -5) are inverted"
+    );
+}
