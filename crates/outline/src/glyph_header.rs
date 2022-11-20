@@ -1,5 +1,9 @@
 //! The common semantic header shared by simple and composite glyphs.
 
+mod decode;
+
+use glyphweave_sfnt::{ByteSpan, Decoded};
+
 use crate::GlyphBounds;
 
 /// A classified TrueType Glyph Header with ordered bounds.
@@ -10,6 +14,16 @@ pub struct GlyphHeader {
 }
 
 impl GlyphHeader {
+    /// Decodes the common header at the start of one non-empty Glyph Byte Span.
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware Diagnostic when the span is empty, out of bounds, shorter than the
+    /// ten-byte header, or records an inverted bounding axis.
+    pub fn decode(bytes: &[u8], glyph_span: ByteSpan) -> Decoded<Self> {
+        decode::decode(bytes, glyph_span)
+    }
+
     /// Constructs a header from its signed contour marker and validated bounds.
     #[must_use]
     pub const fn new(number_of_contours: i16, bounds: GlyphBounds) -> Self {
