@@ -28,3 +28,20 @@ fn every_nonempty_strict_header_prefix_is_rejected() {
         assert_eq!(diagnostic.span().unwrap().end(), length);
     }
 }
+
+#[test]
+fn glyph_span_must_be_inside_the_font_before_header_reads() {
+    let bytes = [0; 11];
+    let span = ByteSpan::sized(2, 10).unwrap();
+    let diagnostic =
+        GlyphHeader::decode(&bytes, span).expect_err("the declared glyph ends after the font");
+
+    assert_eq!(diagnostic.span(), Some(span));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::SpanOutOfBounds {
+            end: 12,
+            length: 11
+        }
+    );
+}
