@@ -45,3 +45,30 @@ fn glyph_span_must_be_inside_the_font_before_header_reads() {
         }
     );
 }
+
+#[test]
+fn each_inverted_bounding_axis_is_rejected_at_the_bounds_fields() {
+    let cases = [
+        ([0, 0, 0, 9, 0, 0, 0, 8, 0, 0], (9, 0, 8, 0)),
+        ([0, 0, 0, 0, 0, 9, 0, 0, 0, 8], (0, 9, 0, 8)),
+    ];
+
+    for (header, (minimum_x, minimum_y, maximum_x, maximum_y)) in cases {
+        let mut bytes = vec![0xaa, 0xbb];
+        bytes.extend_from_slice(&header);
+        let glyph_span = ByteSpan::sized(2, 10).unwrap();
+        let diagnostic = GlyphHeader::decode(&bytes, glyph_span)
+            .expect_err("a lower-left bound cannot exceed its upper-right bound");
+
+        assert_eq!(diagnostic.span(), ByteSpan::sized(4, 8));
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::Outline(OutlineCause::InvalidGlyphBounds {
+                minimum_x,
+                minimum_y,
+                maximum_x,
+                maximum_y,
+            })
+        );
+    }
+}
