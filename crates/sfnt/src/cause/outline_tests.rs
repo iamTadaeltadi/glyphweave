@@ -1,4 +1,10 @@
-use super::{Cause, OutlineCause};
+use super::{Cause, CoordinateAxis, OutlineCause};
+
+#[test]
+fn coordinate_axes_use_stable_outline_names() {
+    assert_eq!(CoordinateAxis::Horizontal.to_string(), "x");
+    assert_eq!(CoordinateAxis::Vertical.to_string(), "y");
+}
 use crate::LocaFormat;
 
 #[test]
