@@ -122,6 +122,24 @@ pub enum OutlineCause {
         /// The first logical point receiving the physical flag.
         point_index: u32,
     },
+    /// Accumulating a simple-glyph coordinate delta leaves the signed design-unit domain.
+    SimpleCoordinateOverflow {
+        /// The coordinate stream being accumulated.
+        axis: CoordinateAxis,
+        /// The zero-based logical point index.
+        point_index: u32,
+        /// The preceding absolute coordinate.
+        previous: i16,
+        /// The signed delta that cannot be applied.
+        delta: i16,
+    },
+    /// Decoded control points disagree with the Glyph Header bounds.
+    SimpleGlyphBoundsMismatch {
+        /// The bounds recorded by the Glyph Header, ordered x-min, y-min, x-max, y-max.
+        recorded: [i16; 4],
+        /// The extrema calculated from decoded points, ordered x-min, y-min, x-max, y-max.
+        calculated: [i16; 4],
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -166,6 +184,14 @@ impl fmt::Display for OutlineCause {
                 f,
                 "loca sentinel {index} value {offset} does not equal glyf length {glyf_length}"
             ),
+            _ => self.fmt_glyph(f),
+        }
+    }
+}
+
+impl OutlineCause {
+    fn fmt_glyph(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::EmptyGlyphDescription => {
                 f.write_str("simple glyph decoder received an empty glyph description")
             }
@@ -206,6 +232,29 @@ impl fmt::Display for OutlineCause {
                 f,
                 "simple overlap flag appears after the first physical flag at point {point_index}"
             ),
+            Self::SimpleCoordinateOverflow {
+                axis,
+                point_index,
+                previous,
+                delta,
+            } => write!(
+                f,
+                "simple point {point_index} {axis} coordinate {previous} plus delta {delta} exceeds signed design units"
+            ),
+            Self::SimpleGlyphBoundsMismatch {
+                recorded: [minimum_x, minimum_y, maximum_x, maximum_y],
+                calculated:
+                    [
+                        actual_minimum_x,
+                        actual_minimum_y,
+                        actual_maximum_x,
+                        actual_maximum_y,
+                    ],
+            } => write!(
+                f,
+                "simple glyph bounds ({minimum_x}, {minimum_y})..({maximum_x}, {maximum_y}) do not match points ({actual_minimum_x}, {actual_minimum_y})..({actual_maximum_x}, {actual_maximum_y})"
+            ),
+            _ => Err(fmt::Error),
         }
     }
 }
