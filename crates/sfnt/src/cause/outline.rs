@@ -140,6 +140,16 @@ pub enum OutlineCause {
         /// The extrema calculated from decoded points, ordered x-min, y-min, x-max, y-max.
         calculated: [i16; 4],
     },
+    /// More than one byte remains after a complete simple glyph description.
+    UnexpectedSimpleGlyphData {
+        /// The number of unconsumed bytes inside the Glyph Byte Span.
+        length: usize,
+    },
+    /// The optional one-byte simple glyph alignment pad is nonzero.
+    InvalidSimpleGlyphPadding {
+        /// The nonzero padding byte.
+        value: u8,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -254,6 +264,12 @@ impl OutlineCause {
                 f,
                 "simple glyph bounds ({minimum_x}, {minimum_y})..({maximum_x}, {maximum_y}) do not match points ({actual_minimum_x}, {actual_minimum_y})..({actual_maximum_x}, {actual_maximum_y})"
             ),
+            Self::UnexpectedSimpleGlyphData { length } => {
+                write!(f, "simple glyph has {length} unexpected trailing byte(s)")
+            }
+            Self::InvalidSimpleGlyphPadding { value } => {
+                write!(f, "simple glyph alignment byte is {value:#04x}, not zero")
+            }
             _ => Err(fmt::Error),
         }
     }
