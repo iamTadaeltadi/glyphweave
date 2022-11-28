@@ -202,3 +202,23 @@ fn glyph_bounds_mismatch_failure_names_recorded_and_calculated_rectangles() {
         "simple glyph bounds (-4, -3)..(8, 9) do not match points (-2, -1)..(6, 7)"
     );
 }
+
+#[test]
+fn trailing_data_failure_reports_the_unconsumed_length() {
+    let cause = Cause::Outline(OutlineCause::UnexpectedSimpleGlyphData { length: 3 });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple glyph has 3 unexpected trailing byte(s)"
+    );
+}
+
+#[test]
+fn padding_failure_renders_the_nonzero_byte() {
+    let cause = Cause::Outline(OutlineCause::InvalidSimpleGlyphPadding { value: 0xa5 });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple glyph alignment byte is 0xa5, not zero"
+    );
+}
