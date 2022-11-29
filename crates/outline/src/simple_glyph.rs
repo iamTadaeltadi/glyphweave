@@ -1,6 +1,8 @@
 //! Canonical simple TrueType outlines.
 
-use glyphweave_sfnt::ByteSpan;
+mod decode;
+
+use glyphweave_sfnt::{ByteSpan, Decoded};
 
 use crate::{GlyphBounds, Point};
 
@@ -16,6 +18,16 @@ pub struct SimpleGlyph {
 }
 
 impl SimpleGlyph {
+    /// Decodes one non-empty simple Glyph Byte Span from `glyf`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware Diagnostic when the header describes a composite glyph or any contour,
+    /// instruction, packed flag, coordinate, bounds, or alignment invariant is malformed.
+    pub fn decode(bytes: &[u8], glyph_span: ByteSpan) -> Decoded<Self> {
+        decode::decode(bytes, glyph_span)
+    }
+
     /// Returns the complete checked Glyph Byte Span in `glyf`.
     #[must_use]
     pub const fn span(&self) -> ByteSpan {
