@@ -43,3 +43,22 @@ fn expands_contours_flags_deltas_and_instructions_at_an_absolute_span() {
     assert_eq!(glyph.instructions(), [0xb0, 0x00]);
     assert!(!glyph.has_overlapping_contours());
 }
+
+#[test]
+fn expands_a_repeated_first_flag_and_preserves_overlap_identity() {
+    let mut bytes = Vec::new();
+    for value in [1i16, 0, 0, 0, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&2u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x79, 2]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.contour_ends(), [3]);
+    assert_eq!(glyph.points(), [Point::new(0, 0, true); 3]);
+    assert!(glyph.instructions().is_empty());
+    assert!(glyph.has_overlapping_contours());
+}
