@@ -66,3 +66,24 @@ fn instruction_program_cannot_cross_the_glyph_span() {
         }
     );
 }
+
+#[test]
+fn flag_repeat_cannot_expand_past_the_point_count() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x39, 2]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("three logical flags cannot describe two points");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(15, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::SimpleFlagRepeatOutOfBounds {
+            point_index: 0,
+            additional_repetitions: 2,
+            point_count: 2,
+        })
+    );
+}
