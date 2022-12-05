@@ -1,7 +1,7 @@
 //! Malformed-stream coverage for simple TrueType glyphs.
 
 use glyphweave_outline::SimpleGlyph;
-use glyphweave_sfnt::{ByteSpan, Cause, OutlineCause};
+use glyphweave_sfnt::{ByteSpan, Cause, CoordinateAxis, OutlineCause};
 
 fn header(number_of_contours: i16, bounds: [i16; 4]) -> Vec<u8> {
     let mut bytes = number_of_contours.to_be_bytes().to_vec();
@@ -122,5 +122,29 @@ fn overlap_marker_is_valid_only_on_the_first_physical_flag() {
     assert_eq!(
         diagnostic.cause(),
         Cause::Outline(OutlineCause::MisplacedSimpleOverlapFlag { point_index: 1 })
+    );
+}
+
+#[test]
+fn accumulated_coordinates_must_remain_signed_design_units() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x21, 0x21]);
+    bytes.extend_from_slice(&i16::MAX.to_be_bytes());
+    bytes.extend_from_slice(&1i16.to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("the second x delta exceeds the absolute coordinate domain");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(18, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::SimpleCoordinateOverflow {
+            axis: CoordinateAxis::Horizontal,
+            point_index: 1,
+            previous: i16::MAX,
+            delta: 1,
+        })
     );
 }
