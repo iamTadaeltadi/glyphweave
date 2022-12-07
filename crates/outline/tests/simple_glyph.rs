@@ -83,3 +83,26 @@ fn decodes_zero_contours_with_optional_phantom_point_instructions() {
     assert!(decoded.points().is_empty());
     assert_eq!(decoded.instructions(), [0xb0, 0x01]);
 }
+
+#[test]
+fn decodes_full_width_signed_coordinate_extremes() {
+    let mut bytes = Vec::new();
+    for value in [1, i16::MIN, i16::MAX, i16::MIN, i16::MAX] {
+        bytes.extend_from_slice(&i16::to_be_bytes(value));
+    }
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.push(0x01);
+    bytes.extend_from_slice(&i16::MIN.to_be_bytes());
+    bytes.extend_from_slice(&i16::MAX.to_be_bytes());
+    bytes.push(0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.points(), [Point::new(i16::MIN, i16::MAX, true)]);
+    assert_eq!(
+        glyph.bounds(),
+        GlyphBounds::new(i16::MIN, i16::MAX, i16::MIN, i16::MAX).unwrap()
+    );
+}
