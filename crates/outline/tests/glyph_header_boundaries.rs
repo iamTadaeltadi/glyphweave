@@ -16,6 +16,19 @@ fn an_empty_loca_span_is_not_a_glyph_description() {
 }
 
 #[test]
+fn empty_glyph_span_still_must_be_inside_the_font() {
+    let span = ByteSpan::empty_at(1);
+    let diagnostic = GlyphHeader::decode(&[], span)
+        .expect_err("an empty span after the font is not a checked loca result");
+
+    assert_eq!(diagnostic.span(), Some(span));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::SpanOutOfBounds { end: 1, length: 0 }
+    );
+}
+
+#[test]
 fn every_nonempty_strict_header_prefix_is_rejected() {
     let complete = [0; 10];
 
