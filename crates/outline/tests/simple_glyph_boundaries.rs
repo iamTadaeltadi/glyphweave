@@ -206,3 +206,17 @@ fn optional_alignment_byte_must_be_zero() {
         Cause::Outline(OutlineCause::InvalidSimpleGlyphPadding { value: 0xa5 })
     );
 }
+
+#[test]
+fn every_strict_prefix_of_a_complete_simple_glyph_is_rejected() {
+    let mut complete = header(1, [0; 4]);
+    complete.extend_from_slice(&2u16.to_be_bytes());
+    complete.extend_from_slice(&0u16.to_be_bytes());
+    complete.extend_from_slice(&[0x39, 2]);
+
+    for length in 0..complete.len() {
+        let span = ByteSpan::sized(0, length).unwrap();
+        SimpleGlyph::decode(&complete, span)
+            .expect_err("no strict prefix may consume bytes from the following glyph");
+    }
+}
