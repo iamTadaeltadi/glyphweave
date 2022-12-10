@@ -20,6 +20,17 @@ pub struct SimpleGlyph {
 impl SimpleGlyph {
     /// Decodes one non-empty simple Glyph Byte Span from `glyf`.
     ///
+    /// ```
+    /// use glyphweave_outline::SimpleGlyph;
+    /// use glyphweave_sfnt::ByteSpan;
+    ///
+    /// let bytes = [0; 10];
+    /// let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    /// let glyph = SimpleGlyph::decode(&bytes, span)?;
+    /// assert_eq!(glyph.contour_count(), 0);
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Returns a span-aware Diagnostic when the header describes a composite glyph or any contour,
