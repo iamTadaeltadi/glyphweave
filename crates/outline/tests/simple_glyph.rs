@@ -127,3 +127,18 @@ fn expands_the_maximal_point_count_without_narrowing() {
     assert_eq!(glyph.points().first(), Some(&Point::new(0, 0, true)));
     assert_eq!(glyph.points().last(), Some(&Point::new(0, 0, true)));
 }
+
+#[test]
+fn preserves_the_maximal_instruction_program() {
+    let mut bytes = vec![0; 10];
+    bytes.extend_from_slice(&u16::MAX.to_be_bytes());
+    bytes.extend(core::iter::repeat_n(0xa5, usize::from(u16::MAX)));
+    bytes.push(0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.instructions().len(), usize::from(u16::MAX));
+    assert!(glyph.instructions().iter().all(|byte| *byte == 0xa5));
+    assert!(glyph.points().is_empty());
+}
