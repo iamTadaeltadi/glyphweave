@@ -69,6 +69,12 @@ impl SimpleGlyph {
         &self.points
     }
 
+    /// Returns the total number of logical control points across all contours.
+    #[must_use]
+    pub fn point_count(&self) -> usize {
+        self.points.len()
+    }
+
     /// Returns one contour's points when `index` is in range.
     #[must_use]
     pub fn contour(&self, index: usize) -> Option<&[Point]> {
