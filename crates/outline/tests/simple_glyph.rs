@@ -183,3 +183,23 @@ fn accepts_a_zero_additional_repeat_count() {
     assert_eq!(glyph.points(), [Point::new(0, 0, true); 2]);
     assert_eq!(glyph.contour_ends(), [2]);
 }
+
+#[test]
+fn includes_off_curve_points_in_verified_bounds() {
+    let mut bytes = Vec::new();
+    for value in [1i16, -7, 9, -7, 9] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.push(0);
+    bytes.extend_from_slice(&(-7i16).to_be_bytes());
+    bytes.extend_from_slice(&9i16.to_be_bytes());
+    bytes.push(0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.points(), [Point::new(-7, 9, false)]);
+    assert_eq!(glyph.bounds(), GlyphBounds::new(-7, 9, -7, 9).unwrap());
+}
