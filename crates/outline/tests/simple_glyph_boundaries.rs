@@ -240,3 +240,23 @@ fn short_x_vector_must_fit_inside_the_glyph_span() {
         }
     );
 }
+
+#[test]
+fn short_y_vector_must_fit_inside_the_glyph_span() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.push(0x35);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic =
+        SimpleGlyph::decode(&bytes, span).expect_err("the short y magnitude is absent");
+
+    assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(15)));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 1,
+            available: 0
+        }
+    );
+}
