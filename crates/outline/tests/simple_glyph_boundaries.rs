@@ -260,3 +260,23 @@ fn short_y_vector_must_fit_inside_the_glyph_span() {
         }
     );
 }
+
+#[test]
+fn long_x_vector_must_be_complete_inside_the_glyph_span() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x21, 0xaa]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic =
+        SimpleGlyph::decode(&bytes, span).expect_err("the signed x delta needs two bytes");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(15, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1
+        }
+    );
+}
