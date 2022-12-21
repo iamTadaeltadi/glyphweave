@@ -324,3 +324,27 @@ fn accumulated_y_coordinates_must_remain_signed_design_units() {
         })
     );
 }
+
+#[test]
+fn negative_coordinate_accumulation_cannot_underflow() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x21, 0x21]);
+    bytes.extend_from_slice(&i16::MIN.to_be_bytes());
+    bytes.extend_from_slice(&(-1i16).to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("the second negative x delta underflows signed design units");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(18, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::SimpleCoordinateOverflow {
+            axis: CoordinateAxis::Horizontal,
+            point_index: 1,
+            previous: i16::MIN,
+            delta: -1,
+        })
+    );
+}
