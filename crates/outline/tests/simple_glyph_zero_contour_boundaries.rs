@@ -20,3 +20,16 @@ fn a_byte_after_zero_contour_header_starts_an_instruction_length() {
         }
     );
 }
+
+#[test]
+fn explicit_zero_instruction_length_is_a_complete_zero_contour_glyph() {
+    let mut bytes = vec![0; 10];
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.span(), span);
+    assert_eq!(glyph.contour_count(), 0);
+    assert!(glyph.instructions().is_empty());
+}
