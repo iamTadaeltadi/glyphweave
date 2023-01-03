@@ -38,4 +38,20 @@ impl ComponentTransform {
     pub const fn identity() -> Self {
         Self::Identity
     }
+
+    /// Expands every compact form into x-scale, scale-01, scale-10, and y-scale coefficients.
+    #[must_use]
+    pub const fn coefficients(self) -> [F2Dot14; 4] {
+        match self {
+            Self::Identity => [F2Dot14::ONE, F2Dot14::ZERO, F2Dot14::ZERO, F2Dot14::ONE],
+            Self::Uniform { scale } => [scale, F2Dot14::ZERO, F2Dot14::ZERO, scale],
+            Self::Axis { x_scale, y_scale } => [x_scale, F2Dot14::ZERO, F2Dot14::ZERO, y_scale],
+            Self::Matrix {
+                x_scale,
+                scale_01,
+                scale_10,
+                y_scale,
+            } => [x_scale, scale_01, scale_10, y_scale],
+        }
+    }
 }
