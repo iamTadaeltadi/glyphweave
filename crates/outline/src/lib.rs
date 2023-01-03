@@ -5,6 +5,7 @@
 
 #![forbid(unsafe_code)]
 
+mod component_transform;
 mod f2_dot_14;
 mod glyph_bounds;
 mod glyph_header;
@@ -14,6 +15,7 @@ mod point;
 mod remap;
 mod simple_glyph;
 
+pub use component_transform::ComponentTransform;
 pub use f2_dot_14::F2Dot14;
 pub use glyph_bounds::GlyphBounds;
 pub use glyph_header::GlyphHeader;
