@@ -5,6 +5,7 @@
 
 #![forbid(unsafe_code)]
 
+mod component;
 mod component_placement;
 mod component_transform;
 mod f2_dot_14;
@@ -16,6 +17,7 @@ mod point;
 mod remap;
 mod simple_glyph;
 
+pub use component::Component;
 pub use component_placement::{ComponentOffsetMode, ComponentPlacement};
 pub use component_transform::ComponentTransform;
 pub use f2_dot_14::F2Dot14;
