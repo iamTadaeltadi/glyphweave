@@ -29,4 +29,10 @@ impl Component {
             use_my_metrics,
         }
     }
+
+    /// Returns the child Glyph ID referenced by this component.
+    #[must_use]
+    pub const fn glyph_id(self) -> GlyphId {
+        self.glyph_id
+    }
 }
