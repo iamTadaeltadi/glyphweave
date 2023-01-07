@@ -35,4 +35,16 @@ impl Component {
     pub const fn glyph_id(self) -> GlyphId {
         self.glyph_id
     }
+
+    /// Returns how the child outline is positioned in its parent.
+    #[must_use]
+    pub const fn placement(self) -> ComponentPlacement {
+        self.placement
+    }
+
+    /// Returns the exact child coordinate transform.
+    #[must_use]
+    pub const fn transform(self) -> ComponentTransform {
+        self.transform
+    }
 }
