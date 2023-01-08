@@ -47,4 +47,10 @@ impl Component {
     pub const fn transform(self) -> ComponentTransform {
         self.transform
     }
+
+    /// Returns whether the parent should inherit this child's horizontal metrics.
+    #[must_use]
+    pub const fn uses_child_metrics(self) -> bool {
+        self.use_my_metrics
+    }
 }
