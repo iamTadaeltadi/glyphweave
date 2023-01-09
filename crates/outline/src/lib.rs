@@ -8,6 +8,7 @@
 mod component;
 mod component_placement;
 mod component_transform;
+mod composite_glyph;
 mod f2_dot_14;
 mod glyph_bounds;
 mod glyph_header;
@@ -20,6 +21,7 @@ mod simple_glyph;
 pub use component::Component;
 pub use component_placement::{ComponentOffsetMode, ComponentPlacement};
 pub use component_transform::ComponentTransform;
+pub use composite_glyph::CompositeGlyph;
 pub use f2_dot_14::F2Dot14;
 pub use glyph_bounds::GlyphBounds;
 pub use glyph_header::GlyphHeader;
