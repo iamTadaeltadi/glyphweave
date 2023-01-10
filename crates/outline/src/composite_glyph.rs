@@ -13,3 +13,17 @@ pub struct CompositeGlyph {
     pub(crate) instructions: Vec<u8>,
     pub(crate) overlapping_components: bool,
 }
+
+impl CompositeGlyph {
+    /// Returns the complete checked Glyph Byte Span in `glyf`.
+    #[must_use]
+    pub const fn span(&self) -> ByteSpan {
+        self.span
+    }
+
+    /// Returns the recorded bounds of the accumulated child outline.
+    #[must_use]
+    pub const fn bounds(&self) -> GlyphBounds {
+        self.bounds
+    }
+}
