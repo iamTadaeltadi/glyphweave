@@ -51,3 +51,6 @@ impl CompositeGlyph {
         self.overlapping_components
     }
 }
+
+#[cfg(test)]
+mod tests;
