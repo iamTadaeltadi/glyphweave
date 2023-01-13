@@ -110,6 +110,18 @@ fn composite_glyph_failure_preserves_the_signed_contour_count() {
 }
 
 #[test]
+fn simple_composite_failure_preserves_the_contour_count() {
+    let cause = Cause::Outline(OutlineCause::SimpleGlyphForCompositeDecoder {
+        number_of_contours: 17,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite glyph decoder received simple contour count 17"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
