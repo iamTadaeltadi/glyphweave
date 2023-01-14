@@ -122,6 +122,19 @@ fn simple_composite_failure_preserves_the_contour_count() {
 }
 
 #[test]
+fn reserved_component_failure_renders_the_complete_word() {
+    let cause = Cause::Outline(OutlineCause::ReservedCompositeGlyphFlags {
+        component_index: 3,
+        flags: 0xe010,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite component 3 sets reserved flags in 0xe010"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
