@@ -93,6 +93,13 @@ pub enum OutlineCause {
         /// The complete offending flag word.
         flags: u16,
     },
+    /// A component selects more than one mutually exclusive transform encoding.
+    ConflictingCompositeTransforms {
+        /// The zero-based component index.
+        component_index: u32,
+        /// The complete conflicting flag word.
+        flags: u16,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -231,6 +238,13 @@ impl OutlineCause {
             } => write!(
                 f,
                 "composite component {component_index} sets reserved flags in {flags:#06x}"
+            ),
+            Self::ConflictingCompositeTransforms {
+                component_index,
+                flags,
+            } => write!(
+                f,
+                "composite component {component_index} selects conflicting transforms in {flags:#06x}"
             ),
             Self::InvalidGlyphBounds {
                 minimum_x,
