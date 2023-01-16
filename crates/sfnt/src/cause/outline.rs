@@ -100,6 +100,13 @@ pub enum OutlineCause {
         /// The complete conflicting flag word.
         flags: u16,
     },
+    /// A component selects both scaled and unscaled offset interpretation.
+    ConflictingComponentOffsetModes {
+        /// The zero-based component index.
+        component_index: u32,
+        /// The complete conflicting flag word.
+        flags: u16,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -245,6 +252,13 @@ impl OutlineCause {
             } => write!(
                 f,
                 "composite component {component_index} selects conflicting transforms in {flags:#06x}"
+            ),
+            Self::ConflictingComponentOffsetModes {
+                component_index,
+                flags,
+            } => write!(
+                f,
+                "composite component {component_index} selects conflicting offset modes in {flags:#06x}"
             ),
             Self::InvalidGlyphBounds {
                 minimum_x,
