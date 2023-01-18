@@ -109,6 +109,11 @@ pub enum OutlineCause {
     },
     /// The first component requests point alignment before parent points exist.
     FirstCompositeComponentUsesPoints,
+    /// `OVERLAP_COMPOUND` appears on a component after the first.
+    MisplacedCompositeOverlapFlag {
+        /// The zero-based component index.
+        component_index: u32,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -264,6 +269,10 @@ impl OutlineCause {
             ),
             Self::FirstCompositeComponentUsesPoints => f.write_str(
                 "first composite component uses point alignment before parent points exist",
+            ),
+            Self::MisplacedCompositeOverlapFlag { component_index } => write!(
+                f,
+                "composite overlap flag appears on component {component_index}, not the first"
             ),
             Self::InvalidGlyphBounds {
                 minimum_x,
