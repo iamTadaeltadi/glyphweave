@@ -171,6 +171,16 @@ fn unanchored_component_failure_explains_the_missing_parent_points() {
 }
 
 #[test]
+fn composite_overlap_failure_names_the_late_component() {
+    let cause = Cause::Outline(OutlineCause::MisplacedCompositeOverlapFlag { component_index: 4 });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite overlap flag appears on component 4, not the first"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
