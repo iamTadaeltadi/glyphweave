@@ -181,6 +181,16 @@ fn composite_overlap_failure_names_the_late_component() {
 }
 
 #[test]
+fn trailing_composite_failure_reports_unconsumed_length() {
+    let cause = Cause::Outline(OutlineCause::UnexpectedCompositeGlyphData { length: 7 });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite glyph has 7 unexpected trailing byte(s)"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
