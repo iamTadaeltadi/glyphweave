@@ -291,7 +291,10 @@ impl OutlineCause {
                 )
             }
             Self::InvalidCompositeGlyphPadding { value } => {
-                write!(f, "composite glyph alignment byte is {value:#04x}, not zero")
+                write!(
+                    f,
+                    "composite glyph alignment byte is {value:#04x}, not zero"
+                )
             }
             Self::InvalidGlyphBounds {
                 minimum_x,
