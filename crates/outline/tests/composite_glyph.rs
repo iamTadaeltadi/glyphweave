@@ -9,6 +9,14 @@ fn header() -> [u8; 10] {
     [0xff, 0xff, 0xff, 0xec, 0xff, 0xe2, 0x00, 0x64, 0x00, 0x78]
 }
 
+fn decode_byte_offset(flags: u16) -> CompositeGlyph {
+    let mut bytes = header().to_vec();
+    bytes.extend(flags.to_be_bytes());
+    bytes.extend([0x00, 0x2a, 0x03, 0xfd]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    CompositeGlyph::decode(&bytes, span).unwrap()
+}
+
 #[test]
 fn decodes_an_identity_component_at_an_absolute_span() {
     let mut bytes = vec![0xaa, 0xbb, 0xcc];
@@ -57,6 +65,21 @@ fn preserves_full_width_signed_component_offsets() {
             x: i16::MIN,
             y: i16::MAX,
             round_to_grid: false,
+            mode: ComponentOffsetMode::Default,
+        }
+    );
+}
+
+#[test]
+fn preserves_grid_rounding_for_offset_components() {
+    let glyph = decode_byte_offset(0x0006);
+
+    assert_eq!(
+        glyph.components()[0].placement(),
+        ComponentPlacement::Offset {
+            x: 3,
+            y: -3,
+            round_to_grid: true,
             mode: ComponentOffsetMode::Default,
         }
     );
