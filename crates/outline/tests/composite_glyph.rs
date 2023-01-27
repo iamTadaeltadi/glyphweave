@@ -99,3 +99,18 @@ fn preserves_scaled_component_offsets() {
         }
     );
 }
+
+#[test]
+fn preserves_unscaled_component_offsets() {
+    let glyph = decode_byte_offset(0x1002);
+
+    assert_eq!(
+        glyph.components()[0].placement(),
+        ComponentPlacement::Offset {
+            x: 3,
+            y: -3,
+            round_to_grid: false,
+            mode: ComponentOffsetMode::Unscaled,
+        }
+    );
+}
