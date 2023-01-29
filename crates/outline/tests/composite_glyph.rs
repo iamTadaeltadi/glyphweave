@@ -1,7 +1,8 @@
 //! Semantic decoding of valid composite-glyph records.
 
 use glyphweave_outline::{
-    ComponentOffsetMode, ComponentPlacement, ComponentTransform, CompositeGlyph, GlyphBounds,
+    ComponentOffsetMode, ComponentPlacement, ComponentTransform, CompositeGlyph, F2Dot14,
+    GlyphBounds,
 };
 use glyphweave_sfnt::ByteSpan;
 
@@ -127,4 +128,20 @@ fn preserves_first_component_overlap_identity() {
     let glyph = decode_byte_offset(0x0402);
 
     assert!(glyph.has_overlapping_components());
+}
+
+#[test]
+fn decodes_uniform_component_scales() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x0a, 0x00, 0x07, 0x00, 0x00, 0x20, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.components()[0].transform(),
+        ComponentTransform::Uniform {
+            scale: F2Dot14::from_bits(0x2000),
+        }
+    );
 }
