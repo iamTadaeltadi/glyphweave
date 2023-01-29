@@ -145,3 +145,22 @@ fn decodes_uniform_component_scales() {
         }
     );
 }
+
+#[test]
+fn decodes_independent_axis_scales() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x42, 0x00, 0x08, 0x00, 0x00]);
+    bytes.extend(0x2000_i16.to_be_bytes());
+    bytes.extend((-0x1000_i16).to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.components()[0].transform(),
+        ComponentTransform::Axis {
+            x_scale: F2Dot14::from_bits(0x2000),
+            y_scale: F2Dot14::from_bits(-0x1000),
+        }
+    );
+}
