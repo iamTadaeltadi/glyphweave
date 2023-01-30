@@ -164,3 +164,25 @@ fn decodes_independent_axis_scales() {
         }
     );
 }
+
+#[test]
+fn decodes_complete_component_matrices() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x82, 0x00, 0x09, 0x00, 0x00]);
+    for value in [0x4000_i16, 0x1000, -0x1000, 0x2000] {
+        bytes.extend(value.to_be_bytes());
+    }
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.components()[0].transform(),
+        ComponentTransform::Matrix {
+            x_scale: F2Dot14::ONE,
+            scale_01: F2Dot14::from_bits(0x1000),
+            scale_10: F2Dot14::from_bits(-0x1000),
+            y_scale: F2Dot14::from_bits(0x2000),
+        }
+    );
+}
