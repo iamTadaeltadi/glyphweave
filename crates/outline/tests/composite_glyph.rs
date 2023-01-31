@@ -207,3 +207,23 @@ fn decodes_ordered_point_aligned_components() {
         }
     );
 }
+
+#[test]
+fn preserves_full_width_point_references() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x22, 0x00, 0x0a, 0x00, 0x00]);
+    bytes.extend([0x00, 0x01, 0x00, 0x0b]);
+    bytes.extend(u16::MAX.to_be_bytes());
+    bytes.extend(0x1234_u16.to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.components()[1].placement(),
+        ComponentPlacement::MatchPoints {
+            parent: u16::MAX,
+            child: 0x1234,
+        }
+    );
+}
