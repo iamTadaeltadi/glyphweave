@@ -288,3 +288,14 @@ fn honors_instruction_flags_on_earlier_components() {
 
     assert_eq!(glyph.instructions(), [0x2a]);
 }
+
+#[test]
+fn accepts_explicit_empty_composite_instructions() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x01, 0x02, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert!(glyph.instructions().is_empty());
+}
