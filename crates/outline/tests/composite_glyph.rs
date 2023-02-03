@@ -275,3 +275,16 @@ fn preserves_parent_composite_instructions() {
 
     assert_eq!(glyph.instructions(), [0xaa, 0xbb, 0xcc]);
 }
+
+#[test]
+fn honors_instruction_flags_on_earlier_components() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x01, 0x22, 0x00, 0x0c, 0x00, 0x00]);
+    bytes.extend([0x00, 0x02, 0x00, 0x0d, 0x00, 0x00]);
+    bytes.extend([0x00, 0x01, 0x2a]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.instructions(), [0x2a]);
+}
