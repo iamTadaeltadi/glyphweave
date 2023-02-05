@@ -313,3 +313,18 @@ fn owns_composite_instructions_independently_of_input() {
 
     assert_eq!(glyph.instructions(), [0xaa, 0xbb]);
 }
+
+#[test]
+fn preserves_the_maximal_composite_instruction_program() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x01, 0x02, 0x00, 0x10, 0x00, 0x00]);
+    bytes.extend(u16::MAX.to_be_bytes());
+    bytes.extend(core::iter::repeat_n(0x2a, usize::from(u16::MAX)));
+    bytes.push(0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.instructions().len(), usize::from(u16::MAX));
+    assert!(glyph.instructions().iter().all(|&byte| byte == 0x2a));
+}
