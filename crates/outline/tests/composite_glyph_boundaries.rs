@@ -64,3 +64,22 @@ fn component_transform_encodings_are_mutually_exclusive() {
         );
     }
 }
+
+#[test]
+fn scaled_and_unscaled_offset_modes_conflict() {
+    let flags = 0x1802_u16;
+    let mut bytes = header(-1);
+    bytes.extend(flags.to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("a component offset cannot be both scaled and unscaled");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(10, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::ConflictingComponentOffsetModes {
+            component_index: 0,
+            flags,
+        })
+    );
+}
