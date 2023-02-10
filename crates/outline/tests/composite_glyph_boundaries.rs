@@ -98,3 +98,19 @@ fn first_component_must_use_an_offset() {
         Cause::Outline(OutlineCause::FirstCompositeComponentUsesPoints)
     );
 }
+
+#[test]
+fn overlap_marker_is_valid_only_on_the_first_component() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x22, 0x00, 0x01, 0x00, 0x00]);
+    bytes.extend([0x04, 0x02]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("a late overlap marker has ambiguous glyph-wide meaning");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::MisplacedCompositeOverlapFlag { component_index: 1 })
+    );
+}
