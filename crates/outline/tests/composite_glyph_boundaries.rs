@@ -202,3 +202,22 @@ fn composite_instruction_length_must_be_complete() {
         }
     );
 }
+
+#[test]
+fn composite_instruction_program_cannot_cross_the_span() {
+    let mut bytes = header(-1);
+    bytes.extend([0x01, 0x02, 0x00, 0x01, 0x00, 0x00]);
+    bytes.extend([0x00, 0x02, 0xaa]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("a two-byte instruction program cannot contain one byte");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(18, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
