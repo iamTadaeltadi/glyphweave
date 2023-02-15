@@ -254,3 +254,18 @@ fn optional_composite_alignment_byte_must_be_zero() {
         Cause::Outline(OutlineCause::InvalidCompositeGlyphPadding { value: 0x7f })
     );
 }
+
+#[test]
+fn at_most_one_composite_alignment_byte_is_permitted() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("two bytes after the final component are not alignment");
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(16, 18));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::UnexpectedCompositeGlyphData { length: 2 })
+    );
+}
