@@ -27,3 +27,16 @@ fn decodes_the_maximal_unsigned_component_count() {
         u16::MAX - 1
     );
 }
+
+#[test]
+fn preserves_the_maximal_referenced_glyph_id() {
+    let mut bytes = vec![0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0];
+    bytes.extend([0x00, 0x02]);
+    bytes.extend(u16::MAX.to_be_bytes());
+    bytes.extend([0, 0]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.components()[0].glyph_id().raw(), u16::MAX);
+}
