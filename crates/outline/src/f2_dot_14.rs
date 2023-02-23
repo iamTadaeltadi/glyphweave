@@ -1,6 +1,14 @@
 //! Exact signed 2.14 fixed-point values used by component transforms.
 
 /// A signed two-integer-bit, fourteen-fractional-bit transform coefficient.
+///
+/// ```
+/// use glyphweave_outline::F2Dot14;
+///
+/// let half = F2Dot14::from_bits(0x2000);
+/// assert_eq!(half.to_bits(), 0x2000);
+/// assert_eq!(half.to_f64(), 0.5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct F2Dot14(i16);
 
