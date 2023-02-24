@@ -3,6 +3,16 @@
 use crate::F2Dot14;
 
 /// A component's exact two-dimensional linear transform.
+///
+/// ```
+/// use glyphweave_outline::{ComponentTransform, F2Dot14};
+///
+/// let transform = ComponentTransform::Axis {
+///     x_scale: F2Dot14::ONE,
+///     y_scale: F2Dot14::from_bits(0x2000),
+/// };
+/// assert_eq!(transform.coefficients()[3].to_f64(), 0.5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum ComponentTransform {
     /// Leaves component coordinates unchanged.
