@@ -5,6 +5,26 @@ use glyphweave_sfnt::GlyphId;
 use crate::{ComponentPlacement, ComponentTransform};
 
 /// A referenced child glyph with placement and transform semantics.
+///
+/// ```
+/// use glyphweave_outline::{
+///     Component, ComponentOffsetMode, ComponentPlacement, ComponentTransform,
+/// };
+/// use glyphweave_sfnt::GlyphId;
+///
+/// let component = Component::new(
+///     GlyphId::new(7),
+///     ComponentPlacement::Offset {
+///         x: 2,
+///         y: 3,
+///         round_to_grid: false,
+///         mode: ComponentOffsetMode::Default,
+///     },
+///     ComponentTransform::identity(),
+///     false,
+/// );
+/// assert_eq!(component.glyph_id(), GlyphId::new(7));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Component {
     glyph_id: GlyphId,
