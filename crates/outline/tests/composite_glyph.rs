@@ -6,7 +6,7 @@ use glyphweave_outline::{
 };
 use glyphweave_sfnt::ByteSpan;
 
-fn header() -> [u8; 10] {
+const fn header() -> [u8; 10] {
     [0xff, 0xff, 0xff, 0xec, 0xff, 0xe2, 0x00, 0x64, 0x00, 0x78]
 }
 
