@@ -17,3 +17,15 @@ pub enum Outline {
     /// An ordered sequence of referenced child outlines.
     Composite(CompositeGlyph),
 }
+
+impl Outline {
+    /// Returns the checked Glyph Byte Span represented by this outline.
+    #[must_use]
+    pub const fn span(&self) -> ByteSpan {
+        match self {
+            Self::Empty { span } => *span,
+            Self::Simple(glyph) => glyph.span(),
+            Self::Composite(glyph) => glyph.span(),
+        }
+    }
+}
