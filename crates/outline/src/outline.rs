@@ -19,6 +19,15 @@ pub enum Outline {
 }
 
 impl Outline {
+    /// Borrows the decoded simple glyph when this outline is direct.
+    #[must_use]
+    pub const fn as_simple(&self) -> Option<&SimpleGlyph> {
+        match self {
+            Self::Simple(glyph) => Some(glyph),
+            Self::Empty { .. } | Self::Composite(_) => None,
+        }
+    }
+
     /// Returns whether this Glyph ID has no encoded outline data.
     #[must_use]
     pub const fn is_empty(&self) -> bool {
