@@ -63,3 +63,6 @@ impl Outline {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
