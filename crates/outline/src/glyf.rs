@@ -1,6 +1,6 @@
 //! Eagerly decoded TrueType outline collection.
 
-use glyphweave_sfnt::ByteSpan;
+use glyphweave_sfnt::{ByteSpan, GlyphId};
 
 use crate::Outline;
 
@@ -12,6 +12,12 @@ pub struct Glyf {
 }
 
 impl Glyf {
+    /// Borrows the canonical outline for an in-range input Glyph ID.
+    #[must_use]
+    pub fn outline(&self, glyph: GlyphId) -> Option<&Outline> {
+        self.outlines.get(usize::from(glyph.raw()))
+    }
+
     /// Returns the number of input Glyph IDs represented by the collection.
     #[must_use]
     pub fn glyph_count(&self) -> usize {
