@@ -6,7 +6,7 @@ use crate::{
     GlyphBounds, SimpleGlyph,
 };
 
-fn bounds() -> GlyphBounds {
+const fn bounds() -> GlyphBounds {
     GlyphBounds::new(-2, -3, 5, 7).unwrap()
 }
 
