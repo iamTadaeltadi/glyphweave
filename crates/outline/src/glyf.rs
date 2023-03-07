@@ -12,6 +12,12 @@ pub struct Glyf {
 }
 
 impl Glyf {
+    /// Returns canonical outlines in ascending input Glyph ID order.
+    #[must_use]
+    pub fn outlines(&self) -> &[Outline] {
+        &self.outlines
+    }
+
     /// Borrows the canonical outline for an in-range input Glyph ID.
     #[must_use]
     pub fn outline(&self, glyph: GlyphId) -> Option<&Outline> {
