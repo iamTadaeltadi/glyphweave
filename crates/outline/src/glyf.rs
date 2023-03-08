@@ -1,8 +1,10 @@
 //! Eagerly decoded TrueType outline collection.
 
-use glyphweave_sfnt::{ByteSpan, GlyphId};
+mod decode;
 
-use crate::Outline;
+use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId};
+
+use crate::{Loca, Outline};
 
 /// Canonical outlines indexed by input Glyph ID.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -12,6 +14,19 @@ pub struct Glyf {
 }
 
 impl Glyf {
+    /// Decodes every Glyph Byte Span delimited by a validated `loca` table.
+    ///
+    /// Empty intervals remain explicit, while non-empty descriptions are classified and fully
+    /// decoded as simple or composite outlines.
+    ///
+    /// # Errors
+    ///
+    /// Returns the first span-aware Diagnostic produced by an out-of-bounds table or malformed
+    /// glyph description, in ascending input Glyph ID order.
+    pub fn decode(bytes: &[u8], loca: &Loca) -> Decoded<Self> {
+        decode::decode(bytes, loca)
+    }
+
     /// Returns canonical outlines in ascending input Glyph ID order.
     #[must_use]
     pub fn outlines(&self) -> &[Outline] {
