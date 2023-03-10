@@ -3,6 +3,22 @@
 use glyphweave_outline::{Glyf, Loca};
 use glyphweave_sfnt::{ByteSpan, GlyphId, LocaFormat};
 
+fn mixed_fixture() -> (Vec<u8>, Loca) {
+    let mut bytes = vec![0, 0, 0, 0, 0, 5, 0, 13];
+    bytes.extend([0; 10]);
+    bytes.extend([0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0]);
+    bytes.extend([0x00, 0x02, 0x00, 0x01, 0x00, 0x00]);
+    let loca = Loca::decode(
+        &bytes,
+        ByteSpan::sized(0, 8).unwrap(),
+        ByteSpan::sized(8, 26).unwrap(),
+        3,
+        LocaFormat::Short,
+    )
+    .unwrap();
+    (bytes, loca)
+}
+
 #[test]
 fn equal_loca_offsets_preserve_empty_outlines() {
     let bytes = [0; 12];
@@ -18,4 +34,22 @@ fn equal_loca_offsets_preserve_empty_outlines() {
     assert!(glyf.outline(GlyphId::NOTDEF).unwrap().is_empty());
     assert!(glyf.outline(GlyphId::new(1)).unwrap().is_empty());
     assert_eq!(glyf.outline(GlyphId::new(2)), None);
+}
+
+#[test]
+fn decodes_mixed_outlines_in_glyph_id_order() {
+    let (bytes, loca) = mixed_fixture();
+
+    let glyf = Glyf::decode(&bytes, &loca).unwrap();
+
+    assert!(glyf.outline(GlyphId::NOTDEF).unwrap().is_empty());
+    let simple = glyf.outline(GlyphId::new(1)).unwrap();
+    assert_eq!(simple.span(), ByteSpan::between(8, 18).unwrap());
+    assert_eq!(simple.as_simple().unwrap().contour_count(), 0);
+    let composite = glyf.outline(GlyphId::new(2)).unwrap();
+    assert_eq!(composite.span(), ByteSpan::between(18, 34).unwrap());
+    assert_eq!(
+        composite.as_composite().unwrap().components()[0].glyph_id(),
+        GlyphId::new(1)
+    );
 }
