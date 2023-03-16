@@ -1,8 +1,10 @@
 //! Cycle-safe transitive retention of composite components.
 
-use glyphweave_sfnt::GlyphId;
+mod compute;
 
-use crate::GlyphSet;
+use glyphweave_sfnt::{Decoded, GlyphId};
+
+use crate::{Glyf, GlyphSet};
 
 /// A closed Glyph Set and its deepest reachable composite-component path.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -12,6 +14,16 @@ pub struct GlyphClosure {
 }
 
 impl GlyphClosure {
+    /// Computes the reachable composite-component closure of an initial Glyph Set.
+    ///
+    /// # Errors
+    ///
+    /// Returns a Closure-stage Diagnostic when a retained root or reachable component is outside
+    /// `glyf`, or when a reachable component edge forms a cycle.
+    pub fn compute(initial: &GlyphSet, glyf: &Glyf) -> Decoded<Self> {
+        compute::compute(initial, glyf)
+    }
+
     /// Visits closed Glyph IDs in ascending input order.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = GlyphId> + DoubleEndedIterator + '_ {
@@ -34,6 +46,14 @@ impl GlyphClosure {
     #[must_use]
     pub fn len(&self) -> usize {
         self.glyphs.len()
+    }
+
+    /// Returns whether the closure contains no Glyph IDs.
+    ///
+    /// This is always `false` because every valid closure retains `.notdef`.
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        false
     }
 
     /// Borrows the complete retained Glyph Set.
