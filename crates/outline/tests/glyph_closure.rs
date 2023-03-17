@@ -64,3 +64,17 @@ fn notdef_leaf_forms_the_minimal_closure() {
     assert_eq!(closure.glyphs(), &GlyphSet::new());
     assert_eq!(closure.maximum_component_depth(), 0);
 }
+
+#[test]
+fn direct_components_join_the_initial_set() {
+    let glyf = decode_graph(&[Node::Empty, Node::Simple, Node::Composite(vec![1])]);
+    let initial: GlyphSet = [GlyphId::new(2)].into_iter().collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 2]
+    );
+    assert_eq!(closure.maximum_component_depth(), 1);
+}
