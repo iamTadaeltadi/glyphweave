@@ -78,3 +78,22 @@ fn direct_components_join_the_initial_set() {
     );
     assert_eq!(closure.maximum_component_depth(), 1);
 }
+
+#[test]
+fn closure_follows_transitive_component_edges() {
+    let glyf = decode_graph(&[
+        Node::Empty,
+        Node::Simple,
+        Node::Composite(vec![1]),
+        Node::Composite(vec![2]),
+    ]);
+    let initial: GlyphSet = [GlyphId::new(3)].into_iter().collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 2, 3]
+    );
+    assert_eq!(closure.maximum_component_depth(), 2);
+}
