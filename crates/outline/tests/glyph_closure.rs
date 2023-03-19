@@ -1,7 +1,7 @@
 //! Integration coverage for cycle-safe composite Glyph Closure.
 
 use glyphweave_outline::{Glyf, GlyphClosure, GlyphSet, Loca};
-use glyphweave_sfnt::{ByteSpan, GlyphId, LocaFormat};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LocaFormat, OutlineCause, Stage};
 
 #[derive(Clone, Debug)]
 enum Node {
@@ -116,4 +116,22 @@ fn shared_subgraphs_are_memoized_without_losing_depth() {
         [0, 1, 2, 3, 4]
     );
     assert_eq!(closure.maximum_component_depth(), 2);
+}
+
+#[test]
+fn rejects_an_initial_root_outside_glyf() {
+    let glyf = decode_graph(&[Node::Simple]);
+    let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
+
+    let diagnostic = GlyphClosure::compute(&initial, &glyf).unwrap_err();
+
+    assert_eq!(diagnostic.stage(), Stage::Closure);
+    assert_eq!(diagnostic.span(), None);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::GlyphClosureRootOutOfBounds {
+            glyph: GlyphId::new(1),
+            glyph_count: 1,
+        })
+    );
 }
