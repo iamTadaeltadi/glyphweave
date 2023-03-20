@@ -135,3 +135,22 @@ fn rejects_an_initial_root_outside_glyf() {
         })
     );
 }
+
+#[test]
+fn rejects_a_reachable_dangling_component() {
+    let glyf = decode_graph(&[Node::Empty, Node::Composite(vec![2])]);
+    let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
+
+    let diagnostic = GlyphClosure::compute(&initial, &glyf).unwrap_err();
+
+    assert_eq!(diagnostic.stage(), Stage::Closure);
+    assert_eq!(diagnostic.span(), None);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::CompositeComponentOutOfBounds {
+            parent: GlyphId::new(1),
+            component: GlyphId::new(2),
+            glyph_count: 2,
+        })
+    );
+}
