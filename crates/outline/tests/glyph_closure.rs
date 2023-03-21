@@ -154,3 +154,13 @@ fn rejects_a_reachable_dangling_component() {
         })
     );
 }
+
+#[test]
+fn ignores_dangling_edges_outside_the_reachable_graph() {
+    let glyf = decode_graph(&[Node::Simple, Node::Composite(vec![2])]);
+
+    let closure = GlyphClosure::compute(&GlyphSet::new(), &glyf).unwrap();
+
+    assert_eq!(closure.iter().collect::<Vec<_>>(), [GlyphId::NOTDEF]);
+    assert_eq!(closure.maximum_component_depth(), 0);
+}
