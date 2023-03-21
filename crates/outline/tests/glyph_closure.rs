@@ -164,3 +164,19 @@ fn ignores_dangling_edges_outside_the_reachable_graph() {
     assert_eq!(closure.iter().collect::<Vec<_>>(), [GlyphId::NOTDEF]);
     assert_eq!(closure.maximum_component_depth(), 0);
 }
+
+#[test]
+fn rejects_a_self_referential_composite() {
+    let glyf = decode_graph(&[Node::Composite(vec![0])]);
+
+    let diagnostic = GlyphClosure::compute(&GlyphSet::new(), &glyf).unwrap_err();
+
+    assert_eq!(diagnostic.stage(), Stage::Closure);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::CompositeGlyphCycle {
+            parent: GlyphId::NOTDEF,
+            component: GlyphId::NOTDEF,
+        })
+    );
+}
