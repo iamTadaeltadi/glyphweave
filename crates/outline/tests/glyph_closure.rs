@@ -199,3 +199,17 @@ fn rejects_a_multi_glyph_cycle_at_its_back_edge() {
         })
     );
 }
+
+#[test]
+fn ignores_cycles_outside_the_reachable_graph() {
+    let glyf = decode_graph(&[
+        Node::Simple,
+        Node::Composite(vec![2]),
+        Node::Composite(vec![1]),
+    ]);
+
+    let closure = GlyphClosure::compute(&GlyphSet::new(), &glyf).unwrap();
+
+    assert_eq!(closure.iter().collect::<Vec<_>>(), [GlyphId::NOTDEF]);
+    assert_eq!(closure.maximum_component_depth(), 0);
+}
