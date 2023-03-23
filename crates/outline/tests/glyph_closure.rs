@@ -213,3 +213,19 @@ fn ignores_cycles_outside_the_reachable_graph() {
     assert_eq!(closure.iter().collect::<Vec<_>>(), [GlyphId::NOTDEF]);
     assert_eq!(closure.maximum_component_depth(), 0);
 }
+
+#[test]
+fn reports_dangling_components_in_source_order() {
+    let glyf = decode_graph(&[Node::Composite(vec![2, 3]), Node::Simple]);
+
+    let diagnostic = GlyphClosure::compute(&GlyphSet::new(), &glyf).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::CompositeComponentOutOfBounds {
+            parent: GlyphId::NOTDEF,
+            component: GlyphId::new(2),
+            glyph_count: 2,
+        })
+    );
+}
