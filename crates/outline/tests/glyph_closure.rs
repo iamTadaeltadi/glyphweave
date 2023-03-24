@@ -229,3 +229,25 @@ fn reports_dangling_components_in_source_order() {
         })
     );
 }
+
+#[test]
+fn visits_initial_roots_in_glyph_id_order() {
+    let glyf = decode_graph(&[
+        Node::Simple,
+        Node::Empty,
+        Node::Composite(vec![4]),
+        Node::Composite(vec![5]),
+    ]);
+    let initial: GlyphSet = [GlyphId::new(3), GlyphId::new(2)].into_iter().collect();
+
+    let diagnostic = GlyphClosure::compute(&initial, &glyf).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::CompositeComponentOutOfBounds {
+            parent: GlyphId::new(2),
+            component: GlyphId::new(4),
+            glyph_count: 4,
+        })
+    );
+}
