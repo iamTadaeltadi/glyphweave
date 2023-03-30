@@ -16,6 +16,25 @@ pub struct GlyphClosure {
 impl GlyphClosure {
     /// Computes the reachable composite-component closure of an initial Glyph Set.
     ///
+    /// ```
+    /// use glyphweave_outline::{Glyf, GlyphClosure, GlyphSet, Loca};
+    /// use glyphweave_sfnt::{ByteSpan, GlyphId, LocaFormat};
+    ///
+    /// let bytes = [0; 6];
+    /// let loca = Loca::decode(
+    ///     &bytes,
+    ///     ByteSpan::sized(0, 6).unwrap(),
+    ///     ByteSpan::empty_at(6),
+    ///     2,
+    ///     LocaFormat::Short,
+    /// )?;
+    /// let glyf = Glyf::decode(&bytes, &loca)?;
+    /// let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
+    /// let closure = GlyphClosure::compute(&initial, &glyf)?;
+    /// assert_eq!(closure.iter().map(GlyphId::raw).collect::<Vec<_>>(), [0, 1]);
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Returns a Closure-stage Diagnostic when a retained root or reachable component is outside
