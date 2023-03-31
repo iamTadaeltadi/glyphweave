@@ -81,3 +81,12 @@ impl GlyphClosure {
         &self.glyphs
     }
 }
+
+impl<'a> IntoIterator for &'a GlyphClosure {
+    type Item = GlyphId;
+    type IntoIter = <&'a GlyphSet as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.glyphs.into_iter()
+    }
+}
