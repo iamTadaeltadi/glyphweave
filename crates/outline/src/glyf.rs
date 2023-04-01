@@ -14,6 +14,15 @@ pub struct Glyf {
 }
 
 impl Glyf {
+    /// Visits every canonical outline paired with its input Glyph ID.
+    #[must_use]
+    pub fn iter(&self) -> impl ExactSizeIterator<Item = (GlyphId, &Outline)> + '_ {
+        self.outlines.iter().enumerate().map(|(index, outline)| {
+            let raw = u16::try_from(index).unwrap_or(u16::MAX);
+            (GlyphId::new(raw), outline)
+        })
+    }
+
     /// Decodes every Glyph Byte Span delimited by a validated `loca` table.
     ///
     /// Empty intervals remain explicit, while non-empty descriptions are classified and fully
