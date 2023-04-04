@@ -37,6 +37,28 @@ fn equal_loca_offsets_preserve_empty_outlines() {
 }
 
 #[test]
+fn decode_revalidates_the_glyf_span_against_current_bytes() {
+    let source = [0; 4];
+    let loca = Loca::decode(
+        &source,
+        ByteSpan::sized(0, 4).unwrap(),
+        ByteSpan::empty_at(4),
+        1,
+        LocaFormat::Short,
+    )
+    .unwrap();
+
+    let diagnostic = Glyf::decode(&source[..3], &loca).unwrap_err();
+
+    assert_eq!(diagnostic.stage(), Stage::Decode);
+    assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(4)));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::SpanOutOfBounds { end: 4, length: 3 }
+    );
+}
+
+#[test]
 fn decodes_mixed_outlines_in_glyph_id_order() {
     let (bytes, loca) = mixed_fixture();
 
