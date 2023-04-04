@@ -16,7 +16,9 @@ pub struct Glyf {
 impl Glyf {
     /// Visits every canonical outline paired with its input Glyph ID.
     #[must_use]
-    pub fn iter(&self) -> impl ExactSizeIterator<Item = (GlyphId, &Outline)> + '_ {
+    pub fn iter(
+        &self,
+    ) -> impl ExactSizeIterator<Item = (GlyphId, &Outline)> + DoubleEndedIterator + '_ {
         self.outlines.iter().enumerate().map(|(index, outline)| {
             let raw = u16::try_from(index).unwrap_or(u16::MAX);
             (GlyphId::new(raw), outline)
