@@ -64,8 +64,10 @@ proptest! {
                 prop_assert_eq!(diagnostic.span(), None);
                 let is_graph_failure = matches!(
                     diagnostic.cause(),
-                    Cause::Outline(OutlineCause::CompositeComponentOutOfBounds { .. })
-                        | Cause::Outline(OutlineCause::CompositeGlyphCycle { .. })
+                    Cause::Outline(
+                        OutlineCause::CompositeComponentOutOfBounds { .. }
+                            | OutlineCause::CompositeGlyphCycle { .. }
+                    )
                 );
                 prop_assert!(is_graph_failure);
             }
