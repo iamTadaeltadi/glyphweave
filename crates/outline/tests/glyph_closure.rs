@@ -279,6 +279,25 @@ fn later_roots_reuse_depths_computed_for_earlier_roots() {
 }
 
 #[test]
+fn roots_completed_as_components_reuse_their_depth() {
+    let glyf = decode_graph(&[
+        Node::Empty,
+        Node::Simple,
+        Node::Composite(vec![3]),
+        Node::Composite(vec![1]),
+    ]);
+    let initial: GlyphSet = [GlyphId::new(2), GlyphId::new(3)].into_iter().collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+
+    assert_eq!(closure.maximum_component_depth(), 2);
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 2, 3]
+    );
+}
+
+#[test]
 fn traverses_the_maximal_glyph_chain_without_recursion() {
     let mut nodes: Vec<_> = (1..u16::MAX)
         .map(|child| Node::Composite(vec![child]))
