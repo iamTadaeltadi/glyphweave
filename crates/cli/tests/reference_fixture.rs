@@ -2,6 +2,7 @@
 
 mod support;
 
+use glyphweave_outline::{GlyphClosure, GlyphSet};
 use glyphweave_sfnt::{Face, FaceIndex, GlyphId};
 
 use support::reference_font::{BYTES, glyf};
@@ -49,4 +50,17 @@ fn reference_font_has_the_reviewed_outline_topology() {
             .collect::<Vec<_>>(),
         [4, 2]
     );
+}
+
+#[test]
+fn direct_reference_composite_closes_over_both_children() {
+    let initial: GlyphSet = std::iter::once(GlyphId::new(4)).collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf()).unwrap();
+
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 2, 3, 4]
+    );
+    assert_eq!(closure.maximum_component_depth(), 1);
 }
