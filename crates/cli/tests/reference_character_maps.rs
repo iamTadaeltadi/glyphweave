@@ -52,3 +52,19 @@ fn format_fourteen_matches_the_fonttools_default_sequence() {
         Some(GlyphId::new(2))
     );
 }
+
+#[test]
+fn format_fourteen_matches_the_fonttools_non_default_sequence() {
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    let mappings = format14().variation_selector_map().clone();
+
+    assert_eq!(
+        mappings.mapping('B', selector),
+        Some(VariationMapping::NonDefault(GlyphId::new(4)))
+    );
+    assert_eq!(
+        mappings.glyph_id('B', selector, format12().character_map()),
+        Some(GlyphId::new(4))
+    );
+    assert_eq!(mappings.mapping('C', selector), None);
+}
