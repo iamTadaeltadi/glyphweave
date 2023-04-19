@@ -2,6 +2,8 @@
 
 mod support;
 
+use std::collections::BTreeMap;
+
 use glyphweave_outline::{CompositeGlyph, SimpleGlyph};
 
 use support::{reference_font::glyf, reference_tool::ttx_xml};
@@ -53,4 +55,36 @@ fn ttx_matches_every_glyphweave_outline_bound() {
             assert!(xml.contains(&expected), "ttx omitted {expected}");
         }
     }
+}
+
+#[test]
+fn ttx_matches_the_glyphweave_point_multiset() {
+    let Some(xml) = ttx_xml(&["glyf"]) else {
+        return;
+    };
+    let mut expected = BTreeMap::new();
+    for glyph in glyf()
+        .outlines()
+        .iter()
+        .filter_map(|outline| outline.as_simple())
+    {
+        for point in glyph.points() {
+            *expected
+                .entry((point.x(), point.y(), point.is_on_curve()))
+                .or_insert(0usize) += 1;
+        }
+    }
+
+    for ((x, y, on_curve), count) in &expected {
+        let needle = format!("<pt x=\"{x}\" y=\"{y}\" on=\"{}\"/>", u8::from(*on_curve));
+        assert_eq!(
+            xml.matches(&needle).count(),
+            *count,
+            "ttx count for {needle}"
+        );
+    }
+    assert_eq!(
+        xml.matches("<pt ").count(),
+        expected.values().sum::<usize>()
+    );
 }
