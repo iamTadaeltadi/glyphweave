@@ -30,3 +30,27 @@ fn ttx_matches_the_glyphweave_outline_census() {
     assert_eq!(xml.matches("<contour>").count(), simple_contours);
     assert_eq!(xml.matches("<component ").count(), components);
 }
+
+#[test]
+fn ttx_matches_every_glyphweave_outline_bound() {
+    let Some(xml) = ttx_xml(&["glyf"]) else {
+        return;
+    };
+    let names = [".notdef", "space", "triangle", "acute", "Aacute", "nested"];
+
+    for ((_, outline), name) in glyf().iter().zip(names) {
+        if let Some(bounds) = outline.bounds() {
+            let expected = format!(
+                "<TTGlyph name=\"{name}\" xMin=\"{}\" yMin=\"{}\" xMax=\"{}\" yMax=\"{}\">",
+                bounds.minimum_x(),
+                bounds.minimum_y(),
+                bounds.maximum_x(),
+                bounds.maximum_y()
+            );
+            assert!(xml.contains(&expected), "ttx omitted {expected}");
+        } else {
+            let expected = format!("<TTGlyph name=\"{name}\"/>");
+            assert!(xml.contains(&expected), "ttx omitted {expected}");
+        }
+    }
+}
