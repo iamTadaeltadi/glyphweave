@@ -4,7 +4,7 @@ mod support;
 
 use std::collections::BTreeMap;
 
-use glyphweave_outline::{CompositeGlyph, SimpleGlyph};
+use glyphweave_outline::{CompositeGlyph, F2Dot14, SimpleGlyph};
 
 use support::{reference_font::glyf, reference_tool::ttx_xml};
 
@@ -87,4 +87,29 @@ fn ttx_matches_the_glyphweave_point_multiset() {
         xml.matches("<pt ").count(),
         expected.values().sum::<usize>()
     );
+}
+
+#[test]
+fn ttx_matches_the_scaled_nested_component() {
+    let Some(xml) = ttx_xml(&["glyf"]) else {
+        return;
+    };
+    let glyf = glyf();
+    let component = &glyf
+        .outline(glyphweave_sfnt::GlyphId::new(5))
+        .unwrap()
+        .as_composite()
+        .unwrap()
+        .components()
+        .get(1)
+        .unwrap();
+
+    assert_eq!(component.glyph_id().raw(), 2);
+    assert_eq!(
+        component.transform().coefficients().map(F2Dot14::to_bits),
+        [0x2000, 0, 0, 0x2000]
+    );
+    assert!(xml.contains(
+        "<component glyphName=\"triangle\" x=\"300\" y=\"0\" scale=\"0.5\" flags=\"0x4\"/>"
+    ));
 }
