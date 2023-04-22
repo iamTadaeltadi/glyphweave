@@ -8,7 +8,7 @@ use glyphweave_outline::{CompositeGlyph, F2Dot14, SimpleGlyph};
 
 use support::{
     reference_font::glyf,
-    reference_map::{format4, format12},
+    reference_map::{format4, format12, format14},
     reference_tool::ttx_xml,
 };
 
@@ -168,6 +168,44 @@ fn ttx_matches_the_glyphweave_format_twelve_map() {
         section.matches("<map ").count(),
         mappings.character_map().len()
     );
+}
+
+#[test]
+fn ttx_matches_the_glyphweave_variation_sequences() {
+    let Some(xml) = ttx_xml(&["cmap"]) else {
+        return;
+    };
+    let section = xml_section(
+        &xml,
+        "<cmap_format_14 platformID=\"0\" platEncID=\"5\">",
+        "</cmap_format_14>",
+    );
+    let mappings = format14();
+    let variation = mappings.variation_selector_map();
+    let mut expected_count = 0;
+
+    for (selector, range) in variation.default_ranges() {
+        for base in range {
+            let expected = format!(
+                "<map uv=\"0x{:x}\" uvs=\"0x{:x}\"/>",
+                u32::from(base),
+                u32::from(selector.value())
+            );
+            assert!(section.contains(&expected), "ttx omitted {expected}");
+            expected_count += 1;
+        }
+    }
+    for (selector, base, glyph) in variation.non_default_mappings() {
+        let name = GLYPH_NAMES.get(usize::from(glyph.raw())).unwrap();
+        let expected = format!(
+            "<map uv=\"0x{:x}\" uvs=\"0x{:x}\" name=\"{name}\"/>",
+            u32::from(base),
+            u32::from(selector.value())
+        );
+        assert!(section.contains(&expected), "ttx omitted {expected}");
+        expected_count += 1;
+    }
+    assert_eq!(section.matches("<map ").count(), expected_count);
 }
 
 fn xml_section<'a>(xml: &'a str, opening: &str, closing: &str) -> &'a str {
