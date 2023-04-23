@@ -37,6 +37,8 @@ name = "glyphweave-cli"
 version = "0.0.1"
 dependencies = [
  "glyphweave-emit",
+ "glyphweave-outline",
+ "glyphweave-sfnt",
  "glyphweave-subset",
  "glyphweave-verify",
 ]
