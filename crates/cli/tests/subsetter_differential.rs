@@ -31,6 +31,25 @@ fn assert_reference_closure(bytes: &[u8]) {
     let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
 
     assert_eq!(glyf.glyph_count(), 6);
+    for raw in [0, 1] {
+        assert!(glyf.outline(GlyphId::new(raw)).unwrap().is_empty());
+    }
+    for raw in [2, 3] {
+        assert!(
+            glyf.outline(GlyphId::new(raw))
+                .unwrap()
+                .as_simple()
+                .is_some()
+        );
+    }
+    for raw in [4, 5] {
+        assert!(
+            glyf.outline(GlyphId::new(raw))
+                .unwrap()
+                .as_composite()
+                .is_some()
+        );
+    }
     assert_eq!(
         closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
         [0, 2, 3, 4, 5]
