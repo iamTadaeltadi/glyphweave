@@ -16,6 +16,15 @@ fn fonttools_retains_the_glyphweave_component_closure() {
     assert_reference_closure(&bytes);
 }
 
+#[test]
+fn harfbuzz_retains_the_glyphweave_component_closure() {
+    let Some(bytes) = subset("hb-subset", 5) else {
+        return;
+    };
+
+    assert_reference_closure(&bytes);
+}
+
 fn assert_reference_closure(bytes: &[u8]) {
     let glyf = glyf_from(bytes);
     let initial: GlyphSet = std::iter::once(GlyphId::new(5)).collect();
