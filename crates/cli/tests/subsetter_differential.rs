@@ -50,9 +50,22 @@ fn assert_reference_closure(bytes: &[u8]) {
                 .is_some()
         );
     }
+    assert_eq!(component_ids(&glyf, 4), [2, 3]);
+    assert_eq!(component_ids(&glyf, 5), [4, 2]);
     assert_eq!(
         closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
         [0, 2, 3, 4, 5]
     );
     assert_eq!(closure.maximum_component_depth(), 2);
+}
+
+fn component_ids(glyf: &glyphweave_outline::Glyf, raw: u16) -> Vec<u16> {
+    glyf.outline(GlyphId::new(raw))
+        .unwrap()
+        .as_composite()
+        .unwrap()
+        .components()
+        .iter()
+        .map(|component| component.glyph_id().raw())
+        .collect()
 }
