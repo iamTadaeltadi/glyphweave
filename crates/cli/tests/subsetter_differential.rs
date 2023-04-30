@@ -35,6 +35,15 @@ fn fonttools_preserves_the_selected_supplementary_mapping() {
     assert_unicode_subset(&bytes);
 }
 
+#[test]
+fn harfbuzz_preserves_the_selected_supplementary_mapping() {
+    let Some(bytes) = subset_unicode("hb-subset", 0x0001_f600) else {
+        return;
+    };
+
+    assert_unicode_subset(&bytes);
+}
+
 fn assert_reference_closure(bytes: &[u8]) {
     let glyf = glyf_from(bytes);
     let initial: GlyphSet = std::iter::once(GlyphId::new(5)).collect();
