@@ -65,6 +65,28 @@ fn harfbuzz_preserves_a_default_variation_sequence() {
     assert_default_variation_sequence(&bytes);
 }
 
+#[test]
+fn fonttools_preserves_a_non_default_variation_sequence() {
+    let Some(bytes) = subset_text("pyftsubset", "B\u{fe0f}") else {
+        return;
+    };
+    let variation = format14_from(&bytes);
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+
+    assert_eq!(
+        variation.variation_selector_map().mapping('B', selector),
+        Some(VariationMapping::NonDefault(GlyphId::new(4)))
+    );
+    let glyf = glyf_from(&bytes);
+    let initial: GlyphSet = std::iter::once(GlyphId::new(4)).collect();
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 2, 3, 4]
+    );
+    assert_eq!(closure.maximum_component_depth(), 1);
+}
+
 fn assert_reference_closure(bytes: &[u8]) {
     let glyf = glyf_from(bytes);
     let initial: GlyphSet = std::iter::once(GlyphId::new(5)).collect();
