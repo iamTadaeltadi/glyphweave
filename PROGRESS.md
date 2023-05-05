@@ -29,11 +29,11 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 - [x] 2.5 Decode Simple Glyph contours, flags, and coordinate deltas — 902 source / 1,475 test lines, 70 unit + integration + 4 fixed-seed property + 2 doc tests, 98.87% line / 96.41% region cov across the decoder (outline crate 99.37% line / 94.33% region cov)
 - [x] 2.6 Decode Composite Glyph components and transforms — 765 source / 1,310 test lines, 59 unit + integration + 3 fixed-seed property + 5 doc tests, 99.13% line / 90.30% region cov across the decoder (outline crate 99.36% line / 93.33% region cov)
 - [x] 2.7 Compute cycle-safe composite Glyph Closure — 470 source / 922 test lines, 32 unit + integration + 3 fixed-seed property + 2 doc tests, 100% line / 100% region cov across the eager `glyf` decoder and closure engine
-- [ ] 2.8 Differentially test character maps and outlines against reference tools <-- NEXT
+- [x] 2.8 Differentially test character maps and outlines against reference tools — 0 source / 816 test lines, 8 deterministic + 14 live differential tests against FontTools 4.55.3 and HarfBuzz 10.4.0, with explicit unavailable-tool skips
 
 ## M3 — OpenType layout (budget: 4,300 lines)
 
-- [ ] 3.1 Decode and encode Coverage and Class Definition structures
+- [ ] 3.1 Decode and encode Coverage and Class Definition structures <-- NEXT
 - [ ] 3.2 Decode Script List, language systems, and Feature List
 - [ ] 3.3 Decode Lookup List flags, extensions, and mark filtering
 - [ ] 3.4 Implement supported GSUB retention, closure, and remapping
