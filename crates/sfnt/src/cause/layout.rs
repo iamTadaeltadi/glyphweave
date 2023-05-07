@@ -30,3 +30,23 @@ impl fmt::Display for LayoutCause {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::LayoutCause;
+
+    #[test]
+    fn unsupported_coverage_format_names_the_selector() {
+        let cause = LayoutCause::UnsupportedCoverageFormat { format: 9 };
+        assert_eq!(cause.to_string(), "unsupported Coverage format 9");
+    }
+
+    #[test]
+    fn unsupported_class_definition_format_names_the_selector() {
+        let cause = LayoutCause::UnsupportedClassDefinitionFormat { format: 7 };
+        assert_eq!(
+            cause.to_string(),
+            "unsupported Class Definition format 7"
+        );
+    }
+}
