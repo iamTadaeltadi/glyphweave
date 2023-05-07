@@ -11,6 +11,34 @@ pub enum LayoutCause {
         /// The unrecognized selector.
         format: u16,
     },
+    /// Coverage format 1 did not list glyph IDs in strict ascending order.
+    NonIncreasingCoverageGlyph {
+        /// The preceding glyph ID.
+        previous: crate::GlyphId,
+        /// The repeated or decreasing glyph ID.
+        current: crate::GlyphId,
+    },
+    /// A Coverage range ended before it began.
+    InvalidCoverageRange {
+        /// The first glyph ID in the range.
+        start: crate::GlyphId,
+        /// The last glyph ID in the range.
+        end: crate::GlyphId,
+    },
+    /// A Coverage range began at or before the preceding range ended.
+    OverlappingCoverageRange {
+        /// The preceding range's final glyph ID.
+        previous_end: crate::GlyphId,
+        /// The next range's first glyph ID.
+        start: crate::GlyphId,
+    },
+    /// A format 2 range did not continue the sequential Coverage Index space.
+    DiscontinuousCoverageIndex {
+        /// The index derived from preceding ranges.
+        expected: u32,
+        /// The index stored in the range record.
+        actual: u16,
+    },
     /// A Class Definition table used an unknown format selector.
     UnsupportedClassDefinitionFormat {
         /// The unrecognized selector.
@@ -24,6 +52,24 @@ impl fmt::Display for LayoutCause {
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
             }
+            Self::NonIncreasingCoverageGlyph { previous, current } => write!(
+                f,
+                "Coverage glyph {current} does not strictly follow {previous}"
+            ),
+            Self::InvalidCoverageRange { start, end } => {
+                write!(f, "Coverage range {start}..={end} has reversed bounds")
+            }
+            Self::OverlappingCoverageRange {
+                previous_end,
+                start,
+            } => write!(
+                f,
+                "Coverage range beginning at {start} overlaps preceding end {previous_end}"
+            ),
+            Self::DiscontinuousCoverageIndex { expected, actual } => write!(
+                f,
+                "Coverage range index {actual} does not continue at {expected}"
+            ),
             Self::UnsupportedClassDefinitionFormat { format } => {
                 write!(f, "unsupported Class Definition format {format}")
             }
@@ -44,9 +90,6 @@ mod tests {
     #[test]
     fn unsupported_class_definition_format_names_the_selector() {
         let cause = LayoutCause::UnsupportedClassDefinitionFormat { format: 7 };
-        assert_eq!(
-            cause.to_string(),
-            "unsupported Class Definition format 7"
-        );
+        assert_eq!(cause.to_string(), "unsupported Class Definition format 7");
     }
 }
