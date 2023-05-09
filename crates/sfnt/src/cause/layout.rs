@@ -165,4 +165,16 @@ mod tests {
             "Coverage range index 18 does not continue at 20"
         );
     }
+
+    #[test]
+    fn overlapping_coverage_range_names_the_boundary() {
+        let cause = LayoutCause::OverlappingCoverageRange {
+            previous_end: GlyphId::new(15),
+            start: GlyphId::new(15),
+        };
+        assert_eq!(
+            cause.to_string(),
+            "Coverage range beginning at 15 overlaps preceding end 15"
+        );
+    }
 }
