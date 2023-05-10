@@ -4,3 +4,7 @@
 //! primitives and explicit glyph selections.
 
 #![forbid(unsafe_code)]
+
+mod coverage;
+
+pub use coverage::Coverage;
