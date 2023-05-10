@@ -177,4 +177,40 @@ mod tests {
             "Coverage range beginning at 15 overlaps preceding end 15"
         );
     }
+
+    #[test]
+    fn class_range_overflow_names_start_and_count() {
+        let cause = LayoutCause::ClassDefinitionGlyphRangeOverflow {
+            start: GlyphId::new(65_534),
+            count: 3,
+        };
+        assert_eq!(
+            cause.to_string(),
+            "Class Definition range beginning at 65534 with 3 value(s) exceeds glyph ID 65535"
+        );
+    }
+
+    #[test]
+    fn invalid_class_range_names_its_bounds() {
+        let cause = LayoutCause::InvalidClassDefinitionRange {
+            start: GlyphId::new(8),
+            end: GlyphId::new(7),
+        };
+        assert_eq!(
+            cause.to_string(),
+            "Class Definition range 8..=7 has reversed bounds"
+        );
+    }
+
+    #[test]
+    fn overlapping_class_range_names_the_boundary() {
+        let cause = LayoutCause::OverlappingClassDefinitionRange {
+            previous_end: GlyphId::new(20),
+            start: GlyphId::new(19),
+        };
+        assert_eq!(
+            cause.to_string(),
+            "Class Definition range beginning at 19 overlaps preceding end 20"
+        );
+    }
 }
