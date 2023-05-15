@@ -53,3 +53,32 @@ fn rejects_decode_offsets_beyond_the_input() {
         Cause::SpanOutOfBounds { end: 2, length: 1 }
     );
 }
+
+#[test]
+fn rejects_duplicate_format_1_glyphs() {
+    let bytes = [0x00, 0x01, 0x00, 0x02, 0x00, 0x05, 0x00, 0x05];
+    let diagnostic = Coverage::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(6, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::NonIncreasingCoverageGlyph {
+            previous: GlyphId::new(5),
+            current: GlyphId::new(5),
+        })
+    );
+}
+
+#[test]
+fn rejects_decreasing_format_1_glyphs() {
+    let bytes = [0x00, 0x01, 0x00, 0x02, 0x00, 0x05, 0x00, 0x04];
+    let diagnostic = Coverage::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::NonIncreasingCoverageGlyph {
+            previous: GlyphId::new(5),
+            current: GlyphId::new(4),
+        })
+    );
+}
