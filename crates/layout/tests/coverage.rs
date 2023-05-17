@@ -82,3 +82,34 @@ fn rejects_decreasing_format_1_glyphs() {
         })
     );
 }
+
+#[test]
+fn decodes_format_2_ranges_into_sequential_indices() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x02, // format, rangeCount
+        0x00, 0x03, 0x00, 0x05, 0x00, 0x00, // 3..=5 at index 0
+        0x00, 0x09, 0x00, 0x0a, 0x00, 0x03, // 9..=10 at index 3
+    ];
+    let coverage = Coverage::decode(&bytes, 0).unwrap();
+
+    assert_eq!(coverage.glyphs(), &[3, 4, 5, 9, 10].map(GlyphId::new));
+    assert_eq!(coverage.coverage_index(GlyphId::new(10)), Some(4));
+}
+
+#[test]
+fn accepts_distinct_adjacent_format_2_ranges() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x02, // format, rangeCount
+        0x00, 0x03, 0x00, 0x04, 0x00, 0x00, // 3..=4
+        0x00, 0x05, 0x00, 0x06, 0x00, 0x02, // 5..=6
+    ];
+    let coverage = Coverage::decode(&bytes, 0).unwrap();
+
+    assert_eq!(coverage.glyphs(), &[3, 4, 5, 6].map(GlyphId::new));
+}
+
+#[test]
+fn decodes_empty_format_2() {
+    let coverage = Coverage::decode(&[0x00, 0x02, 0x00, 0x00], 0).unwrap();
+    assert!(coverage.is_empty());
+}
