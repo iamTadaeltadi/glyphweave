@@ -113,3 +113,40 @@ fn decodes_empty_format_2() {
     let coverage = Coverage::decode(&[0x00, 0x02, 0x00, 0x00], 0).unwrap();
     assert!(coverage.is_empty());
 }
+
+#[test]
+fn rejects_reversed_coverage_range() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x01, // format, rangeCount
+        0x00, 0x06, 0x00, 0x05, 0x00, 0x00,
+    ];
+    let diagnostic = Coverage::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(4, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidCoverageRange {
+            start: GlyphId::new(6),
+            end: GlyphId::new(5),
+        })
+    );
+}
+
+#[test]
+fn rejects_overlapping_coverage_ranges() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x02, // format, rangeCount
+        0x00, 0x03, 0x00, 0x05, 0x00, 0x00, // 3..=5
+        0x00, 0x05, 0x00, 0x07, 0x00, 0x03, // overlaps at 5
+    ];
+    let diagnostic = Coverage::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(10, 12));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::OverlappingCoverageRange {
+            previous_end: GlyphId::new(5),
+            start: GlyphId::new(5),
+        })
+    );
+}
