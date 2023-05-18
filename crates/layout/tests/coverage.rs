@@ -150,3 +150,40 @@ fn rejects_overlapping_coverage_ranges() {
         })
     );
 }
+
+#[test]
+fn rejects_nonzero_first_coverage_index() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x01, // format, rangeCount
+        0x00, 0x03, 0x00, 0x05, 0x00, 0x01,
+    ];
+    let diagnostic = Coverage::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(8, 10));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::DiscontinuousCoverageIndex {
+            expected: 0,
+            actual: 1,
+        })
+    );
+}
+
+#[test]
+fn rejects_discontinuous_later_coverage_index() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x02, // format, rangeCount
+        0x00, 0x03, 0x00, 0x05, 0x00, 0x00, // three indices
+        0x00, 0x09, 0x00, 0x0a, 0x00, 0x04, // should begin at three
+    ];
+    let diagnostic = Coverage::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(14, 16));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::DiscontinuousCoverageIndex {
+            expected: 3,
+            actual: 4,
+        })
+    );
+}
