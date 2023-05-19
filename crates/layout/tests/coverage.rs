@@ -187,3 +187,19 @@ fn rejects_discontinuous_later_coverage_index() {
         })
     );
 }
+
+#[test]
+fn decodes_the_complete_glyph_id_domain() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x01, // format, rangeCount
+        0x00, 0x00, 0xff, 0xff, 0x00, 0x00,
+    ];
+    let coverage = Coverage::decode(&bytes, 0).unwrap();
+
+    assert_eq!(coverage.len(), 65_536);
+    assert_eq!(coverage.glyph_at(u16::MAX), Some(GlyphId::new(u16::MAX)));
+    assert_eq!(
+        coverage.coverage_index(GlyphId::new(u16::MAX)),
+        Some(u16::MAX)
+    );
+}
