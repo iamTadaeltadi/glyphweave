@@ -3,6 +3,7 @@
 use glyphweave_sfnt::GlyphId;
 
 mod decode;
+mod encode;
 
 /// The sorted unique glyphs affected by an OpenType layout operation.
 ///
