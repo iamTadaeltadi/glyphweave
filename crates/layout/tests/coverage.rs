@@ -203,3 +203,26 @@ fn decodes_the_complete_glyph_id_domain() {
         Some(u16::MAX)
     );
 }
+
+#[test]
+fn encodes_sparse_coverage_as_format_1() {
+    let coverage = Coverage::from_glyphs([GlyphId::new(2), GlyphId::new(8)]);
+    assert_eq!(
+        coverage.encode(),
+        [0x00, 0x01, 0x00, 0x02, 0x00, 0x02, 0x00, 0x08]
+    );
+}
+
+#[test]
+fn coverage_format_ties_prefer_format_1() {
+    let coverage = Coverage::from_glyphs([GlyphId::new(4), GlyphId::new(5), GlyphId::new(6)]);
+    assert_eq!(
+        coverage.encode(),
+        [0x00, 0x01, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00, 0x06]
+    );
+}
+
+#[test]
+fn empty_coverage_encodes_as_format_1() {
+    assert_eq!(Coverage::default().encode(), [0x00, 0x01, 0x00, 0x00]);
+}
