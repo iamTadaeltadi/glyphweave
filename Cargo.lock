@@ -56,6 +56,7 @@ name = "glyphweave-layout"
 version = "0.0.1"
 dependencies = [
  "glyphweave-sfnt",
+ "proptest",
 ]
 
 [[package]]
