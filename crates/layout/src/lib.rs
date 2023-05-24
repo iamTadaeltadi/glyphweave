@@ -5,6 +5,8 @@
 
 #![forbid(unsafe_code)]
 
+mod class_definition;
 mod coverage;
 
+pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
