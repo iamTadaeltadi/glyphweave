@@ -1,8 +1,9 @@
 //! Bounded decoding for both OpenType Coverage formats.
 
-use glyphweave_sfnt::{ByteSpan, Cause, Decoded, Diagnostic, LayoutCause, Reader, Stage};
+use glyphweave_sfnt::{Decoded, LayoutCause, Reader};
 
 use super::Coverage;
+use crate::{layout_error, layout_error_sized};
 
 impl Coverage {
     /// Decodes a Coverage table beginning at an absolute byte offset.
@@ -93,13 +94,4 @@ impl Coverage {
         }
         Ok(Self { glyphs })
     }
-}
-
-fn layout_error(offset: usize, cause: LayoutCause) -> Diagnostic {
-    layout_error_sized(offset, 2, cause)
-}
-
-fn layout_error_sized(offset: usize, size: usize, cause: LayoutCause) -> Diagnostic {
-    let span = ByteSpan::sized(offset, size).unwrap_or_else(|| ByteSpan::empty_at(offset));
-    Diagnostic::at(Stage::Decode, span, Cause::Layout(cause))
 }
