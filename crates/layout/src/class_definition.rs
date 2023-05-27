@@ -4,6 +4,8 @@ use std::collections::BTreeMap;
 
 use glyphweave_sfnt::GlyphId;
 
+mod decode;
+
 /// An ordered glyph-to-class mapping with implicit class zero.
 ///
 /// Only nonzero assignments are stored. A glyph absent from the map always belongs to class zero.
