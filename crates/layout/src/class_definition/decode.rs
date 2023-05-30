@@ -19,6 +19,7 @@ impl ClassDefinition {
         let format_offset = reader.offset();
         match reader.u16()? {
             1 => Self::decode_format_1(&mut reader),
+            2 => Self::decode_format_2(&mut reader),
             format => Err(layout_error(
                 format_offset,
                 LayoutCause::UnsupportedClassDefinitionFormat { format },
@@ -45,6 +46,42 @@ impl ClassDefinition {
                 let raw = start.raw() + index;
                 classes.insert(GlyphId::new(raw), class);
             }
+        }
+        Ok(Self { classes })
+    }
+
+    fn decode_format_2(reader: &mut Reader<'_>) -> Decoded<Self> {
+        let count = reader.u16()?;
+        let mut classes = BTreeMap::new();
+        let mut previous_end = None;
+
+        for _ in 0..count {
+            let range_offset = reader.offset();
+            let start = GlyphId::new(reader.u16()?);
+            let end = GlyphId::new(reader.u16()?);
+            let class = reader.u16()?;
+            if start > end {
+                return Err(layout_error_sized(
+                    range_offset,
+                    4,
+                    LayoutCause::InvalidClassDefinitionRange { start, end },
+                ));
+            }
+            if let Some(previous_end) = previous_end {
+                if start <= previous_end {
+                    return Err(layout_error(
+                        range_offset,
+                        LayoutCause::OverlappingClassDefinitionRange {
+                            previous_end,
+                            start,
+                        },
+                    ));
+                }
+            }
+            if class != 0 {
+                classes.extend((start.raw()..=end.raw()).map(|raw| (GlyphId::new(raw), class)));
+            }
+            previous_end = Some(end);
         }
         Ok(Self { classes })
     }
