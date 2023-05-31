@@ -44,3 +44,24 @@ fn a_truncated_class_value_reports_the_remaining_byte() {
     );
     assert_eq!(diagnostic.span().unwrap().start(), 6);
 }
+
+#[test]
+fn every_strict_format_2_prefix_is_rejected() {
+    let complete = [
+        0x00, 0x02, // format
+        0x00, 0x02, // classRangeCount
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x01, // first range
+        0x00, 0x04, 0x00, 0x05, 0x00, 0x02, // second range
+    ];
+
+    for end in 0..complete.len() {
+        let diagnostic = ClassDefinition::decode(&complete[..end], 0).unwrap_err();
+        assert!(
+            matches!(diagnostic.cause(), Cause::UnexpectedEnd { .. }),
+            "prefix {end} produced {}",
+            diagnostic.cause()
+        );
+    }
+
+    assert_eq!(ClassDefinition::decode(&complete, 0).unwrap().len(), 4);
+}
