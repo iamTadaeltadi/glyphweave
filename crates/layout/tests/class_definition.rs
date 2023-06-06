@@ -92,6 +92,20 @@ fn decodes_empty_format_2() {
 }
 
 #[test]
+fn canonical_encoding_merges_adjacent_equal_class_ranges() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x02, // format, classRangeCount
+        0x00, 0x03, 0x00, 0x04, 0x00, 0x06, 0x00, 0x05, 0x00, 0x06, 0x00, 0x06,
+    ];
+    let classes = ClassDefinition::decode(&bytes, 0).unwrap();
+
+    assert_eq!(
+        classes.encode(),
+        [0x00, 0x02, 0x00, 0x01, 0x00, 0x03, 0x00, 0x06, 0x00, 0x06]
+    );
+}
+
+#[test]
 fn decodes_maximal_format_2_range() {
     let bytes = [
         0x00, 0x02, 0x00, 0x01, // format, classRangeCount
