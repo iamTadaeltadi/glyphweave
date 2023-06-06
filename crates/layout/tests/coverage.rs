@@ -106,6 +106,10 @@ fn accepts_distinct_adjacent_format_2_ranges() {
     let coverage = Coverage::decode(&bytes, 0).unwrap();
 
     assert_eq!(coverage.glyphs(), &[3, 4, 5, 6].map(GlyphId::new));
+    assert_eq!(
+        coverage.encode(),
+        [0x00, 0x02, 0x00, 0x01, 0x00, 0x03, 0x00, 0x06, 0x00, 0x00]
+    );
 }
 
 #[test]
