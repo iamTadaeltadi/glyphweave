@@ -21,6 +21,24 @@ fn decodes_format_1_and_discards_class_zero() {
 }
 
 #[test]
+fn canonical_encoding_trims_dense_class_zero_edges() {
+    let bytes = [
+        0x00, 0x01, // format
+        0x00, 0x03, // startGlyphID
+        0x00, 0x05, // glyphCount
+        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
+    ];
+    let classes = ClassDefinition::decode(&bytes, 0).unwrap();
+
+    assert_eq!(
+        classes.encode(),
+        [
+            0x00, 0x01, 0x00, 0x04, 0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02,
+        ]
+    );
+}
+
+#[test]
 fn decodes_format_1_at_an_absolute_offset() {
     let bytes = [0xaa, 0xbb, 0x00, 0x01, 0x00, 0x09, 0x00, 0x01, 0x00, 0x04];
     let classes = ClassDefinition::decode(&bytes, 2).unwrap();
