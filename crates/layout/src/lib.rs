@@ -32,3 +32,18 @@ fn layout_error_sized(
 fn push_u16(bytes: &mut Vec<u8>, value: u16) {
     bytes.extend_from_slice(&value.to_be_bytes());
 }
+
+#[cfg(test)]
+mod tests {
+    use glyphweave_sfnt::{ByteSpan, LayoutCause};
+
+    #[test]
+    fn impossible_field_span_overflow_still_has_a_location() {
+        let diagnostic = super::layout_error_sized(
+            usize::MAX,
+            4,
+            LayoutCause::UnsupportedCoverageFormat { format: 0 },
+        );
+        assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(usize::MAX)));
+    }
+}
