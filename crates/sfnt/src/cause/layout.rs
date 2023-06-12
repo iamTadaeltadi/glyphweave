@@ -2,6 +2,56 @@
 
 use core::fmt;
 
+/// The tag-ordered layout list involved in a validation failure.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum LayoutListKind {
+    /// The ScriptRecord array of a ScriptList.
+    Script,
+    /// The LangSysRecord array of a Script table.
+    Language,
+    /// The FeatureRecord array of a FeatureList.
+    Feature,
+}
+
+impl fmt::Display for LayoutListKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Self::Script => "script",
+            Self::Language => "language",
+            Self::Feature => "feature",
+        })
+    }
+}
+
+/// The relative-offset target involved in a layout validation failure.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum LayoutTarget {
+    /// A Script table referenced by ScriptList.
+    Script,
+    /// The default Language System table of a Script.
+    DefaultLanguageSystem,
+    /// A named Language System table referenced by a Script.
+    LanguageSystem,
+    /// A Feature table referenced by FeatureList.
+    Feature,
+    /// A tag-specific Feature Parameters table.
+    FeatureParameters,
+}
+
+impl fmt::Display for LayoutTarget {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Self::Script => "Script",
+            Self::DefaultLanguageSystem => "default Language System",
+            Self::LanguageSystem => "Language System",
+            Self::Feature => "Feature",
+            Self::FeatureParameters => "Feature Parameters",
+        })
+    }
+}
+
 /// A format or invariant failure in a shared OpenType layout structure.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
