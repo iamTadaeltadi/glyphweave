@@ -1,4 +1,4 @@
-use super::LayoutCause;
+use super::{LayoutCause, LayoutListKind, LayoutTarget};
 use crate::GlyphId;
 
 #[test]
@@ -94,5 +94,27 @@ fn overlapping_class_range_names_the_boundary() {
     assert_eq!(
         cause.to_string(),
         "Class Definition range beginning at 19 overlaps preceding end 20"
+    );
+}
+
+#[test]
+fn layout_list_kinds_have_stable_names() {
+    assert_eq!(LayoutListKind::Script.to_string(), "script");
+    assert_eq!(LayoutListKind::Language.to_string(), "language");
+    assert_eq!(LayoutListKind::Feature.to_string(), "feature");
+}
+
+#[test]
+fn layout_targets_have_stable_names() {
+    assert_eq!(LayoutTarget::Script.to_string(), "Script");
+    assert_eq!(
+        LayoutTarget::DefaultLanguageSystem.to_string(),
+        "default Language System"
+    );
+    assert_eq!(LayoutTarget::LanguageSystem.to_string(), "Language System");
+    assert_eq!(LayoutTarget::Feature.to_string(), "Feature");
+    assert_eq!(
+        LayoutTarget::FeatureParameters.to_string(),
+        "Feature Parameters"
     );
 }
