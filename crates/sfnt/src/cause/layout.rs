@@ -56,6 +56,45 @@ impl fmt::Display for LayoutTarget {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum LayoutCause {
+    /// A Script, Language System, or Feature record used a malformed Tag.
+    InvalidLayoutTag {
+        /// The list containing the record.
+        list: LayoutListKind,
+        /// The malformed Tag.
+        tag: crate::Tag,
+    },
+    /// A tagged record array decreased instead of remaining alphabetically ordered.
+    UnsortedLayoutTags {
+        /// The list containing the records.
+        list: LayoutListKind,
+        /// The preceding Tag.
+        previous: crate::Tag,
+        /// The decreasing Tag.
+        current: crate::Tag,
+    },
+    /// A uniquely keyed tagged record array repeated a Tag.
+    DuplicateLayoutTag {
+        /// The list containing the records.
+        list: LayoutListKind,
+        /// The repeated Tag.
+        tag: crate::Tag,
+    },
+    /// An Offset16 target was null, inside its owner records, or outside its container.
+    InvalidLayoutOffset {
+        /// The kind of structure being targeted.
+        target: LayoutTarget,
+        /// The stored relative Offset16.
+        offset: u16,
+        /// The first legal relative target byte.
+        minimum: usize,
+        /// The containing structure's byte length.
+        container_length: usize,
+    },
+    /// A Language System table used the reserved lookup-order offset.
+    ReservedLookupOrderOffset {
+        /// The nonzero reserved value.
+        offset: u16,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -120,6 +159,29 @@ pub enum LayoutCause {
 impl fmt::Display for LayoutCause {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
+            Self::InvalidLayoutTag { list, tag } => {
+                write!(f, "invalid {list} tag {tag:?}")
+            }
+            Self::UnsortedLayoutTags {
+                list,
+                previous,
+                current,
+            } => write!(f, "{list} tag {current} follows larger tag {previous}"),
+            Self::DuplicateLayoutTag { list, tag } => {
+                write!(f, "duplicate {list} tag {tag}")
+            }
+            Self::InvalidLayoutOffset {
+                target,
+                offset,
+                minimum,
+                container_length,
+            } => write!(
+                f,
+                "{target} offset {offset} is outside legal range {minimum}..{container_length}"
+            ),
+            Self::ReservedLookupOrderOffset { offset } => {
+                write!(f, "reserved lookup-order offset must be zero, not {offset}")
+            }
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
             }
