@@ -1,5 +1,5 @@
 use super::{LayoutCause, LayoutListKind, LayoutTarget};
-use crate::GlyphId;
+use crate::{GlyphId, Tag};
 
 #[test]
 fn unsupported_coverage_format_names_the_selector() {
@@ -117,4 +117,35 @@ fn layout_targets_have_stable_names() {
         LayoutTarget::FeatureParameters.to_string(),
         "Feature Parameters"
     );
+}
+
+#[test]
+fn invalid_layout_tag_names_its_list() {
+    let cause = LayoutCause::InvalidLayoutTag {
+        list: LayoutListKind::Script,
+        tag: Tag::new([b'a', 0, b'c', b'd']),
+    };
+    assert_eq!(cause.to_string(), "invalid script tag Tag(a\\x00cd)");
+}
+
+#[test]
+fn unsorted_layout_tags_name_the_adjacent_pair() {
+    let cause = LayoutCause::UnsortedLayoutTags {
+        list: LayoutListKind::Feature,
+        previous: Tag::new(*b"liga"),
+        current: Tag::new(*b"kern"),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "feature tag kern follows larger tag liga"
+    );
+}
+
+#[test]
+fn duplicate_layout_tag_names_its_list() {
+    let cause = LayoutCause::DuplicateLayoutTag {
+        list: LayoutListKind::Language,
+        tag: Tag::new(*b"ENG "),
+    };
+    assert_eq!(cause.to_string(), "duplicate language tag ENG ");
 }
