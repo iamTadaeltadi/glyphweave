@@ -149,3 +149,26 @@ fn duplicate_layout_tag_names_its_list() {
     };
     assert_eq!(cause.to_string(), "duplicate language tag ENG ");
 }
+
+#[test]
+fn invalid_layout_offset_names_its_legal_interval() {
+    let cause = LayoutCause::InvalidLayoutOffset {
+        target: LayoutTarget::LanguageSystem,
+        offset: 6,
+        minimum: 10,
+        container_length: 42,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "Language System offset 6 is outside legal range 10..42"
+    );
+}
+
+#[test]
+fn reserved_lookup_order_offset_names_the_value() {
+    let cause = LayoutCause::ReservedLookupOrderOffset { offset: 4 };
+    assert_eq!(
+        cause.to_string(),
+        "reserved lookup-order offset must be zero, not 4"
+    );
+}
