@@ -6,11 +6,11 @@ use core::fmt;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum LayoutListKind {
-    /// The ScriptRecord array of a ScriptList.
+    /// The `ScriptRecord` array of a `ScriptList`.
     Script,
-    /// The LangSysRecord array of a Script table.
+    /// The `LangSysRecord` array of a Script table.
     Language,
-    /// The FeatureRecord array of a FeatureList.
+    /// The `FeatureRecord` array of a `FeatureList`.
     Feature,
 }
 
@@ -28,13 +28,13 @@ impl fmt::Display for LayoutListKind {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum LayoutTarget {
-    /// A Script table referenced by ScriptList.
+    /// A Script table referenced by `ScriptList`.
     Script,
     /// The default Language System table of a Script.
     DefaultLanguageSystem,
     /// A named Language System table referenced by a Script.
     LanguageSystem,
-    /// A Feature table referenced by FeatureList.
+    /// A Feature table referenced by `FeatureList`.
     Feature,
     /// A tag-specific Feature Parameters table.
     FeatureParameters,
