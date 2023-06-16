@@ -7,9 +7,11 @@
 
 mod class_definition;
 mod coverage;
+mod language_system;
 
 pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
+pub use language_system::LanguageSystem;
 
 fn layout_error(offset: usize, cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::Diagnostic {
     layout_error_sized(offset, 2, cause)
