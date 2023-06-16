@@ -52,3 +52,6 @@ impl LanguageSystem {
         self.required_feature.is_none() && self.feature_indices.is_empty()
     }
 }
+
+#[cfg(test)]
+mod tests;
