@@ -64,3 +64,6 @@ impl ScriptList {
         self.scripts.is_empty()
     }
 }
+
+#[cfg(test)]
+mod tests;
