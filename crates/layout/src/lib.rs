@@ -8,6 +8,7 @@
 mod class_definition;
 mod coverage;
 mod feature;
+mod feature_list;
 mod language_system;
 mod script;
 mod script_list;
@@ -15,6 +16,7 @@ mod script_list;
 pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
 pub use feature::Feature;
+pub use feature_list::FeatureList;
 pub use language_system::LanguageSystem;
 pub use script::Script;
 pub use script_list::ScriptList;
