@@ -1,5 +1,7 @@
 //! Canonical OpenType language-system feature selection.
 
+mod decode;
+
 /// The required and optional `FeatureList` indices selected by one language system.
 ///
 /// Optional indices are a sorted set because their source order does not control lookup
