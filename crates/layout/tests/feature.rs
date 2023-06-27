@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType Feature tables.
 
 use glyphweave_layout::Feature;
-use glyphweave_sfnt::ByteSpan;
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTarget};
 
 #[test]
 fn decodes_lookup_set_and_absolute_parameters_position() {
@@ -25,4 +25,39 @@ fn decodes_null_parameters_offset() {
 
     assert_eq!(feature.parameters_position(), None);
     assert_eq!(feature.lookup_indices(), &[7]);
+}
+
+#[test]
+fn rejects_parameters_target_inside_lookup_array() {
+    let bytes = [0x00, 0x04, 0x00, 0x01, 0x00, 0x07, 0xfe];
+    let diagnostic =
+        Feature::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(0, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::FeatureParameters,
+            offset: 4,
+            minimum: 6,
+            container_length: 7,
+        })
+    );
+}
+
+#[test]
+fn rejects_parameters_target_at_container_end() {
+    let bytes = [0x00, 0x04, 0x00, 0x00];
+    let diagnostic =
+        Feature::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::FeatureParameters,
+            offset: 4,
+            minimum: 4,
+            container_length: 4,
+        })
+    );
 }
