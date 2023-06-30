@@ -142,3 +142,15 @@ fn rejects_named_target_at_container_end() {
         })
     );
 }
+
+#[test]
+fn accepts_exact_language_target_aliasing() {
+    let bytes = [
+        0x00, 0x0a, 0x00, 0x01, b'D', b'E', b'U', b' ', 0x00, 0x0a, // shared target
+        0x00, 0x00, 0x00, 0x04, 0x00, 0x00, // Language System
+    ];
+    let script = Script::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
+
+    assert_eq!(script.default_language(), script.language(DEU));
+    assert_eq!(script.language(DEU).unwrap().required_feature(), Some(4));
+}
