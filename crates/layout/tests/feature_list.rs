@@ -102,3 +102,18 @@ fn accepts_exact_feature_target_aliasing() {
     assert_eq!(list.feature(0), list.feature(1));
     assert_eq!(list.feature(1).unwrap().lookup_indices(), &[5]);
 }
+
+#[test]
+fn every_strict_feature_list_prefix_is_rejected() {
+    let complete = [
+        0x00, 0x01, b'k', b'e', b'r', b'n', 0x00, 0x08, // record
+        0x00, 0x00, 0x00, 0x00, // Feature
+    ];
+    for end in 0..complete.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(
+            FeatureList::decode(&complete, span).is_err(),
+            "strict prefix {end} decoded"
+        );
+    }
+}
