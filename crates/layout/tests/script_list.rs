@@ -118,3 +118,18 @@ fn accepts_exact_script_target_aliasing() {
     assert_eq!(list.script(ARAB), list.script(LATN));
     assert!(list.script(LATN).unwrap().is_empty());
 }
+
+#[test]
+fn every_strict_script_list_prefix_is_rejected() {
+    let complete = [
+        0x00, 0x01, b'l', b'a', b't', b'n', 0x00, 0x08, // record
+        0x00, 0x00, 0x00, 0x00, // Script
+    ];
+    for end in 0..complete.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(
+            ScriptList::decode(&complete, span).is_err(),
+            "strict prefix {end} decoded"
+        );
+    }
+}
