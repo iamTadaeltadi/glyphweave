@@ -1,6 +1,6 @@
 //! Deterministic totality properties for shared layout-list decoders.
 
-use glyphweave_layout::{Feature, FeatureList, LanguageSystem, Script};
+use glyphweave_layout::{Feature, FeatureList, LanguageSystem, Script, ScriptList};
 use glyphweave_sfnt::ByteSpan;
 use proptest::{
     collection,
@@ -83,6 +83,21 @@ proptest! {
             for (_, feature) in list.features() {
                 prop_assert!(feature.lookup_indices().is_sorted());
             }
+        }
+    }
+
+    #[test]
+    fn arbitrary_script_list_spans_decode_totally(
+        bytes in collection::vec(any::<u8>(), 0..257),
+        start in 0..300usize,
+        length in 0..300usize,
+    ) {
+        let span = ByteSpan::between(start, start + length).unwrap();
+        if let Ok(list) = ScriptList::decode(&bytes, span) {
+            prop_assert!(list
+                .scripts()
+                .windows(2)
+                .all(|pair| pair[0].0 < pair[1].0));
         }
     }
 }
