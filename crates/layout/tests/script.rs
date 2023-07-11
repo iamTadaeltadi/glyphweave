@@ -169,3 +169,21 @@ fn every_strict_script_prefix_is_rejected() {
         );
     }
 }
+
+#[test]
+fn truncation_after_a_greater_language_tag_is_bounded() {
+    let bytes = [
+        0x00, 0x00, 0x00, 0x02, b'D', b'E', b'U', b' ', 0x00, 0x10, b'F', b'R', b'A', b' ', 0x00,
+    ];
+    let diagnostic =
+        Script::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(14, 15));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
