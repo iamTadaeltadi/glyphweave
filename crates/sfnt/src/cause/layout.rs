@@ -2,6 +2,25 @@
 
 use core::fmt;
 
+/// The OpenType layout table family that assigns meaning to a lookup type.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum LayoutTableKind {
+    /// Glyph substitution through GSUB.
+    Substitution,
+    /// Glyph positioning through GPOS.
+    Positioning,
+}
+
+impl fmt::Display for LayoutTableKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Self::Substitution => "GSUB",
+            Self::Positioning => "GPOS",
+        })
+    }
+}
+
 /// The tag-ordered layout list involved in a validation failure.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
