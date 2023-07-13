@@ -1,4 +1,4 @@
-use super::{LayoutCause, LayoutListKind, LayoutTarget};
+use super::{LayoutCause, LayoutListKind, LayoutTableKind, LayoutTarget};
 use crate::{GlyphId, Tag};
 
 #[test]
@@ -102,6 +102,12 @@ fn layout_list_kinds_have_stable_names() {
     assert_eq!(LayoutListKind::Script.to_string(), "script");
     assert_eq!(LayoutListKind::Language.to_string(), "language");
     assert_eq!(LayoutListKind::Feature.to_string(), "feature");
+}
+
+#[test]
+fn layout_table_kinds_use_standard_tags() {
+    assert_eq!(LayoutTableKind::Substitution.to_string(), "GSUB");
+    assert_eq!(LayoutTableKind::Positioning.to_string(), "GPOS");
 }
 
 #[test]
