@@ -112,6 +112,12 @@ fn layout_table_kinds_use_standard_tags() {
 
 #[test]
 fn layout_targets_have_stable_names() {
+    assert_eq!(LayoutTarget::Lookup.to_string(), "Lookup");
+    assert_eq!(LayoutTarget::LookupSubtable.to_string(), "Lookup subtable");
+    assert_eq!(
+        LayoutTarget::ExtensionSubtable.to_string(),
+        "extension subtable"
+    );
     assert_eq!(LayoutTarget::Script.to_string(), "Script");
     assert_eq!(
         LayoutTarget::DefaultLanguageSystem.to_string(),
