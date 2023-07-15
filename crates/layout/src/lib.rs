@@ -57,7 +57,7 @@ fn relative_target_span(
             field_position,
             glyphweave_sfnt::LayoutCause::InvalidLayoutOffset {
                 target,
-                offset,
+                offset: u32::from(offset),
                 minimum,
                 container_length,
             },
