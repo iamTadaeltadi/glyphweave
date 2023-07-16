@@ -107,11 +107,11 @@ pub enum LayoutCause {
         /// The repeated Tag.
         tag: crate::Tag,
     },
-    /// An Offset16 target was null, inside its owner records, or outside its container.
+    /// An Offset16 or Offset32 target was null, inside owner records, or outside its container.
     InvalidLayoutOffset {
         /// The kind of structure being targeted.
         target: LayoutTarget,
-        /// The stored relative Offset16.
+        /// The stored relative offset.
         offset: u32,
         /// The first legal relative target byte.
         minimum: usize,
@@ -122,6 +122,25 @@ pub enum LayoutCause {
     ReservedLookupOrderOffset {
         /// The nonzero reserved value.
         offset: u16,
+    },
+    /// A GSUB or GPOS Lookup used a type outside its defined enumeration.
+    InvalidLookupType {
+        /// The table family assigning meaning to the type.
+        table: LayoutTableKind,
+        /// The unrecognized lookup type.
+        lookup_type: u16,
+    },
+    /// A Lookup declared no subtables.
+    EmptyLookupSubtables {
+        /// The containing layout table family.
+        table: LayoutTableKind,
+        /// The declared lookup type.
+        lookup_type: u16,
+    },
+    /// A Lookup set bits reserved in the shared lookup-flag word.
+    ReservedLookupFlags {
+        /// The complete raw flag word.
+        flags: u16,
     },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
@@ -209,6 +228,15 @@ impl fmt::Display for LayoutCause {
             ),
             Self::ReservedLookupOrderOffset { offset } => {
                 write!(f, "reserved lookup-order offset must be zero, not {offset}")
+            }
+            Self::InvalidLookupType { table, lookup_type } => {
+                write!(f, "invalid {table} lookup type {lookup_type}")
+            }
+            Self::EmptyLookupSubtables { table, lookup_type } => {
+                write!(f, "{table} lookup type {lookup_type} has no subtables")
+            }
+            Self::ReservedLookupFlags { flags } => {
+                write!(f, "lookup flags {flags:#06x} set reserved bits")
             }
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
