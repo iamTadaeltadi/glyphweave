@@ -184,3 +184,27 @@ fn reserved_lookup_order_offset_names_the_value() {
         "reserved lookup-order offset must be zero, not 4"
     );
 }
+
+#[test]
+fn invalid_lookup_type_names_its_table() {
+    let cause = LayoutCause::InvalidLookupType {
+        table: LayoutTableKind::Substitution,
+        lookup_type: 9,
+    };
+    assert_eq!(cause.to_string(), "invalid GSUB lookup type 9");
+}
+
+#[test]
+fn empty_lookup_names_its_type() {
+    let cause = LayoutCause::EmptyLookupSubtables {
+        table: LayoutTableKind::Positioning,
+        lookup_type: 3,
+    };
+    assert_eq!(cause.to_string(), "GPOS lookup type 3 has no subtables");
+}
+
+#[test]
+fn reserved_lookup_flags_preserve_the_raw_word() {
+    let cause = LayoutCause::ReservedLookupFlags { flags: 0x00a2 };
+    assert_eq!(cause.to_string(), "lookup flags 0x00a2 set reserved bits");
+}
