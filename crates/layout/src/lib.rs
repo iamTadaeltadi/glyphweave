@@ -10,6 +10,7 @@ mod coverage;
 mod feature;
 mod feature_list;
 mod language_system;
+mod mark_filter;
 mod script;
 mod script_list;
 
@@ -18,6 +19,7 @@ pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use language_system::LanguageSystem;
+pub use mark_filter::MarkFilter;
 pub use script::Script;
 pub use script_list::ScriptList;
 
