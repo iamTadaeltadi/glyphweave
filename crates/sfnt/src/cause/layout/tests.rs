@@ -208,3 +208,37 @@ fn reserved_lookup_flags_preserve_the_raw_word() {
     let cause = LayoutCause::ReservedLookupFlags { flags: 0x00a2 };
     assert_eq!(cause.to_string(), "lookup flags 0x00a2 set reserved bits");
 }
+
+#[test]
+fn unsupported_extension_format_names_its_table() {
+    let cause = LayoutCause::UnsupportedExtensionFormat {
+        table: LayoutTableKind::Positioning,
+        format: 2,
+    };
+    assert_eq!(cause.to_string(), "unsupported GPOS extension format 2");
+}
+
+#[test]
+fn recursive_extension_names_the_transport_type() {
+    let cause = LayoutCause::RecursiveExtensionLookupType {
+        table: LayoutTableKind::Substitution,
+        lookup_type: 7,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "GSUB extension cannot target lookup type 7"
+    );
+}
+
+#[test]
+fn mismatched_extensions_name_both_real_types() {
+    let cause = LayoutCause::MismatchedExtensionLookupTypes {
+        table: LayoutTableKind::Positioning,
+        expected: 4,
+        actual: 6,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "GPOS extension lookup type 6 differs from preceding type 4"
+    );
+}
