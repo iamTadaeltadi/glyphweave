@@ -58,14 +58,26 @@ fn relative_target_span(
     minimum: usize,
     target: glyphweave_sfnt::LayoutTarget,
 ) -> glyphweave_sfnt::Decoded<glyphweave_sfnt::ByteSpan> {
+    relative_target_span_u32(owner, field_position, 2, u32::from(offset), minimum, target)
+}
+
+fn relative_target_span_u32(
+    owner: glyphweave_sfnt::ByteSpan,
+    field_position: usize,
+    field_size: usize,
+    offset: u32,
+    minimum: usize,
+    target: glyphweave_sfnt::LayoutTarget,
+) -> glyphweave_sfnt::Decoded<glyphweave_sfnt::ByteSpan> {
     let container_length = owner.length();
-    let relative = usize::from(offset);
+    let relative = usize::try_from(offset).unwrap_or(usize::MAX);
     if relative < minimum || relative >= container_length {
-        return Err(layout_error(
+        return Err(layout_error_sized(
             field_position,
+            field_size,
             glyphweave_sfnt::LayoutCause::InvalidLayoutOffset {
                 target,
-                offset: u32::from(offset),
+                offset,
                 minimum,
                 container_length,
             },
