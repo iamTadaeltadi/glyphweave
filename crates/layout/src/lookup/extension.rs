@@ -74,5 +74,36 @@ pub(super) fn decode_extension(
     })
 }
 
+pub(super) fn flatten_extensions(
+    bytes: &[u8],
+    wrappers: Vec<ByteSpan>,
+    table: LayoutTableKind,
+) -> Decoded<(u16, Vec<ByteSpan>)> {
+    let mut effective_type = None;
+    let mut payloads = Vec::with_capacity(wrappers.len());
+    for wrapper in wrappers {
+        let decoded = decode_extension(bytes, wrapper, table)?;
+        if let Some(expected) = effective_type {
+            if decoded.lookup_type != expected {
+                return Err(crate::layout_error(
+                    decoded.type_position,
+                    LayoutCause::MismatchedExtensionLookupTypes {
+                        table,
+                        expected,
+                        actual: decoded.lookup_type,
+                    },
+                ));
+            }
+        } else {
+            effective_type = Some(decoded.lookup_type);
+        }
+        payloads.push(decoded.payload);
+    }
+    Ok((
+        effective_type.expect("nonempty extension Lookup established its type"),
+        payloads,
+    ))
+}
+
 #[cfg(test)]
 mod tests;
