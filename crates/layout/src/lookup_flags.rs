@@ -20,6 +20,21 @@ pub struct LookupFlags {
 }
 
 impl LookupFlags {
+    pub(crate) const fn from_raw(raw: u16, filtering_set: Option<u16>) -> Self {
+        let attachment = (raw >> 8) as u8;
+        let attachment = if attachment == 0 {
+            None
+        } else {
+            Some(attachment)
+        };
+        Self::new(
+            raw & 0x0001 != 0,
+            raw & 0x0002 != 0,
+            raw & 0x0004 != 0,
+            MarkFilter::resolve(raw & 0x0008 != 0, filtering_set, attachment),
+        )
+    }
+
     /// Builds canonical lookup qualifiers with an already resolved mark filter.
     #[must_use]
     pub const fn new(
