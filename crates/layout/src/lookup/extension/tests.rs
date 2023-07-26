@@ -1,6 +1,6 @@
 use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind, LayoutTarget};
 
-use super::decode_extension;
+use super::{decode_extension, flatten_extensions};
 
 fn decode(
     bytes: &[u8],
@@ -72,6 +72,55 @@ fn rejects_extension_target_inside_wrapper() {
             offset: 4,
             minimum: 8,
             container_length: 8,
+        })
+    );
+}
+
+#[test]
+fn flattens_same_typed_wrappers_in_order() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x10, // wrapper one
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x0a, // wrapper two
+        0xaa, 0xbb, 0xcc, 0xdd,
+    ];
+    let wrappers = [
+        ByteSpan::between(0, 20).unwrap(),
+        ByteSpan::between(8, 20).unwrap(),
+    ];
+    let (lookup_type, payloads) =
+        flatten_extensions(&bytes, wrappers.into(), LayoutTableKind::Substitution).unwrap();
+
+    assert_eq!(lookup_type, 4);
+    assert_eq!(
+        payloads,
+        [
+            ByteSpan::between(16, 20).unwrap(),
+            ByteSpan::between(18, 20).unwrap()
+        ]
+    );
+}
+
+#[test]
+fn rejects_different_real_extension_types() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x10, // type four
+        0x00, 0x01, 0x00, 0x05, 0x00, 0x00, 0x00, 0x0a, // type five
+        0xaa, 0xbb, 0xcc, 0xdd,
+    ];
+    let wrappers = [
+        ByteSpan::between(0, 20).unwrap(),
+        ByteSpan::between(8, 20).unwrap(),
+    ];
+    let diagnostic =
+        flatten_extensions(&bytes, wrappers.into(), LayoutTableKind::Substitution).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(10, 12));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::MismatchedExtensionLookupTypes {
+            table: LayoutTableKind::Substitution,
+            expected: 4,
+            actual: 5,
         })
     );
 }
