@@ -4,6 +4,8 @@ use glyphweave_sfnt::LayoutTableKind;
 
 use crate::Lookup;
 
+mod decode;
+
 /// Lookups in the exact processing and index order defined by GSUB or GPOS.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct LookupList {
