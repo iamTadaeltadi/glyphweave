@@ -1,7 +1,7 @@
 //! Semantic decoding tests for shared OpenType Lookup tables.
 
 use glyphweave_layout::{Lookup, MarkFilter};
-use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind, LayoutTarget};
 
 #[test]
 fn decodes_flags_mark_set_and_ordered_subtables() {
@@ -119,6 +119,51 @@ fn rejects_lookup_without_subtables() {
         Cause::Layout(LayoutCause::EmptyLookupSubtables {
             table: LayoutTableKind::Positioning,
             lookup_type: 1,
+        })
+    );
+}
+
+#[test]
+fn rejects_subtable_target_inside_lookup_header() {
+    let bytes = [0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x06, 0xfe];
+    let diagnostic = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(6, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::LookupSubtable,
+            offset: 6,
+            minimum: 8,
+            container_length: 9,
+        })
+    );
+}
+
+#[test]
+fn filtering_set_extends_the_protected_header() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x10, 0x00, 0x01, 0x00, 0x08, 0x00, 0x03, 0xfe,
+    ];
+    let diagnostic = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::LookupSubtable,
+            offset: 8,
+            minimum: 10,
+            container_length: 11,
         })
     );
 }
