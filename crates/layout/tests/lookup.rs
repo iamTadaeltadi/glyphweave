@@ -184,3 +184,45 @@ fn accepts_exact_subtable_target_aliasing() {
     assert_eq!(lookup.subtables()[0], lookup.subtables()[1]);
     assert_eq!(lookup.subtables()[0], ByteSpan::between(10, 12).unwrap());
 }
+
+#[test]
+fn flattens_gsub_extension_lookup() {
+    let bytes = [
+        0x00, 0x07, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0a, 0x00, 0x12, // Lookup
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x10, // wrapper one
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x0a, // wrapper two
+        0xde, 0xad, 0xbe, 0xef,
+    ];
+    let lookup = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap();
+
+    assert_eq!(lookup.lookup_type(), 4);
+    assert_eq!(
+        lookup.subtables(),
+        [
+            ByteSpan::between(26, 30).unwrap(),
+            ByteSpan::between(28, 30).unwrap()
+        ]
+    );
+}
+
+#[test]
+fn flattens_gpos_extension_lookup() {
+    let bytes = [
+        0x00, 0x09, 0x00, 0x00, 0x00, 0x01, 0x00, 0x08, // Lookup
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x08, 0xfe,
+    ];
+    let lookup = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Positioning,
+    )
+    .unwrap();
+
+    assert_eq!(lookup.lookup_type(), 2);
+    assert_eq!(lookup.subtables(), [ByteSpan::between(16, 17).unwrap()]);
+}
