@@ -22,6 +22,6 @@ impl LookupList {
                 relative_target_span(span, position, offset, minimum, LayoutTarget::Lookup)?;
             lookups.push(Lookup::decode(bytes, target, table)?);
         }
-        Ok(Self::new(lookups))
+        Ok(Self::new(table, lookups))
     }
 }

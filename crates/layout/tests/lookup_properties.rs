@@ -65,7 +65,7 @@ proptest! {
         let span = ByteSpan::between(start, start + length).unwrap();
         let table = table(positioning);
         if let Ok(list) = LookupList::decode(&bytes, span, table) {
-            prop_assert!(list.table().is_none_or(|actual| actual == table));
+            prop_assert_eq!(list.table(), table);
             let canonical = list.lookups().iter().all(|lookup| {
                 !lookup.is_empty() && is_effective_type(table, lookup.lookup_type())
             });

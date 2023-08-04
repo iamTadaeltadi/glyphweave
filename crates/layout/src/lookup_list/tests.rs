@@ -14,17 +14,17 @@ fn lookup(lookup_type: u16) -> Lookup {
 
 #[test]
 fn preserves_lookup_index_order() {
-    let list = LookupList::new([lookup(4), lookup(1)]);
+    let list = LookupList::new(LayoutTableKind::Substitution, [lookup(4), lookup(1)]);
     assert_eq!(list.lookup(0).unwrap().lookup_type(), 4);
     assert_eq!(list.lookup(1).unwrap().lookup_type(), 1);
     assert_eq!(list.lookup(2), None);
-    assert_eq!(list.table(), Some(LayoutTableKind::Substitution));
+    assert_eq!(list.table(), LayoutTableKind::Substitution);
 }
 
 #[test]
-fn empty_list_has_no_table_family() {
-    let list = LookupList::default();
+fn empty_list_preserves_its_table_family() {
+    let list = LookupList::new(LayoutTableKind::Positioning, []);
     assert!(list.is_empty());
     assert_eq!(list.len(), 0);
-    assert_eq!(list.table(), None);
+    assert_eq!(list.table(), LayoutTableKind::Positioning);
 }
