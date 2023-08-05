@@ -1,6 +1,6 @@
 //! Deterministic totality properties for Lookup and LookupList decoding.
 
-use glyphweave_layout::{Lookup, LookupList};
+use glyphweave_layout::{Lookup, LookupList, MarkFilter};
 use glyphweave_sfnt::{ByteSpan, LayoutTableKind};
 use proptest::{
     collection,
@@ -31,6 +31,10 @@ fn is_effective_type(table: LayoutTableKind, lookup_type: u16) -> bool {
         LayoutTableKind::Positioning => (1..=9).contains(&lookup_type) && lookup_type != 9,
         _ => false,
     }
+}
+
+fn push_u16(bytes: &mut Vec<u8>, value: u16) {
+    bytes.extend_from_slice(&value.to_be_bytes());
 }
 
 proptest! {
@@ -71,5 +75,40 @@ proptest! {
             });
             prop_assert!(canonical);
         }
+    }
+
+    #[test]
+    fn generated_flag_words_resolve_mark_precedence(
+        right_to_left in any::<bool>(),
+        ignore_base in any::<bool>(),
+        ignore_ligatures in any::<bool>(),
+        ignore_marks in any::<bool>(),
+        filtering_set in proptest::option::of(any::<u16>()),
+        attachment_class in any::<u8>(),
+    ) {
+        let low = u16::from(right_to_left)
+            | u16::from(ignore_base) << 1
+            | u16::from(ignore_ligatures) << 2
+            | u16::from(ignore_marks) << 3
+            | u16::from(filtering_set.is_some()) << 4;
+        let raw_flags = low | u16::from(attachment_class) << 8;
+        let offset = if filtering_set.is_some() { 10 } else { 8 };
+        let mut bytes = Vec::new();
+        push_u16(&mut bytes, 1);
+        push_u16(&mut bytes, raw_flags);
+        push_u16(&mut bytes, 1);
+        push_u16(&mut bytes, offset);
+        if let Some(set) = filtering_set {
+            push_u16(&mut bytes, set);
+        }
+        bytes.push(0xfe);
+
+        let span = ByteSpan::between(0, bytes.len()).unwrap();
+        let lookup = Lookup::decode(&bytes, span, LayoutTableKind::Substitution).unwrap();
+        let class = (attachment_class != 0).then_some(attachment_class);
+        prop_assert_eq!(
+            lookup.flags().mark_filter(),
+            MarkFilter::resolve(ignore_marks, filtering_set, class)
+        );
     }
 }
