@@ -77,6 +77,23 @@ fn rejects_extension_target_inside_wrapper() {
 }
 
 #[test]
+fn preserves_full_width_invalid_extension_offset() {
+    let bytes = [0x00, 0x01, 0x00, 0x04, 0xff, 0xff, 0xff, 0xff];
+    let diagnostic = decode(&bytes, LayoutTableKind::Substitution).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(4, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::ExtensionSubtable,
+            offset: u32::MAX,
+            minimum: 8,
+            container_length: 8,
+        })
+    );
+}
+
+#[test]
 fn flattens_same_typed_wrappers_in_order() {
     let bytes = [
         0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x10, // wrapper one
