@@ -1,4 +1,4 @@
-//! Deterministic totality properties for Lookup and LookupList decoding.
+//! Deterministic totality properties for `Lookup` and `LookupList` decoding.
 
 use glyphweave_layout::{Lookup, LookupList, MarkFilter};
 use glyphweave_sfnt::{ByteSpan, LayoutTableKind};
@@ -17,7 +17,7 @@ fn fixed_config() -> Config {
     }
 }
 
-fn table(positioning: bool) -> LayoutTableKind {
+const fn table(positioning: bool) -> LayoutTableKind {
     if positioning {
         LayoutTableKind::Positioning
     } else {
@@ -87,11 +87,11 @@ proptest! {
         attachment_class in any::<u8>(),
     ) {
         let low = u16::from(right_to_left)
-            | u16::from(ignore_base) << 1
-            | u16::from(ignore_ligatures) << 2
-            | u16::from(ignore_marks) << 3
-            | u16::from(filtering_set.is_some()) << 4;
-        let raw_flags = low | u16::from(attachment_class) << 8;
+            | (u16::from(ignore_base) << 1)
+            | (u16::from(ignore_ligatures) << 2)
+            | (u16::from(ignore_marks) << 3)
+            | (u16::from(filtering_set.is_some()) << 4);
+        let raw_flags = low | (u16::from(attachment_class) << 8);
         let offset = if filtering_set.is_some() { 10 } else { 8 };
         let mut bytes = Vec::new();
         push_u16(&mut bytes, 1);
