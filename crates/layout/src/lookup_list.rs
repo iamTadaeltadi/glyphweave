@@ -1,4 +1,4 @@
-//! Canonical indexed OpenType LookupList model.
+//! Canonical indexed OpenType `LookupList` model.
 
 use glyphweave_sfnt::LayoutTableKind;
 
@@ -23,7 +23,7 @@ impl LookupList {
         }
     }
 
-    /// Returns the Lookup at a zero-based LookupList index.
+    /// Returns the Lookup at a zero-based `LookupList` index.
     #[must_use]
     pub fn lookup(&self, index: u16) -> Option<&Lookup> {
         self.lookups.get(usize::from(index))

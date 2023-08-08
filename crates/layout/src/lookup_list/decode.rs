@@ -4,7 +4,7 @@ use super::LookupList;
 use crate::{Lookup, relative_target_span};
 
 impl LookupList {
-    /// Decodes a GSUB or GPOS LookupList at the beginning of `span`.
+    /// Decodes a GSUB or GPOS `LookupList` at the beginning of `span`.
     /// # Errors
     /// Returns a diagnostic for truncation or an invalid nested Lookup or relative target.
     pub fn decode(bytes: &[u8], span: ByteSpan, table: LayoutTableKind) -> Decoded<Self> {
