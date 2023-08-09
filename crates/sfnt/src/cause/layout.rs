@@ -12,6 +12,26 @@ pub enum LayoutTableKind {
     Positioning,
 }
 
+impl LayoutTableKind {
+    /// Returns the greatest lookup type defined by this table family.
+    #[must_use]
+    pub const fn maximum_lookup_type(self) -> u16 {
+        match self {
+            Self::Substitution => 8,
+            Self::Positioning => 9,
+        }
+    }
+
+    /// Returns the transport-only extension lookup type for this table family.
+    #[must_use]
+    pub const fn extension_lookup_type(self) -> u16 {
+        match self {
+            Self::Substitution => 7,
+            Self::Positioning => 9,
+        }
+    }
+}
+
 impl fmt::Display for LayoutTableKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
