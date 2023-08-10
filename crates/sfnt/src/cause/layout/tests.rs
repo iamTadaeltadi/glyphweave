@@ -111,6 +111,14 @@ fn layout_table_kinds_use_standard_tags() {
 }
 
 #[test]
+fn layout_table_kinds_define_lookup_boundaries() {
+    assert_eq!(LayoutTableKind::Substitution.maximum_lookup_type(), 8);
+    assert_eq!(LayoutTableKind::Substitution.extension_lookup_type(), 7);
+    assert_eq!(LayoutTableKind::Positioning.maximum_lookup_type(), 9);
+    assert_eq!(LayoutTableKind::Positioning.extension_lookup_type(), 9);
+}
+
+#[test]
 fn layout_targets_have_stable_names() {
     assert_eq!(LayoutTarget::Lookup.to_string(), "Lookup");
     assert_eq!(LayoutTarget::LookupSubtable.to_string(), "Lookup subtable");
