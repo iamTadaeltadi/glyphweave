@@ -1,12 +1,27 @@
 use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind, LayoutTarget};
 
-use super::{decode_extension, flatten_extensions};
+use super::{decode_extension, flatten_extensions, is_extension_type, is_valid_type};
 
 fn decode(
     bytes: &[u8],
     table: LayoutTableKind,
 ) -> glyphweave_sfnt::Decoded<super::DecodedExtension> {
     decode_extension(bytes, ByteSpan::between(0, bytes.len()).unwrap(), table)
+}
+
+#[test]
+fn validates_both_lookup_type_domains() {
+    for (table, extension, maximum) in [
+        (LayoutTableKind::Substitution, 7, 8),
+        (LayoutTableKind::Positioning, 9, 9),
+    ] {
+        assert!(!is_valid_type(table, 0));
+        assert!(is_valid_type(table, 1));
+        assert!(is_valid_type(table, maximum));
+        assert!(!is_valid_type(table, maximum + 1));
+        assert!(is_extension_type(table, extension));
+        assert!(!is_extension_type(table, 1));
+    }
 }
 
 #[test]
