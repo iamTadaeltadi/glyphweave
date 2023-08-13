@@ -272,3 +272,23 @@ fn accepts_exact_extension_payload_aliasing() {
     assert_eq!(lookup.subtables()[0], lookup.subtables()[1]);
     assert_eq!(lookup.subtables()[0], ByteSpan::between(26, 28).unwrap());
 }
+
+#[test]
+fn truncated_mark_filtering_set_is_bounded() {
+    let bytes = [0x00, 0x01, 0x00, 0x10, 0x00, 0x01, 0x00, 0x0a, 0x00];
+    let diagnostic = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(8, 9));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
