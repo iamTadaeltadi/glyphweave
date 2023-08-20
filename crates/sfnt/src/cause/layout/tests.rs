@@ -126,6 +126,17 @@ fn layout_targets_have_stable_names() {
         LayoutTarget::ExtensionSubtable.to_string(),
         "extension subtable"
     );
+    assert_eq!(
+        LayoutTarget::SubstitutionCoverage.to_string(),
+        "substitution Coverage"
+    );
+    assert_eq!(
+        LayoutTarget::SubstitutionSequence.to_string(),
+        "substitution Sequence"
+    );
+    assert_eq!(LayoutTarget::AlternateSet.to_string(), "AlternateSet");
+    assert_eq!(LayoutTarget::LigatureSet.to_string(), "LigatureSet");
+    assert_eq!(LayoutTarget::Ligature.to_string(), "Ligature");
     assert_eq!(LayoutTarget::Script.to_string(), "Script");
     assert_eq!(
         LayoutTarget::DefaultLanguageSystem.to_string(),
