@@ -137,6 +137,20 @@ fn layout_targets_have_stable_names() {
     assert_eq!(LayoutTarget::AlternateSet.to_string(), "AlternateSet");
     assert_eq!(LayoutTarget::LigatureSet.to_string(), "LigatureSet");
     assert_eq!(LayoutTarget::Ligature.to_string(), "Ligature");
+    assert_eq!(
+        LayoutTarget::ContextClassDefinition.to_string(),
+        "context Class Definition"
+    );
+    assert_eq!(LayoutTarget::ContextRuleSet.to_string(), "ContextRuleSet");
+    assert_eq!(LayoutTarget::ContextRule.to_string(), "ContextRule");
+    assert_eq!(
+        LayoutTarget::ChainedContextRuleSet.to_string(),
+        "ChainContextRuleSet"
+    );
+    assert_eq!(
+        LayoutTarget::ChainedContextRule.to_string(),
+        "ChainContextRule"
+    );
     assert_eq!(LayoutTarget::Script.to_string(), "Script");
     assert_eq!(
         LayoutTarget::DefaultLanguageSystem.to_string(),

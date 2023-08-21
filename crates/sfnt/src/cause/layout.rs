@@ -83,6 +83,16 @@ pub enum LayoutTarget {
     LigatureSet,
     /// A Ligature table within a LigatureSet.
     Ligature,
+    /// A contextual glyph Class Definition table.
+    ContextClassDefinition,
+    /// A ContextSubst rule-set table.
+    ContextRuleSet,
+    /// A ContextSubst rule table.
+    ContextRule,
+    /// A ChainContextSubst rule-set table.
+    ChainedContextRuleSet,
+    /// A ChainContextSubst rule table.
+    ChainedContextRule,
     /// A Script table referenced by `ScriptList`.
     Script,
     /// The default Language System table of a Script.
@@ -106,6 +116,11 @@ impl fmt::Display for LayoutTarget {
             Self::AlternateSet => "AlternateSet",
             Self::LigatureSet => "LigatureSet",
             Self::Ligature => "Ligature",
+            Self::ContextClassDefinition => "context Class Definition",
+            Self::ContextRuleSet => "ContextRuleSet",
+            Self::ContextRule => "ContextRule",
+            Self::ChainedContextRuleSet => "ChainContextRuleSet",
+            Self::ChainedContextRule => "ChainContextRule",
             Self::Script => "Script",
             Self::DefaultLanguageSystem => "default Language System",
             Self::LanguageSystem => "Language System",
