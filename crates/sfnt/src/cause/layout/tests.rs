@@ -284,3 +284,16 @@ fn unsupported_gsub_format_names_type_and_selector() {
     };
     assert_eq!(cause.to_string(), "unsupported GSUB lookup type 4 format 3");
 }
+
+#[test]
+fn mismatched_gsub_count_names_both_domains() {
+    let cause = LayoutCause::MismatchedGsubMappingCount {
+        lookup_type: 2,
+        inputs: 3,
+        records: 2,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "GSUB lookup type 2 has 3 input glyph(s) but 2 mapping record(s)"
+    );
+}
