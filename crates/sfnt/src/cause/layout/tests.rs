@@ -275,3 +275,12 @@ fn mismatched_extensions_name_both_real_types() {
         "GPOS extension lookup type 6 differs from preceding type 4"
     );
 }
+
+#[test]
+fn unsupported_gsub_format_names_type_and_selector() {
+    let cause = LayoutCause::UnsupportedGsubFormat {
+        lookup_type: 4,
+        format: 3,
+    };
+    assert_eq!(cause.to_string(), "unsupported GSUB lookup type 4 format 3");
+}

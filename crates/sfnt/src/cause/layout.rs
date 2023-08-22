@@ -215,6 +215,13 @@ pub enum LayoutCause {
         /// The different real type declared by a later wrapper.
         actual: u16,
     },
+    /// A supported GSUB lookup type used an unknown subtable format.
+    UnsupportedGsubFormat {
+        /// The effective GSUB lookup type.
+        lookup_type: u16,
+        /// The unrecognized format selector.
+        format: u16,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -327,6 +334,13 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "{table} extension lookup type {actual} differs from preceding type {expected}"
+            ),
+            Self::UnsupportedGsubFormat {
+                lookup_type,
+                format,
+            } => write!(
+                f,
+                "unsupported GSUB lookup type {lookup_type} format {format}"
             ),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
