@@ -66,3 +66,23 @@ fn rejects_unknown_single_substitution_format() {
         })
     );
 }
+
+#[test]
+fn rejects_single_output_count_different_from_coverage() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x08, 0x00, 0x01, 0x00, 0x14, // header and output
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x07, // two covered glyphs
+    ];
+    let diagnostic =
+        SingleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(4, 6));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::MismatchedGsubMappingCount {
+            lookup_type: 1,
+            inputs: 2,
+            records: 1,
+        })
+    );
+}
