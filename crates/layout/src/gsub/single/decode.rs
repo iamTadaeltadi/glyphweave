@@ -1,7 +1,7 @@
 //! Bounded decoding for both SingleSubst formats.
-use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTarget, Reader};
 use super::SingleSubstitution;
-use crate::{Coverage, layout_error, relative_target_span};
+use crate::{gsub::decode::decode_coverage, layout_error};
+use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, Reader};
 
 impl SingleSubstitution {
     /// Decodes a SingleSubst subtable at the beginning of `span`.
@@ -59,21 +59,4 @@ impl SingleSubstitution {
             coverage.glyphs().iter().copied().zip(outputs),
         ))
     }
-}
-
-fn decode_coverage(
-    bytes: &[u8],
-    owner: ByteSpan,
-    position: usize,
-    offset: u16,
-    minimum_position: usize,
-) -> Decoded<Coverage> {
-    let target = relative_target_span(
-        owner,
-        position,
-        offset,
-        minimum_position - owner.start(),
-        LayoutTarget::SubstitutionCoverage,
-    )?;
-    Coverage::decode(&bytes[..owner.end()], target.start())
 }
