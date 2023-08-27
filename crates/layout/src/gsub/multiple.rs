@@ -4,6 +4,8 @@ use glyphweave_sfnt::GlyphId;
 
 use super::sequence_map::SequenceMap;
 
+mod decode;
+
 /// An input-ordered map replacing one glyph with an ordered glyph sequence.
 ///
 /// An empty output sequence is retained because GSUB uses it to delete the input glyph.
