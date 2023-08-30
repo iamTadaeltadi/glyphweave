@@ -297,3 +297,12 @@ fn mismatched_gsub_count_names_both_domains() {
         "GSUB lookup type 2 has 3 input glyph(s) but 2 mapping record(s)"
     );
 }
+
+#[test]
+fn invalid_ligature_count_names_the_minimum() {
+    let cause = LayoutCause::InvalidLigatureComponentCount { count: 1 };
+    assert_eq!(
+        cause.to_string(),
+        "GSUB Ligature declares 1 component(s), fewer than the required two"
+    );
+}
