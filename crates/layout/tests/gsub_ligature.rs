@@ -1,7 +1,7 @@
 //! Integration coverage for semantic LigatureSubst decoding.
 
 use glyphweave_layout::LigatureSubstitution;
-use glyphweave_sfnt::{ByteSpan, GlyphId};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause};
 
 #[test]
 fn decodes_coverage_sets_and_ligature_preference_order() {
@@ -30,5 +30,24 @@ fn decodes_coverage_sets_and_ligature_preference_order() {
     assert_eq!(
         substitution.rules()[2].components(),
         [GlyphId::new(7), GlyphId::new(8),]
+    );
+}
+
+#[test]
+fn rejects_ligature_with_only_implicit_first_component() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x10, 0x00, 0x01, 0x00, 0x08, // subtable header
+        0x00, 0x01, 0x00, 0x04, // LigatureSet
+        0x00, 0x14, 0x00, 0x01, // invalid Ligature
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage
+    ];
+    let diagnostic =
+        LigatureSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(14, 16));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLigatureComponentCount { count: 1 })
     );
 }
