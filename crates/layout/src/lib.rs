@@ -23,7 +23,7 @@ pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use gsub::{
-    AlternateSubstitution, LigatureRule, LigatureSubstitution, MultipleSubstitution,
+    AlternateSubstitution, ContextRule, LigatureRule, LigatureSubstitution, MultipleSubstitution,
     ReverseChainSingleSubstitution, SingleSubstitution, SubstitutionRecord,
 };
 pub use language_system::LanguageSystem;

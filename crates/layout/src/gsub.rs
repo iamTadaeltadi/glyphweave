@@ -1,6 +1,7 @@
 //! Canonical Glyph Substitution rules, closure, retention, and remapping.
 
 mod alternate;
+mod context_rule;
 mod decode;
 mod ligature_rule;
 mod ligature_substitution;
@@ -11,6 +12,7 @@ mod single;
 mod substitution_record;
 
 pub use alternate::AlternateSubstitution;
+pub use context_rule::ContextRule;
 pub use ligature_rule::LigatureRule;
 pub use ligature_substitution::LigatureSubstitution;
 pub use multiple::MultipleSubstitution;
