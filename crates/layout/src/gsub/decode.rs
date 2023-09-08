@@ -2,7 +2,7 @@
 
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTarget, Reader};
 
-use crate::{Coverage, layout_error, relative_target_span};
+use crate::{Coverage, SubstitutionRecord, layout_error, relative_target_span};
 
 pub(super) fn decode_coverage(
     bytes: &[u8],
@@ -31,6 +31,32 @@ pub(super) fn decode_coverages(
         .into_iter()
         .map(|(position, offset)| decode_coverage(bytes, owner, position, offset, minimum_position))
         .collect()
+}
+
+pub(super) fn decode_records(
+    reader: &mut Reader<'_>,
+    count: u16,
+    input_count: u16,
+    lookup_type: u16,
+) -> Decoded<Vec<SubstitutionRecord>> {
+    let mut records = Vec::with_capacity(usize::from(count));
+    for _ in 0..count {
+        let position = reader.offset();
+        let sequence_index = reader.u16()?;
+        let lookup_index = reader.u16()?;
+        if sequence_index >= input_count {
+            return Err(layout_error(
+                position,
+                LayoutCause::InvalidSubstitutionSequenceIndex {
+                    lookup_type,
+                    sequence_index,
+                    input_count,
+                },
+            ));
+        }
+        records.push(SubstitutionRecord::new(sequence_index, lookup_index));
+    }
+    Ok(records)
 }
 
 pub(super) fn decode_sequence_map(
