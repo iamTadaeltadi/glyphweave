@@ -236,6 +236,20 @@ pub enum LayoutCause {
         /// The declared count, including the implicit first Coverage glyph.
         count: u16,
     },
+    /// A contextual GSUB rule declared an empty input sequence.
+    EmptyContextInput {
+        /// ContextSubst type 5 or ChainContextSubst type 6.
+        lookup_type: u16,
+    },
+    /// A contextual action targeted a position outside its input sequence.
+    InvalidSubstitutionSequenceIndex {
+        /// ContextSubst type 5 or ChainContextSubst type 6.
+        lookup_type: u16,
+        /// The zero-based sequence index in the action record.
+        sequence_index: u16,
+        /// The contextual input sequence length.
+        input_count: u16,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -367,6 +381,20 @@ impl fmt::Display for LayoutCause {
             Self::InvalidLigatureComponentCount { count } => write!(
                 f,
                 "GSUB Ligature declares {count} component(s), fewer than the required two"
+            ),
+            Self::EmptyContextInput { lookup_type } => {
+                write!(
+                    f,
+                    "GSUB lookup type {lookup_type} context has no input glyphs"
+                )
+            }
+            Self::InvalidSubstitutionSequenceIndex {
+                lookup_type,
+                sequence_index,
+                input_count,
+            } => write!(
+                f,
+                "GSUB lookup type {lookup_type} sequence index {sequence_index} is outside {input_count} input glyph(s)"
             ),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
