@@ -10,6 +10,7 @@ use crate::{
 };
 
 mod format_1;
+mod format_2;
 
 impl ContextSubstitution {
     /// Decodes a ContextSubst subtable at the beginning of `span`.
@@ -20,6 +21,7 @@ impl ContextSubstitution {
         let format_position = reader.offset();
         match reader.u16()? {
             1 => format_1::decode(bytes, span, &mut reader),
+            2 => format_2::decode(bytes, span, &mut reader),
             3 => Self::decode_format_3(bytes, span, &mut reader),
             format => Err(layout_error(
                 format_position,
