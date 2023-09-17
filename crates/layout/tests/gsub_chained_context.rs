@@ -35,3 +35,34 @@ fn decodes_format_3_three_direction_coverage_context() {
         [SubstitutionRecord::new(1, 7), SubstitutionRecord::new(0, 5),]
     );
 }
+
+#[test]
+fn decodes_format_1_exact_glyph_chained_rule() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x26, 0x00, 0x01, 0x00, 0x08, // subtable header
+        0x00, 0x01, 0x00, 0x04, // one ChainSubRule
+        0x00, 0x02, 0x00, 0x02, 0x00, 0x01, // backtrack [2, 1]
+        0x00, 0x03, 0x00, 0x04, 0x00, 0x05, // inputs [implicit 3, 4, 5]
+        0x00, 0x01, 0x00, 0x09, // lookahead [9]
+        0x00, 0x02, 0x00, 0x01, 0x00, 0x07, // first action
+        0x00, 0x00, 0x00, 0x05, // second action
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // first-input Coverage {3}
+    ];
+    let substitution =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap();
+
+    let ChainedContextSubstitution::GlyphRules(rules) = substitution else {
+        panic!("format 1 must expand exact glyph rules");
+    };
+    assert_eq!(rules[0].backtrack(), [GlyphId::new(2), GlyphId::new(1)]);
+    assert_eq!(
+        rules[0].input(),
+        [GlyphId::new(3), GlyphId::new(4), GlyphId::new(5),]
+    );
+    assert_eq!(rules[0].lookahead(), [GlyphId::new(9)]);
+    assert_eq!(
+        rules[0].records(),
+        [SubstitutionRecord::new(1, 7), SubstitutionRecord::new(0, 5),]
+    );
+}
