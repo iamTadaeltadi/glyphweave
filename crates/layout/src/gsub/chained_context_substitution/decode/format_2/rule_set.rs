@@ -50,7 +50,13 @@ fn decode_rule(bytes: &[u8], span: ByteSpan, first_class: u16) -> Decoded<Contex
     let lookahead = read_classes(&mut reader)?;
     let record_count = reader.u16()?;
     let records = decode_records(&mut reader, record_count, input_count, 6)?;
-    Ok(ContextRule::chained(backtrack, first_class, input, lookahead, records))
+    Ok(ContextRule::chained(
+        backtrack,
+        first_class,
+        input,
+        lookahead,
+        records,
+    ))
 }
 
 fn read_classes(reader: &mut Reader<'_>) -> Decoded<Vec<u16>> {

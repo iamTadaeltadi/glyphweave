@@ -20,13 +20,8 @@ pub(super) fn decode(
     offsets
         .into_iter()
         .map(|(position, offset)| {
-            let target = relative_target_span(
-                span,
-                position,
-                offset,
-                minimum,
-                LayoutTarget::ContextRule,
-            )?;
+            let target =
+                relative_target_span(span, position, offset, minimum, LayoutTarget::ContextRule)?;
             decode_rule(bytes, target, first)
         })
         .collect()

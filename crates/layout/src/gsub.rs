@@ -12,6 +12,7 @@ mod reverse_chain;
 mod sequence_map;
 mod single;
 mod substitution_record;
+mod subtable;
 
 pub use alternate::AlternateSubstitution;
 pub use chained_context_substitution::ChainedContextSubstitution;
@@ -23,3 +24,4 @@ pub use multiple::MultipleSubstitution;
 pub use reverse_chain::ReverseChainSingleSubstitution;
 pub use single::SingleSubstitution;
 pub use substitution_record::SubstitutionRecord;
+pub use subtable::GsubSubtable;
