@@ -180,6 +180,13 @@ pub enum LayoutCause {
         /// The unrecognized lookup type.
         lookup_type: u16,
     },
+    /// A family-specific decoder received a Lookup from the other layout table.
+    UnexpectedLayoutTableKind {
+        /// The family required by the decoder.
+        expected: LayoutTableKind,
+        /// The family carried by the Lookup.
+        actual: LayoutTableKind,
+    },
     /// A Lookup declared no subtables.
     EmptyLookupSubtables {
         /// The containing layout table family.
@@ -339,6 +346,9 @@ impl fmt::Display for LayoutCause {
             }
             Self::InvalidLookupType { table, lookup_type } => {
                 write!(f, "invalid {table} lookup type {lookup_type}")
+            }
+            Self::UnexpectedLayoutTableKind { expected, actual } => {
+                write!(f, "expected {expected} Lookup, found {actual} Lookup")
             }
             Self::EmptyLookupSubtables { table, lookup_type } => {
                 write!(f, "{table} lookup type {lookup_type} has no subtables")
