@@ -24,7 +24,7 @@ pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,
-    GsubSubtable, LigatureRule, LigatureSubstitution, MultipleSubstitution,
+    GsubLookup, GsubSubtable, LigatureRule, LigatureSubstitution, MultipleSubstitution,
     ReverseChainSingleSubstitution, SingleSubstitution, SubstitutionRecord,
 };
 pub use language_system::LanguageSystem;
