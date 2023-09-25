@@ -257,6 +257,13 @@ pub enum LayoutCause {
         /// The contextual input sequence length.
         input_count: u16,
     },
+    /// A contextual action referenced a LookupList index that does not exist.
+    InvalidContextLookupIndex {
+        /// The referenced zero-based LookupList index.
+        lookup_index: u16,
+        /// The number of available Lookups.
+        lookup_count: usize,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -405,6 +412,13 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "GSUB lookup type {lookup_type} sequence index {sequence_index} is outside {input_count} input glyph(s)"
+            ),
+            Self::InvalidContextLookupIndex {
+                lookup_index,
+                lookup_count,
+            } => write!(
+                f,
+                "context references LookupList index {lookup_index} but only {lookup_count} Lookup(s) exist"
             ),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
