@@ -24,7 +24,7 @@ pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,
-    GsubLookup, GsubLookupList, GsubSubtable, LigatureRule, LigatureSubstitution,
+    GsubClosure, GsubLookup, GsubLookupList, GsubSubtable, LigatureRule, LigatureSubstitution,
     MultipleSubstitution, ReverseChainSingleSubstitution, SingleSubstitution, SubstitutionRecord,
 };
 pub use language_system::LanguageSystem;
@@ -49,6 +49,13 @@ fn layout_error_sized(
     glyphweave_sfnt::Diagnostic::at(
         glyphweave_sfnt::Stage::Decode,
         span,
+        glyphweave_sfnt::Cause::Layout(cause),
+    )
+}
+
+fn closure_error(cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::Diagnostic {
+    glyphweave_sfnt::Diagnostic::failure(
+        glyphweave_sfnt::Stage::Closure,
         glyphweave_sfnt::Cause::Layout(cause),
     )
 }

@@ -2,6 +2,7 @@
 
 mod alternate;
 mod chained_context_substitution;
+mod closure;
 mod context_rule;
 mod context_substitution;
 mod decode;
@@ -18,6 +19,7 @@ mod subtable;
 
 pub use alternate::AlternateSubstitution;
 pub use chained_context_substitution::ChainedContextSubstitution;
+pub use closure::GsubClosure;
 pub use context_rule::ContextRule;
 pub use context_substitution::ContextSubstitution;
 pub use ligature_rule::LigatureRule;
