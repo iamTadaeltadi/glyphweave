@@ -13,10 +13,16 @@ pub(super) fn write(
             write!(formatter, "invalid {table} lookup type {lookup_type}")
         }
         LayoutCause::UnexpectedLayoutTableKind { expected, actual } => {
-            write!(formatter, "expected {expected} Lookup, found {actual} Lookup")
+            write!(
+                formatter,
+                "expected {expected} Lookup, found {actual} Lookup"
+            )
         }
         LayoutCause::EmptyLookupSubtables { table, lookup_type } => {
-            write!(formatter, "{table} lookup type {lookup_type} has no subtables")
+            write!(
+                formatter,
+                "{table} lookup type {lookup_type} has no subtables"
+            )
         }
         LayoutCause::ReservedLookupFlags { flags } => {
             write!(formatter, "lookup flags {flags:#06x} set reserved bits")
