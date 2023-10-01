@@ -8,7 +8,7 @@ pub struct SubstitutionRecord {
 }
 
 impl SubstitutionRecord {
-    /// Creates an action without changing either LookupList coordinate.
+    /// Creates an action without changing either `LookupList` coordinate.
     #[must_use]
     pub const fn new(sequence_index: u16, lookup_index: u16) -> Self {
         Self {
@@ -23,7 +23,7 @@ impl SubstitutionRecord {
         self.sequence_index
     }
 
-    /// Returns the referenced zero-based LookupList index.
+    /// Returns the referenced zero-based `LookupList` index.
     #[must_use]
     pub const fn lookup_index(self) -> u16 {
         self.lookup_index

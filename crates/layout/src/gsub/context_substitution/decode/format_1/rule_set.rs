@@ -1,4 +1,4 @@
-//! Decoding for one Coverage-indexed SubRuleSet.
+//! Decoding for one Coverage-indexed `SubRuleSet`.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTarget, Reader};
 

@@ -1,4 +1,4 @@
-//! Bounded dispatch for LigatureSubst format 1.
+//! Bounded dispatch for `LigatureSubst` format 1.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, LayoutTarget, Reader};
 
@@ -8,7 +8,7 @@ use crate::{gsub::decode::decode_coverage, layout_error, relative_target_span};
 mod set;
 
 impl LigatureSubstitution {
-    /// Decodes a LigatureSubst subtable at the beginning of `span`.
+    /// Decodes a `LigatureSubst` subtable at the beginning of `span`.
     /// # Errors
     /// For truncation, invalid format, offsets, Coverage, counts, or Ligature records.
     pub fn decode(bytes: &[u8], span: ByteSpan) -> Decoded<Self> {

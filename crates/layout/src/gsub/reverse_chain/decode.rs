@@ -1,4 +1,4 @@
-//! Bounded decoding for ReverseChainSingleSubst format 1.
+//! Bounded decoding for `ReverseChainSingleSubst` format 1.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, Reader};
 
@@ -10,7 +10,7 @@ use crate::{
 };
 
 impl ReverseChainSingleSubstitution {
-    /// Decodes a ReverseChainSingleSubst subtable at the beginning of `span`.
+    /// Decodes a `ReverseChainSingleSubst` subtable at the beginning of `span`.
     /// # Errors
     /// For truncation, invalid format, offsets, Coverage, or mapping-count mismatch.
     pub fn decode(bytes: &[u8], span: ByteSpan) -> Decoded<Self> {

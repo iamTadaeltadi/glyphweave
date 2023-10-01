@@ -1,4 +1,4 @@
-//! Bounded ContextSubst format dispatch.
+//! Bounded `ContextSubst` format dispatch.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, Reader};
 
@@ -13,7 +13,7 @@ mod format_1;
 mod format_2;
 
 impl ContextSubstitution {
-    /// Decodes a ContextSubst subtable at the beginning of `span`.
+    /// Decodes a `ContextSubst` subtable at the beginning of `span`.
     /// # Errors
     /// For truncation, invalid formats, offsets, Coverage, counts, or action indices.
     pub fn decode(bytes: &[u8], span: ByteSpan) -> Decoded<Self> {

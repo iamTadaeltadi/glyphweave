@@ -1,4 +1,4 @@
-//! Decoding for one Coverage-indexed LigatureSet.
+//! Decoding for one Coverage-indexed `LigatureSet`.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTarget, Reader};
 

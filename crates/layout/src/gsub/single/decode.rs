@@ -1,10 +1,10 @@
-//! Bounded decoding for both SingleSubst formats.
+//! Bounded decoding for both `SingleSubst` formats.
 use super::SingleSubstitution;
 use crate::{gsub::decode::decode_coverage, layout_error};
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, Reader};
 
 impl SingleSubstitution {
-    /// Decodes a SingleSubst subtable at the beginning of `span`.
+    /// Decodes a `SingleSubst` subtable at the beginning of `span`.
     /// # Errors
     /// For truncation, invalid offsets, formats, Coverage, or count mismatch.
     pub fn decode(bytes: &[u8], span: ByteSpan) -> Decoded<Self> {

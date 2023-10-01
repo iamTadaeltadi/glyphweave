@@ -1,4 +1,4 @@
-//! ChainContextSubst format 1 exact-glyph rule-set decoding.
+//! `ChainContextSubst` format 1 exact-glyph rule-set decoding.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, LayoutTarget, Reader};
 
