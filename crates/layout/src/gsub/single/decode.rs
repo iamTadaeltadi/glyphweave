@@ -30,8 +30,8 @@ impl SingleSubstitution {
         let coverage = decode_coverage(bytes, span, offset_position, offset, reader.offset())?;
         Ok(Self::from_mappings(coverage.glyphs().iter().copied().map(
             |input| {
-                let output = i32::from(input.raw()) + i32::from(delta);
-                (input, GlyphId::new(output.rem_euclid(65_536) as u16))
+                let output = input.raw().wrapping_add_signed(delta);
+                (input, GlyphId::new(output))
             },
         )))
     }

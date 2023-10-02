@@ -30,6 +30,7 @@ impl MultipleSubstitution {
     }
 
     /// Iterates mappings in ascending input Glyph ID order.
+    #[must_use]
     pub fn mappings(&self) -> impl ExactSizeIterator<Item = (GlyphId, &[GlyphId])> + '_ {
         self.mappings.iter()
     }
