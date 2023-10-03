@@ -53,7 +53,7 @@ fn layout_error_sized(
     )
 }
 
-fn closure_error(cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::Diagnostic {
+const fn closure_error(cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::Diagnostic {
     glyphweave_sfnt::Diagnostic::failure(
         glyphweave_sfnt::Stage::Closure,
         glyphweave_sfnt::Cause::Layout(cause),

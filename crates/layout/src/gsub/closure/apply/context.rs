@@ -30,7 +30,8 @@ pub(super) fn apply(
                 extend(lookups, rule.records());
             }
         }
-        GsubSubtable::Context(ContextSubstitution::CoverageRule(rule)) => {
+        GsubSubtable::Context(ContextSubstitution::CoverageRule(rule))
+        | GsubSubtable::ChainedContext(ChainedContextSubstitution::CoverageRule(rule)) => {
             if feasible::coverage(rule, glyphs) {
                 extend(lookups, rule.records());
             }
@@ -57,11 +58,6 @@ pub(super) fn apply(
                     glyphs,
                 )
             }) {
-                extend(lookups, rule.records());
-            }
-        }
-        GsubSubtable::ChainedContext(ChainedContextSubstitution::CoverageRule(rule)) => {
-            if feasible::coverage(rule, glyphs) {
                 extend(lookups, rule.records());
             }
         }

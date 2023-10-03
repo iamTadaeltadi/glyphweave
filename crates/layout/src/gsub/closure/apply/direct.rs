@@ -27,7 +27,7 @@ pub(super) fn apply(subtable: &GsubSubtable, glyphs: &mut BTreeSet<GlyphId>) {
             .rules()
             .iter()
             .filter(|rule| rule.components().iter().all(|glyph| glyphs.contains(glyph)))
-            .map(|rule| rule.replacement())
+            .map(crate::LigatureRule::replacement)
             .collect(),
         GsubSubtable::ReverseChainSingle(value)
             if coverages_match(value.backtrack(), glyphs)
@@ -49,10 +49,7 @@ pub(super) fn coverage_matches(coverage: &Coverage, glyphs: &BTreeSet<GlyphId>) 
     coverage.glyphs().iter().any(|glyph| glyphs.contains(glyph))
 }
 
-pub(super) fn coverages_match(
-    coverages: &[Coverage],
-    glyphs: &BTreeSet<GlyphId>,
-) -> bool {
+pub(super) fn coverages_match(coverages: &[Coverage], glyphs: &BTreeSet<GlyphId>) -> bool {
     coverages
         .iter()
         .all(|coverage| coverage_matches(coverage, glyphs))
