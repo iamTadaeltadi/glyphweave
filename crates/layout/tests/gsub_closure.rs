@@ -68,6 +68,31 @@ fn contextual_action_reaches_nested_lookup_before_its_output() {
     assert_eq!(closure.passes(), 2);
 }
 
+#[test]
+fn cyclic_contextual_lookup_graph_reaches_a_fixed_point() {
+    let bytes = [
+        0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x0c, // first Context
+        0x00, 0x00, 0x00, 0x01, // Lookup 0 invokes Lookup 1
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+        0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x0c, // second Context
+        0x00, 0x00, 0x00, 0x00, // Lookup 1 invokes Lookup 0
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+    ];
+    let list = LookupList::new(
+        LayoutTableKind::Substitution,
+        [
+            lookup(5, ByteSpan::between(0, 18).unwrap()),
+            lookup(5, ByteSpan::between(18, bytes.len()).unwrap()),
+        ],
+    );
+    let semantic = GsubLookupList::decode(&bytes, &list).unwrap();
+    let closure = GsubClosure::compute(&semantic, [GlyphId::new(3)], [0]).unwrap();
+
+    assert_eq!(closure.lookup_indices().collect::<Vec<_>>(), [0, 1]);
+    assert_eq!(closure.glyphs().collect::<Vec<_>>(), [GlyphId::new(3)]);
+    assert_eq!(closure.passes(), 1);
+}
+
 fn lookup(lookup_type: u16, span: ByteSpan) -> Lookup {
     Lookup::new(
         LayoutTableKind::Substitution,
