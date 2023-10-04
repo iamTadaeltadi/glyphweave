@@ -41,6 +41,33 @@ fn closes_transitive_single_multiple_and_ligature_outputs() {
     assert_eq!(closure.passes(), 1);
 }
 
+#[test]
+fn contextual_action_reaches_nested_lookup_before_its_output() {
+    let bytes = [
+        0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x0c, // Context format 3
+        0x00, 0x00, 0x00, 0x01, // input 0 invokes Lookup 1
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // input Coverage {3}
+        0x00, 0x02, 0x00, 0x08, 0x00, 0x01, 0x00, 0x04, // Single 3->4
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+    ];
+    let list = LookupList::new(
+        LayoutTableKind::Substitution,
+        [
+            lookup(5, ByteSpan::between(0, 18).unwrap()),
+            lookup(1, ByteSpan::between(18, bytes.len()).unwrap()),
+        ],
+    );
+    let semantic = GsubLookupList::decode(&bytes, &list).unwrap();
+    let closure = GsubClosure::compute(&semantic, [GlyphId::new(3)], [0]).unwrap();
+
+    assert_eq!(closure.lookup_indices().collect::<Vec<_>>(), [0, 1]);
+    assert_eq!(
+        closure.glyphs().collect::<Vec<_>>(),
+        [GlyphId::new(3), GlyphId::new(4),]
+    );
+    assert_eq!(closure.passes(), 2);
+}
+
 fn lookup(lookup_type: u16, span: ByteSpan) -> Lookup {
     Lookup::new(
         LayoutTableKind::Substitution,
