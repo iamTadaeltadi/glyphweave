@@ -1,7 +1,7 @@
 //! Integration coverage for GSUB glyph and Lookup fixed points.
 
 use glyphweave_layout::{GsubClosure, GsubLookupList, Lookup, LookupFlags, LookupList};
-use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTableKind, Stage};
 
 #[test]
 fn closes_transitive_single_multiple_and_ligature_outputs() {
@@ -91,6 +91,31 @@ fn cyclic_contextual_lookup_graph_reaches_a_fixed_point() {
     assert_eq!(closure.lookup_indices().collect::<Vec<_>>(), [0, 1]);
     assert_eq!(closure.glyphs().collect::<Vec<_>>(), [GlyphId::new(3)]);
     assert_eq!(closure.passes(), 1);
+}
+
+#[test]
+fn rejects_dangling_contextual_lookup_at_closure_stage() {
+    let bytes = [
+        0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00, 0x0c, 0x00, 0x00, 0x00,
+        0x02, // dangling Lookup index 2
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let list = LookupList::new(
+        LayoutTableKind::Substitution,
+        [lookup(5, ByteSpan::between(0, bytes.len()).unwrap())],
+    );
+    let semantic = GsubLookupList::decode(&bytes, &list).unwrap();
+    let diagnostic = GsubClosure::compute(&semantic, [GlyphId::new(3)], [0]).unwrap_err();
+
+    assert_eq!(diagnostic.stage(), Stage::Closure);
+    assert_eq!(diagnostic.span(), None);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidContextLookupIndex {
+            lookup_index: 2,
+            lookup_count: 1,
+        })
+    );
 }
 
 fn lookup(lookup_type: u16, span: ByteSpan) -> Lookup {
