@@ -8,7 +8,7 @@ use crate::GsubLookup;
 
 mod context;
 mod direct;
-mod feasible;
+pub(in crate::gsub) mod feasible;
 
 pub(super) fn lookup(
     lookup: &GsubLookup,

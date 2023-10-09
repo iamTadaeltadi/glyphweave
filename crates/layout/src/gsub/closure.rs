@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 
 use glyphweave_sfnt::GlyphId;
 
-mod apply;
+pub(in crate::gsub) mod apply;
 mod compute;
 
 /// The monotone fixed point reached from selected glyphs and root GSUB Lookups.
