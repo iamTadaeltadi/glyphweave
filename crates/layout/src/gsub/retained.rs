@@ -18,6 +18,41 @@ fn retain_subtable(subtable: &GsubSubtable, closure: &GsubClosure) -> Option<Gsu
     }
 }
 
+fn retain_lookup(lookup: &GsubLookup, reachable: bool, closure: &GsubClosure) -> GsubLookup {
+    let subtables = reachable
+        .then(|| {
+            lookup
+                .subtables()
+                .iter()
+                .filter_map(|subtable| retain_subtable(subtable, closure))
+                .collect()
+        })
+        .unwrap_or_default();
+    GsubLookup::from_parts(lookup.lookup_type(), lookup.flags(), subtables)
+}
+
+impl GsubLookupList {
+    /// Retains only reachable rules whose glyph references belong to `closure`.
+    ///
+    /// Original Lookup slots remain stable until final cross-table index compaction.
+    #[must_use]
+    pub fn retain(&self, closure: &GsubClosure) -> RetainedGsub {
+        let lookups = self
+            .lookups()
+            .iter()
+            .enumerate()
+            .map(|(index, lookup)| {
+                let reachable =
+                    u16::try_from(index).is_ok_and(|index| closure.contains_lookup(index));
+                retain_lookup(lookup, reachable, closure)
+            })
+            .collect();
+        RetainedGsub {
+            lookups: Self::from_lookups(lookups),
+        }
+    }
+}
+
 /// A retained GSUB `LookupList` whose surviving glyph references belong to one closure.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct RetainedGsub {
