@@ -24,6 +24,30 @@ fn prunes_direct_mappings_outside_the_computed_closure() {
     );
 }
 
+#[test]
+fn preserves_unreachable_lookup_slots_as_empty_placeholders() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x06, 0x00, 0x01, // Single delta +1
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+        0x00, 0x01, 0x00, 0x06, 0x00, 0x01, // Single delta +1
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x08, // Coverage {8}
+    ];
+    let semantic = decode(
+        &bytes,
+        [
+            (1, ByteSpan::between(0, 12).unwrap()),
+            (1, ByteSpan::between(12, bytes.len()).unwrap()),
+        ],
+    );
+    let closure = GsubClosure::compute(&semantic, [GlyphId::new(3)], [0]).unwrap();
+    let retained = semantic.retain(&closure);
+
+    assert_eq!(retained.len(), 2);
+    assert!(!retained.lookup(0).unwrap().is_empty());
+    assert!(retained.lookup(1).unwrap().is_empty());
+    assert_eq!(retained.lookup(1).unwrap().lookup_type(), 1);
+}
+
 fn decode<const N: usize>(bytes: &[u8], entries: [(u16, ByteSpan); N]) -> GsubLookupList {
     let list = LookupList::new(
         LayoutTableKind::Substitution,
