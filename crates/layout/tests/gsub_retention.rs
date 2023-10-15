@@ -124,6 +124,38 @@ fn narrows_contextual_class_domains_to_closed_glyphs() {
     assert_eq!(rules[0].input(), [1, 2, 0]);
 }
 
+#[test]
+fn drops_unreachable_exact_context_rules_in_encoded_order() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x22, 0x00, 0x01, 0x00, 0x08, // Context format 1
+        0x00, 0x02, 0x00, 0x06, 0x00, 0x10, // two rule offsets
+        0x00, 0x02, 0x00, 0x01, 0x00, 0x04, // input [3,4]
+        0x00, 0x00, 0x00, 0x01, // invoke Lookup 1
+        0x00, 0x02, 0x00, 0x01, 0x00, 0x09, // input [3,9]
+        0x00, 0x00, 0x00, 0x01, // invoke Lookup 1
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+        0x00, 0x01, 0x00, 0x06, 0x00, 0x02, // Single delta +2
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+    ];
+    let semantic = decode(
+        &bytes,
+        [
+            (5, ByteSpan::between(0, 40).unwrap()),
+            (1, ByteSpan::between(40, bytes.len()).unwrap()),
+        ],
+    );
+    let closure = GsubClosure::compute(&semantic, [GlyphId::new(3), GlyphId::new(4)], [0]).unwrap();
+    let retained = semantic.retain(&closure);
+
+    let GsubSubtable::Context(ContextSubstitution::GlyphRules(rules)) =
+        &retained.lookup(0).unwrap().subtables()[0]
+    else {
+        panic!("format 1 must retain exact-glyph predicates");
+    };
+    assert_eq!(rules.len(), 1);
+    assert_eq!(rules[0].input(), [GlyphId::new(3), GlyphId::new(4)]);
+}
+
 fn decode<const N: usize>(bytes: &[u8], entries: [(u16, ByteSpan); N]) -> GsubLookupList {
     let list = LookupList::new(
         LayoutTableKind::Substitution,
