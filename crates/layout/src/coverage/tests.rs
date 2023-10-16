@@ -3,7 +3,7 @@ use glyphweave_sfnt::GlyphId;
 
 #[test]
 fn default_coverage_is_empty() {
-    let coverage = Coverage::default();
+    let coverage: Coverage = Coverage::default();
     assert!(coverage.is_empty());
     assert_eq!(coverage.len(), 0);
     assert!(coverage.glyphs().is_empty());
