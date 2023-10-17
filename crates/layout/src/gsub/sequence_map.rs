@@ -2,25 +2,23 @@
 
 use std::collections::BTreeMap;
 
-use glyphweave_sfnt::GlyphId;
-
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(super) struct SequenceMap {
-    mappings: BTreeMap<GlyphId, Vec<GlyphId>>,
+pub(super) struct SequenceMap<G> {
+    mappings: BTreeMap<G, Vec<G>>,
 }
 
-impl SequenceMap {
-    pub(super) fn new(mappings: impl IntoIterator<Item = (GlyphId, Vec<GlyphId>)>) -> Self {
+impl<G: Copy + Ord> SequenceMap<G> {
+    pub(super) fn new(mappings: impl IntoIterator<Item = (G, Vec<G>)>) -> Self {
         Self {
             mappings: mappings.into_iter().collect(),
         }
     }
 
-    pub(super) fn get(&self, input: GlyphId) -> Option<&[GlyphId]> {
+    pub(super) fn get(&self, input: G) -> Option<&[G]> {
         self.mappings.get(&input).map(Vec::as_slice)
     }
 
-    pub(super) fn iter(&self) -> impl ExactSizeIterator<Item = (GlyphId, &[GlyphId])> + '_ {
+    pub(super) fn iter(&self) -> impl ExactSizeIterator<Item = (G, &[G])> + '_ {
         self.mappings
             .iter()
             .map(|(&input, output)| (input, output.as_slice()))
