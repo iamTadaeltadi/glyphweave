@@ -3,7 +3,7 @@ use glyphweave_sfnt::GlyphId;
 
 #[test]
 fn default_definition_is_implicit_class_zero() {
-    let classes = ClassDefinition::default();
+    let classes: ClassDefinition = ClassDefinition::default();
     assert!(classes.is_empty());
     assert_eq!(classes.len(), 0);
     assert_eq!(classes.highest_class(), 0);

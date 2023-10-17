@@ -23,17 +23,17 @@ mod encode;
 /// assert_eq!(classes.class_of(GlyphId::new(4)), 0);
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct ClassDefinition {
-    classes: BTreeMap<GlyphId, u16>,
+pub struct ClassDefinition<G = GlyphId> {
+    classes: BTreeMap<G, u16>,
 }
 
-impl ClassDefinition {
+impl<G: Copy + Ord> ClassDefinition<G> {
     /// Builds a canonical definition from assignments in arbitrary glyph order.
     ///
     /// Later assignments replace earlier assignments for the same glyph, and assigning class zero
     /// removes that glyph from the sparse representation.
     #[must_use]
-    pub fn from_assignments(assignments: impl IntoIterator<Item = (GlyphId, u16)>) -> Self {
+    pub fn from_assignments(assignments: impl IntoIterator<Item = (G, u16)>) -> Self {
         let mut classes = BTreeMap::new();
         for (glyph, class) in assignments {
             if class == 0 {
@@ -47,13 +47,13 @@ impl ClassDefinition {
 
     /// Returns the assigned class, or implicit class zero when the glyph is absent.
     #[must_use]
-    pub fn class_of(&self, glyph: GlyphId) -> u16 {
+    pub fn class_of(&self, glyph: G) -> u16 {
         self.classes.get(&glyph).copied().unwrap_or(0)
     }
 
     /// Iterates nonzero assignments in ascending Glyph ID order.
     #[must_use]
-    pub fn assignments(&self) -> impl ExactSizeIterator<Item = (GlyphId, u16)> + '_ {
+    pub fn assignments(&self) -> impl ExactSizeIterator<Item = (G, u16)> + '_ {
         self.classes.iter().map(|(&glyph, &class)| (glyph, class))
     }
 
@@ -76,8 +76,8 @@ impl ClassDefinition {
     }
 }
 
-impl FromIterator<(GlyphId, u16)> for ClassDefinition {
-    fn from_iter<T: IntoIterator<Item = (GlyphId, u16)>>(iter: T) -> Self {
+impl<G: Copy + Ord> FromIterator<(G, u16)> for ClassDefinition<G> {
+    fn from_iter<T: IntoIterator<Item = (G, u16)>>(iter: T) -> Self {
         Self::from_assignments(iter)
     }
 }
