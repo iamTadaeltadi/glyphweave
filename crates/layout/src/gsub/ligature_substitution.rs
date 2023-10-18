@@ -8,14 +8,14 @@ mod decode;
 
 /// Ligature rules in their original Coverage-set and preference order.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct LigatureSubstitution {
-    rules: Vec<LigatureRule>,
+pub struct LigatureSubstitution<G = GlyphId> {
+    rules: Vec<LigatureRule<G>>,
 }
 
-impl LigatureSubstitution {
+impl<G: Copy + PartialEq> LigatureSubstitution<G> {
     /// Builds a substitution without reordering or deduplicating preference-sensitive rules.
     #[must_use]
-    pub fn new(rules: impl IntoIterator<Item = LigatureRule>) -> Self {
+    pub fn new(rules: impl IntoIterator<Item = LigatureRule<G>>) -> Self {
         Self {
             rules: rules.into_iter().collect(),
         }
@@ -23,12 +23,12 @@ impl LigatureSubstitution {
 
     /// Returns every rule in shaping preference order.
     #[must_use]
-    pub fn rules(&self) -> &[LigatureRule] {
+    pub fn rules(&self) -> &[LigatureRule<G>] {
         &self.rules
     }
 
     /// Iterates only rules selected by one first component without changing their order.
-    pub fn rules_for(&self, first: GlyphId) -> impl Iterator<Item = &LigatureRule> {
+    pub fn rules_for(&self, first: G) -> impl Iterator<Item = &LigatureRule<G>> {
         self.rules.iter().filter(move |rule| rule.first() == first)
     }
 
@@ -63,6 +63,6 @@ mod tests {
         );
         assert_eq!(substitutions.len(), 3);
         assert!(!substitutions.is_empty());
-        assert!(LigatureSubstitution::default().is_empty());
+        assert!(LigatureSubstitution::<GlyphId>::default().is_empty());
     }
 }
