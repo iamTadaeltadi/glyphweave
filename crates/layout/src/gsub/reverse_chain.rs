@@ -1,24 +1,26 @@
 //! Reverse-chaining one-to-one substitutions.
 
+use glyphweave_sfnt::GlyphId;
+
 use crate::{Coverage, SingleSubstitution};
 
 mod decode;
 
 /// One input map guarded by ordered backtrack and lookahead Coverages.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct ReverseChainSingleSubstitution {
-    backtrack: Vec<Coverage>,
-    substitutions: SingleSubstitution,
-    lookahead: Vec<Coverage>,
+pub struct ReverseChainSingleSubstitution<G = GlyphId> {
+    backtrack: Vec<Coverage<G>>,
+    substitutions: SingleSubstitution<G>,
+    lookahead: Vec<Coverage<G>>,
 }
 
-impl ReverseChainSingleSubstitution {
+impl<G: Copy + Ord> ReverseChainSingleSubstitution<G> {
     /// Builds a rule without changing context sequence order.
     #[must_use]
     pub fn new(
-        backtrack: impl IntoIterator<Item = Coverage>,
-        substitutions: SingleSubstitution,
-        lookahead: impl IntoIterator<Item = Coverage>,
+        backtrack: impl IntoIterator<Item = Coverage<G>>,
+        substitutions: SingleSubstitution<G>,
+        lookahead: impl IntoIterator<Item = Coverage<G>>,
     ) -> Self {
         Self {
             backtrack: backtrack.into_iter().collect(),
@@ -29,19 +31,19 @@ impl ReverseChainSingleSubstitution {
 
     /// Returns backtrack Coverages in encoded nearest-to-farthest order.
     #[must_use]
-    pub fn backtrack(&self) -> &[Coverage] {
+    pub fn backtrack(&self) -> &[Coverage<G>] {
         &self.backtrack
     }
 
     /// Returns the input-to-output substitution map.
     #[must_use]
-    pub const fn substitutions(&self) -> &SingleSubstitution {
+    pub const fn substitutions(&self) -> &SingleSubstitution<G> {
         &self.substitutions
     }
 
     /// Returns lookahead Coverages in input sequence order.
     #[must_use]
-    pub fn lookahead(&self) -> &[Coverage] {
+    pub fn lookahead(&self) -> &[Coverage<G>] {
         &self.lookahead
     }
 
@@ -73,6 +75,6 @@ mod tests {
             Some(GlyphId::new(14))
         );
         assert!(!substitution.is_empty());
-        assert!(ReverseChainSingleSubstitution::default().is_empty());
+        assert!(ReverseChainSingleSubstitution::<GlyphId>::default().is_empty());
     }
 }
