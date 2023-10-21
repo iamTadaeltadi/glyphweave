@@ -1,22 +1,22 @@
 //! One semantic GSUB Lookup after extension flattening and subtable decoding.
 
-use glyphweave_sfnt::{Decoded, LayoutCause, LayoutTableKind};
+use glyphweave_sfnt::{Decoded, GlyphId, LayoutCause, LayoutTableKind};
 
 use crate::{GsubSubtable, Lookup, LookupFlags, layout_error};
 
 /// Ordered same-typed GSUB subtables with their shared processing qualifiers.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct GsubLookup {
+pub struct GsubLookup<G = GlyphId> {
     lookup_type: u16,
     flags: LookupFlags,
-    subtables: Vec<GsubSubtable>,
+    subtables: Vec<GsubSubtable<G>>,
 }
 
-impl GsubLookup {
+impl<G> GsubLookup<G> {
     pub(super) const fn from_parts(
         lookup_type: u16,
         flags: LookupFlags,
-        subtables: Vec<GsubSubtable>,
+        subtables: Vec<GsubSubtable<G>>,
     ) -> Self {
         Self {
             lookup_type,
@@ -24,7 +24,9 @@ impl GsubLookup {
             subtables,
         }
     }
+}
 
+impl GsubLookup<GlyphId> {
     /// Semantically decodes every real payload span of a shared Lookup.
     /// # Errors
     /// For a non-GSUB family or any malformed effective subtable.
@@ -49,7 +51,9 @@ impl GsubLookup {
             subtables,
         })
     }
+}
 
+impl<G> GsubLookup<G> {
     /// Returns the effective GSUB lookup type shared by every subtable.
     #[must_use]
     pub const fn lookup_type(&self) -> u16 {
@@ -64,7 +68,7 @@ impl GsubLookup {
 
     /// Returns semantic subtables in shaping application order.
     #[must_use]
-    pub fn subtables(&self) -> &[GsubSubtable] {
+    pub fn subtables(&self) -> &[GsubSubtable<G>] {
         &self.subtables
     }
 
