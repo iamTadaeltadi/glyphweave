@@ -1,20 +1,22 @@
 //! Indexed semantic GSUB Lookup collection.
 
-use glyphweave_sfnt::{Decoded, LayoutCause, LayoutTableKind};
+use glyphweave_sfnt::{Decoded, GlyphId, LayoutCause, LayoutTableKind};
 
 use crate::{GsubLookup, LookupList, layout_error};
 
 /// Semantic GSUB Lookups in stable `LookupList` index order.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct GsubLookupList {
-    lookups: Vec<GsubLookup>,
+pub struct GsubLookupList<G = GlyphId> {
+    lookups: Vec<GsubLookup<G>>,
 }
 
-impl GsubLookupList {
-    pub(super) const fn from_lookups(lookups: Vec<GsubLookup>) -> Self {
+impl<G> GsubLookupList<G> {
+    pub(super) const fn from_lookups(lookups: Vec<GsubLookup<G>>) -> Self {
         Self { lookups }
     }
+}
 
+impl GsubLookupList<GlyphId> {
     /// Decodes every Lookup while retaining its original zero-based index.
     /// # Errors
     /// For a non-GSUB list or any malformed semantic Lookup.
@@ -35,16 +37,18 @@ impl GsubLookupList {
             .collect::<Decoded<Vec<_>>>()?;
         Ok(Self { lookups })
     }
+}
 
+impl<G> GsubLookupList<G> {
     /// Returns a Lookup by its original zero-based `LookupList` index.
     #[must_use]
-    pub fn lookup(&self, index: u16) -> Option<&GsubLookup> {
+    pub fn lookup(&self, index: u16) -> Option<&GsubLookup<G>> {
         self.lookups.get(usize::from(index))
     }
 
     /// Returns semantic Lookups in original index order.
     #[must_use]
-    pub fn lookups(&self) -> &[GsubLookup] {
+    pub fn lookups(&self) -> &[GsubLookup<G>] {
         &self.lookups
     }
 
