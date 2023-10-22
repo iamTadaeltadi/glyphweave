@@ -266,6 +266,13 @@ pub enum LayoutCause {
         /// The number of available Lookups.
         lookup_count: usize,
     },
+    /// A retained layout reference has no entry in the output Glyph ID Remap.
+    UnmappedLayoutGlyph {
+        /// The layout table being rewritten.
+        table: LayoutTableKind,
+        /// The retained input Glyph ID missing from the Remap.
+        glyph: crate::GlyphId,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -365,7 +372,8 @@ impl fmt::Display for LayoutCause {
             | Self::InvalidLigatureComponentCount { .. }
             | Self::EmptyContextInput { .. }
             | Self::InvalidSubstitutionSequenceIndex { .. }
-            | Self::InvalidContextLookupIndex { .. } => display::gsub(self, f),
+            | Self::InvalidContextLookupIndex { .. }
+            | Self::UnmappedLayoutGlyph { .. } => display::gsub(self, f),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
             }

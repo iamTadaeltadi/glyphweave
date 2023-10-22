@@ -14,6 +14,18 @@ fn unsupported_class_definition_format_names_the_selector() {
 }
 
 #[test]
+fn unmapped_layout_glyph_names_the_table_and_input_id() {
+    let cause = LayoutCause::UnmappedLayoutGlyph {
+        table: LayoutTableKind::Substitution,
+        glyph: GlyphId::new(19),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "GSUB retained glyph 19 has no output mapping"
+    );
+}
+
+#[test]
 fn coverage_ordering_cause_names_both_glyphs() {
     let cause = LayoutCause::NonIncreasingCoverageGlyph {
         previous: GlyphId::new(9),

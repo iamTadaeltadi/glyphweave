@@ -47,6 +47,12 @@ pub(super) fn write(
             formatter,
             "context references LookupList index {lookup_index} but only {lookup_count} Lookup(s) exist"
         ),
+        LayoutCause::UnmappedLayoutGlyph { table, glyph } => {
+            write!(
+                formatter,
+                "{table} retained glyph {glyph} has no output mapping"
+            )
+        }
         _ => return None,
     };
     Some(result)
