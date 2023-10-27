@@ -4,6 +4,7 @@ use glyphweave_sfnt::{Decoded, GlyphId, LayoutCause, LayoutTableKind, NewGlyphId
 
 use crate::{ClassDefinition, ContextRule, Coverage, SubstitutionRecord, rewrite_error};
 
+mod chained;
 mod context;
 mod direct;
 mod ligature;
