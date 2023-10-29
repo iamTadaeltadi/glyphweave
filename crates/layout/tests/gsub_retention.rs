@@ -4,7 +4,7 @@ use glyphweave_layout::{
     ChainedContextSubstitution, ContextSubstitution, GsubClosure, GsubLookupList, GsubSubtable,
     Lookup, LookupFlags, LookupList,
 };
-use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind, NewGlyphId};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTableKind, NewGlyphId, Stage};
 
 #[test]
 fn prunes_direct_mappings_outside_the_computed_closure() {
@@ -48,6 +48,30 @@ fn remaps_retained_direct_rules_into_output_glyph_space() {
     assert_eq!(
         single.mappings().collect::<Vec<_>>(),
         [(NewGlyphId::new(1), NewGlyphId::new(2))]
+    );
+}
+
+#[test]
+fn rejects_a_partial_mapping_at_the_rewrite_stage() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x06, 0x00, 0x01, // Single delta +1
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+    ];
+    let semantic = decode(&bytes, [(1, ByteSpan::between(0, bytes.len()).unwrap())]);
+    let closure = GsubClosure::compute(&semantic, [GlyphId::new(3)], [0]).unwrap();
+    let retained = semantic.retain(&closure);
+    let diagnostic = retained
+        .remap(|glyph| (glyph == GlyphId::new(3)).then_some(NewGlyphId::new(1)))
+        .unwrap_err();
+
+    assert_eq!(diagnostic.stage(), Stage::Rewrite);
+    assert_eq!(diagnostic.span(), None);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnmappedLayoutGlyph {
+            table: LayoutTableKind::Substitution,
+            glyph: GlyphId::new(4),
+        })
     );
 }
 
