@@ -4,7 +4,7 @@ use glyphweave_layout::{
     ChainedContextSubstitution, ContextSubstitution, GsubClosure, GsubLookupList, GsubSubtable,
     Lookup, LookupFlags, LookupList,
 };
-use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind, NewGlyphId};
 
 #[test]
 fn prunes_direct_mappings_outside_the_computed_closure() {
@@ -22,6 +22,32 @@ fn prunes_direct_mappings_outside_the_computed_closure() {
     assert_eq!(
         single.mappings().collect::<Vec<_>>(),
         [(GlyphId::new(3), GlyphId::new(4))]
+    );
+}
+
+#[test]
+fn remaps_retained_direct_rules_into_output_glyph_space() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x0a, 0x00, 0x02, 0x00, 0x04, 0x00, 0x09, 0x00, 0x01, 0x00, 0x02, 0x00,
+        0x03, 0x00, 0x08,
+    ];
+    let semantic = decode(&bytes, [(1, ByteSpan::between(0, bytes.len()).unwrap())]);
+    let closure = GsubClosure::compute(&semantic, [GlyphId::new(3)], [0]).unwrap();
+    let retained = semantic.retain(&closure);
+    let remapped = retained
+        .remap(|glyph| match glyph.raw() {
+            3 => Some(NewGlyphId::new(1)),
+            4 => Some(NewGlyphId::new(2)),
+            _ => None,
+        })
+        .unwrap();
+
+    let GsubSubtable::Single(single) = &remapped.lookup(0).unwrap().subtables()[0] else {
+        panic!("lookup type 1 must remain SingleSubst");
+    };
+    assert_eq!(
+        single.mappings().collect::<Vec<_>>(),
+        [(NewGlyphId::new(1), NewGlyphId::new(2))]
     );
 }
 
