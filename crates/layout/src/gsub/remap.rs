@@ -13,6 +13,9 @@ mod direct;
 mod ligature;
 mod reverse;
 
+#[cfg(test)]
+mod tests;
+
 impl RetainedGsub {
     /// Converts every retained glyph reference into emitted Glyph ID space.
     /// # Errors
