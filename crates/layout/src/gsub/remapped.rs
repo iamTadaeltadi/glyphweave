@@ -5,6 +5,13 @@ use glyphweave_sfnt::NewGlyphId;
 use crate::{GsubLookup, GsubLookupList};
 
 /// A remapped GSUB `LookupList` that cannot contain input-space Glyph IDs.
+///
+/// ```
+/// use glyphweave_layout::RemappedGsub;
+///
+/// let substitutions = RemappedGsub::default();
+/// assert!(substitutions.is_empty());
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct RemappedGsub {
     pub(super) lookups: GsubLookupList<NewGlyphId>,
