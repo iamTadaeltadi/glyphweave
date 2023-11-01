@@ -1,10 +1,10 @@
 use glyphweave_sfnt::{GlyphId, NewGlyphId};
 
-use super::{context, direct, ligature, reverse};
+use super::{chained, context, direct, ligature, reverse};
 use crate::{
-    AlternateSubstitution, ClassDefinition, ContextRule, ContextSubstitution, Coverage,
-    LigatureRule, LigatureSubstitution, MultipleSubstitution, ReverseChainSingleSubstitution,
-    SingleSubstitution, SubstitutionRecord,
+    AlternateSubstitution, ChainedContextSubstitution, ClassDefinition, ContextRule,
+    ContextSubstitution, Coverage, LigatureRule, LigatureSubstitution, MultipleSubstitution,
+    ReverseChainSingleSubstitution, SingleSubstitution, SubstitutionRecord,
 };
 
 #[test]
@@ -121,4 +121,71 @@ fn every_contextual_predicate_domain_uses_output_glyphs() {
         [NewGlyphId::new(23), NewGlyphId::new(25)]
     );
     assert_eq!(coverages.records()[0], SubstitutionRecord::new(0, 9));
+}
+
+#[test]
+fn every_chained_predicate_direction_uses_output_glyphs() {
+    let glyphs = ChainedContextSubstitution::GlyphRules(vec![ContextRule::chained(
+        [GlyphId::new(2)],
+        GlyphId::new(3),
+        [GlyphId::new(4)],
+        [GlyphId::new(5)],
+        [SubstitutionRecord::new(1, 7)],
+    )]);
+    let classes = ChainedContextSubstitution::ClassRules {
+        coverage: Coverage::from_glyphs([GlyphId::new(3)]),
+        backtrack_classes: ClassDefinition::from_assignments([(GlyphId::new(2), 1)]),
+        input_classes: ClassDefinition::from_assignments([(GlyphId::new(3), 2)]),
+        lookahead_classes: ClassDefinition::from_assignments([(GlyphId::new(4), 3)]),
+        rules: vec![ContextRule::chained(
+            [1],
+            2,
+            [],
+            [3],
+            [SubstitutionRecord::new(0, 8)],
+        )],
+    };
+    let coverages = ChainedContextSubstitution::CoverageRule(ContextRule::chained(
+        [Coverage::from_glyphs([GlyphId::new(2)])],
+        Coverage::from_glyphs([GlyphId::new(3)]),
+        [],
+        [Coverage::from_glyphs([GlyphId::new(4)])],
+        [SubstitutionRecord::new(0, 9)],
+    ));
+    let mut mapping = |glyph: GlyphId| Some(NewGlyphId::new(glyph.raw() + 30));
+
+    let ChainedContextSubstitution::GlyphRules(glyphs) =
+        chained::substitution(&glyphs, &mut mapping).unwrap()
+    else {
+        panic!("glyph rules must preserve their chained domain");
+    };
+    let ChainedContextSubstitution::ClassRules {
+        coverage,
+        backtrack_classes,
+        input_classes,
+        lookahead_classes,
+        rules,
+    } = chained::substitution(&classes, &mut mapping).unwrap()
+    else {
+        panic!("class rules must preserve their chained domain");
+    };
+    let ChainedContextSubstitution::CoverageRule(coverages) =
+        chained::substitution(&coverages, &mut mapping).unwrap()
+    else {
+        panic!("Coverage rules must preserve their chained domain");
+    };
+
+    assert_eq!(glyphs[0].backtrack(), [NewGlyphId::new(32)]);
+    assert_eq!(
+        glyphs[0].input(),
+        [NewGlyphId::new(33), NewGlyphId::new(34)]
+    );
+    assert_eq!(glyphs[0].lookahead(), [NewGlyphId::new(35)]);
+    assert_eq!(coverage.glyphs(), [NewGlyphId::new(33)]);
+    assert_eq!(backtrack_classes.class_of(NewGlyphId::new(32)), 1);
+    assert_eq!(input_classes.class_of(NewGlyphId::new(33)), 2);
+    assert_eq!(lookahead_classes.class_of(NewGlyphId::new(34)), 3);
+    assert_eq!(rules[0].lookahead(), [3]);
+    assert_eq!(coverages.backtrack()[0].glyphs(), [NewGlyphId::new(32)]);
+    assert_eq!(coverages.lookahead()[0].glyphs(), [NewGlyphId::new(34)]);
 }
