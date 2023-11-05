@@ -3,7 +3,10 @@ use std::collections::BTreeSet;
 use glyphweave_sfnt::GlyphId;
 
 use super::retain;
-use crate::{AlternateSubstitution, GsubClosure, GsubSubtable, MultipleSubstitution};
+use crate::{
+    AlternateSubstitution, GsubClosure, GsubSubtable, LigatureRule, LigatureSubstitution,
+    MultipleSubstitution,
+};
 
 #[test]
 fn sequence_retention_preserves_deletion_and_filters_alternates() {
@@ -31,6 +34,27 @@ fn sequence_retention_preserves_deletion_and_filters_alternates() {
         Some(&[GlyphId::new(7)][..])
     );
     assert_eq!(alternate.alternates(GlyphId::new(8)), None);
+}
+
+#[test]
+fn ligature_retention_requires_every_component_and_replacement() {
+    let closure = closed([2, 3, 9]);
+    let input = GsubSubtable::Ligature(LigatureSubstitution::new([
+        LigatureRule::new(GlyphId::new(2), GlyphId::new(3), [], GlyphId::new(9)),
+        LigatureRule::new(GlyphId::new(2), GlyphId::new(4), [], GlyphId::new(9)),
+        LigatureRule::new(GlyphId::new(2), GlyphId::new(3), [], GlyphId::new(10)),
+    ]));
+
+    let Some(GsubSubtable::Ligature(retained)) = retain(&input, &closure) else {
+        panic!("one fully closed LigatureSubst rule must remain");
+    };
+
+    assert_eq!(retained.len(), 1);
+    assert_eq!(
+        retained.rules()[0].components(),
+        [GlyphId::new(2), GlyphId::new(3)]
+    );
+    assert_eq!(retained.rules()[0].replacement(), GlyphId::new(9));
 }
 
 fn closed(raw_glyphs: impl IntoIterator<Item = u16>) -> GsubClosure {
