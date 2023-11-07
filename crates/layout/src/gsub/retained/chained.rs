@@ -2,6 +2,9 @@
 
 use crate::{ChainedContextSubstitution, GsubClosure};
 
+#[cfg(test)]
+mod tests;
+
 pub(super) fn retain(
     value: &ChainedContextSubstitution,
     closure: &GsubClosure,
