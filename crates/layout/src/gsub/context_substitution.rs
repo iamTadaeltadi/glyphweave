@@ -6,6 +6,9 @@ use crate::{ClassDefinition, ContextRule, Coverage};
 
 mod decode;
 
+#[cfg(test)]
+mod tests;
+
 /// A `ContextSubst` subtable represented in its exact-glyph, class, or Coverage predicate domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ContextSubstitution<G = GlyphId> {
