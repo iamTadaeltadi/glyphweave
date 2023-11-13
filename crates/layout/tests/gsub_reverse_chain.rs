@@ -1,4 +1,4 @@
-//! Integration coverage for ReverseChainSingleSubst decoding.
+//! Integration coverage for `ReverseChainSingleSubst` decoding.
 
 use glyphweave_layout::ReverseChainSingleSubstitution;
 use glyphweave_sfnt::{ByteSpan, GlyphId};
