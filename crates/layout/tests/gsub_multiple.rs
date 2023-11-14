@@ -1,4 +1,4 @@
-//! Integration coverage for semantic MultipleSubst decoding.
+//! Integration coverage for semantic `MultipleSubst` decoding.
 
 use glyphweave_layout::MultipleSubstitution;
 use glyphweave_sfnt::{ByteSpan, GlyphId};
