@@ -1,4 +1,4 @@
-//! Integration coverage for semantic SingleSubst decoding.
+//! Integration coverage for semantic `SingleSubst` decoding.
 
 use glyphweave_layout::SingleSubstitution;
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause};
