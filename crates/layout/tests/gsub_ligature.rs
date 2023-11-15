@@ -1,4 +1,4 @@
-//! Integration coverage for semantic LigatureSubst decoding.
+//! Integration coverage for semantic `LigatureSubst` decoding.
 
 use glyphweave_layout::LigatureSubstitution;
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause};
