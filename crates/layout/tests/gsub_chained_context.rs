@@ -1,4 +1,4 @@
-//! Integration coverage for ChainContextSubst decoding.
+//! Integration coverage for `ChainContextSubst` decoding.
 
 use glyphweave_layout::{ChainedContextSubstitution, SubstitutionRecord};
 use glyphweave_sfnt::{ByteSpan, GlyphId};
