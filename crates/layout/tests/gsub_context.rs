@@ -1,4 +1,4 @@
-//! Integration coverage for ContextSubst decoding.
+//! Integration coverage for `ContextSubst` decoding.
 
 use glyphweave_layout::{ContextSubstitution, SubstitutionRecord};
 use glyphweave_sfnt::{ByteSpan, GlyphId};
