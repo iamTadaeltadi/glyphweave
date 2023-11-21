@@ -1,7 +1,7 @@
 //! Malformed-input boundaries for semantic GSUB decoding.
 
 use glyphweave_layout::SingleSubstitution;
-use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTarget};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTarget};
 
 #[test]
 fn every_strict_single_delta_prefix_is_rejected() {
@@ -63,4 +63,19 @@ fn single_explicit_outputs_must_match_coverage_length() {
             records: 2,
         })
     );
+}
+
+#[test]
+fn single_delta_offsets_remain_relative_inside_absolute_spans() {
+    let bytes = [
+        0xaa, 0xbb, 0x00, 0x01, 0x00, 0x06, 0x00, 0x02, // delta +2
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let decoded = SingleSubstitution::decode(
+        &bytes,
+        ByteSpan::between(2, bytes.len()).unwrap(),
+    )
+    .unwrap();
+
+    assert_eq!(decoded.replacement(GlyphId::new(3)), Some(GlyphId::new(5)));
 }
