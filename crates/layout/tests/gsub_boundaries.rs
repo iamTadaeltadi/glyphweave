@@ -49,8 +49,8 @@ fn single_coverage_cannot_target_its_header() {
 #[test]
 fn single_explicit_outputs_must_match_coverage_length() {
     let bytes = [
-        0x00, 0x02, 0x00, 0x0a, 0x00, 0x02, 0x00, 0x04, 0x00, 0x05,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x02, 0x00, 0x0a, 0x00, 0x02, 0x00, 0x04, 0x00, 0x05, 0x00, 0x01, 0x00, 0x01, 0x00,
+        0x03,
     ];
     let diagnostic =
         SingleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
@@ -71,11 +71,22 @@ fn single_delta_offsets_remain_relative_inside_absolute_spans() {
         0xaa, 0xbb, 0x00, 0x01, 0x00, 0x06, 0x00, 0x02, // delta +2
         0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
     ];
-    let decoded = SingleSubstitution::decode(
-        &bytes,
-        ByteSpan::between(2, bytes.len()).unwrap(),
-    )
-    .unwrap();
+    let decoded =
+        SingleSubstitution::decode(&bytes, ByteSpan::between(2, bytes.len()).unwrap()).unwrap();
 
     assert_eq!(decoded.replacement(GlyphId::new(3)), Some(GlyphId::new(5)));
+}
+
+#[test]
+fn single_explicit_outputs_preserve_maximum_glyph_id() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x08, 0x00, 0x01, 0xff, 0xff, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let decoded =
+        SingleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
+
+    assert_eq!(
+        decoded.replacement(GlyphId::new(3)),
+        Some(GlyphId::new(u16::MAX))
+    );
 }
