@@ -104,3 +104,18 @@ fn every_strict_multiple_substitution_prefix_is_rejected() {
         assert!(MultipleSubstitution::decode(&valid[..end], span).is_err());
     }
 }
+
+#[test]
+fn multiple_substitution_rejects_unknown_format() {
+    let bytes = [0x00, 0x02];
+    let diagnostic =
+        MultipleSubstitution::decode(&bytes, ByteSpan::between(0, 2).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsupportedGsubFormat {
+            lookup_type: 2,
+            format: 2,
+        })
+    );
+}
