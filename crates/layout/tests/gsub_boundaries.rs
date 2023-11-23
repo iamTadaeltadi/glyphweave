@@ -119,3 +119,25 @@ fn multiple_substitution_rejects_unknown_format() {
         })
     );
 }
+
+#[test]
+fn multiple_sequence_count_must_match_coverage() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x0a, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic = MultipleSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::MismatchedGsubMappingCount {
+            lookup_type: 2,
+            inputs: 1,
+            records: 2,
+        })
+    );
+}
