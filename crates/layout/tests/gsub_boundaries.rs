@@ -164,3 +164,26 @@ fn multiple_sequence_cannot_target_lookup_header() {
         })
     );
 }
+
+#[test]
+fn multiple_sequence_cannot_target_subtable_end() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic = MultipleSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::SubstitutionSequence,
+            offset: 14,
+            minimum: 8,
+            container_length: 14,
+        })
+    );
+}
