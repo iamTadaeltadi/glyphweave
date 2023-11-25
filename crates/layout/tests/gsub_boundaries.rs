@@ -94,9 +94,8 @@ fn single_explicit_outputs_preserve_maximum_glyph_id() {
 #[test]
 fn every_strict_multiple_substitution_prefix_is_rejected() {
     let valid = [
-        0x00, 0x01, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x08,
-        0x00, 0x02, 0x00, 0x05, 0x00, 0x06,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x08, 0x00, 0x02, 0x00, 0x05, 0x00, 0x06, 0x00,
+        0x01, 0x00, 0x01, 0x00, 0x03,
     ];
 
     for end in 0..valid.len() {
@@ -123,14 +122,12 @@ fn multiple_substitution_rejects_unknown_format() {
 #[test]
 fn multiple_sequence_count_must_match_coverage() {
     let bytes = [
-        0x00, 0x01, 0x00, 0x0a, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x0a, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
+        0x03,
     ];
-    let diagnostic = MultipleSubstitution::decode(
-        &bytes,
-        ByteSpan::between(0, bytes.len()).unwrap(),
-    )
-    .unwrap_err();
+    let diagnostic =
+        MultipleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
 
     assert_eq!(
         diagnostic.cause(),
@@ -145,14 +142,11 @@ fn multiple_sequence_count_must_match_coverage() {
 #[test]
 fn multiple_sequence_cannot_target_lookup_header() {
     let bytes = [
-        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x06,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
     ];
-    let diagnostic = MultipleSubstitution::decode(
-        &bytes,
-        ByteSpan::between(0, bytes.len()).unwrap(),
-    )
-    .unwrap_err();
+    let diagnostic =
+        MultipleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
 
     assert_eq!(
         diagnostic.cause(),
@@ -168,14 +162,11 @@ fn multiple_sequence_cannot_target_lookup_header() {
 #[test]
 fn multiple_sequence_cannot_target_subtable_end() {
     let bytes = [
-        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
     ];
-    let diagnostic = MultipleSubstitution::decode(
-        &bytes,
-        ByteSpan::between(0, bytes.len()).unwrap(),
-    )
-    .unwrap_err();
+    let diagnostic =
+        MultipleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
 
     assert_eq!(
         diagnostic.cause(),
@@ -186,4 +177,15 @@ fn multiple_sequence_cannot_target_subtable_end() {
             container_length: 14,
         })
     );
+}
+
+#[test]
+fn multiple_sequence_outputs_cannot_cross_subtable_end() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03, 0x00,
+        0x02, 0x00, 0x04,
+    ];
+    let span = ByteSpan::between(0, bytes.len()).unwrap();
+
+    assert!(MultipleSubstitution::decode(&bytes, span).is_err());
 }
