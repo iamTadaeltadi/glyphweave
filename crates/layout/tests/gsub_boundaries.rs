@@ -1,6 +1,6 @@
 //! Malformed-input boundaries for semantic GSUB decoding.
 
-use glyphweave_layout::{MultipleSubstitution, SingleSubstitution};
+use glyphweave_layout::{AlternateSubstitution, MultipleSubstitution, SingleSubstitution};
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTarget};
 
 #[test]
@@ -188,4 +188,17 @@ fn multiple_sequence_outputs_cannot_cross_subtable_end() {
     let span = ByteSpan::between(0, bytes.len()).unwrap();
 
     assert!(MultipleSubstitution::decode(&bytes, span).is_err());
+}
+
+#[test]
+fn every_strict_alternate_substitution_prefix_is_rejected() {
+    let valid = [
+        0x00, 0x01, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x08,
+        0x00, 0x02, 0x00, 0x05, 0x00, 0x06,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    for end in 0..valid.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(AlternateSubstitution::decode(&valid[..end], span).is_err());
+    }
 }
