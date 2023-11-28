@@ -239,3 +239,26 @@ fn alternate_set_count_must_match_coverage() {
         })
     );
 }
+
+#[test]
+fn alternate_set_cannot_target_lookup_header() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x06,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic = AlternateSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::AlternateSet,
+            offset: 6,
+            minimum: 8,
+            container_length: 14,
+        })
+    );
+}
