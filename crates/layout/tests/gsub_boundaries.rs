@@ -1,6 +1,8 @@
 //! Malformed-input boundaries for semantic GSUB decoding.
 
-use glyphweave_layout::{AlternateSubstitution, MultipleSubstitution, SingleSubstitution};
+use glyphweave_layout::{
+    AlternateSubstitution, LigatureSubstitution, MultipleSubstitution, SingleSubstitution,
+};
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTarget};
 
 #[test]
@@ -278,4 +280,18 @@ fn empty_alternate_set_remains_an_explicit_mapping() {
         AlternateSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
 
     assert_eq!(decoded.alternates(GlyphId::new(3)), Some(&[][..]));
+}
+
+#[test]
+fn every_strict_ligature_substitution_prefix_is_rejected() {
+    let valid = [
+        0x00, 0x01, 0x00, 0x12, 0x00, 0x01, 0x00, 0x08,
+        0x00, 0x01, 0x00, 0x04,
+        0x00, 0x07, 0x00, 0x02, 0x00, 0x06,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x05,
+    ];
+    for end in 0..valid.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(LigatureSubstitution::decode(&valid[..end], span).is_err());
+    }
 }
