@@ -379,3 +379,15 @@ fn ligature_record_cannot_target_set_header() {
         })
     );
 }
+
+#[test]
+fn ligature_replacement_must_be_complete() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x04, 0xff,
+    ];
+    let span = ByteSpan::between(0, bytes.len()).unwrap();
+
+    assert!(LigatureSubstitution::decode(&bytes, span).is_err());
+}
