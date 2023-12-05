@@ -420,3 +420,21 @@ fn every_strict_reverse_chain_prefix_is_rejected() {
         assert!(ReverseChainSingleSubstitution::decode(&valid[..end], span).is_err());
     }
 }
+
+#[test]
+fn reverse_chain_rejects_unknown_format() {
+    let bytes = [0x00, 0x02];
+    let diagnostic = ReverseChainSingleSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsupportedGsubFormat {
+            lookup_type: 8,
+            format: 2,
+        })
+    );
+}
