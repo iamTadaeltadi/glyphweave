@@ -1,7 +1,8 @@
 //! Malformed-input boundaries for semantic GSUB decoding.
 
 use glyphweave_layout::{
-    AlternateSubstitution, LigatureSubstitution, MultipleSubstitution, SingleSubstitution,
+    AlternateSubstitution, LigatureSubstitution, MultipleSubstitution,
+    ReverseChainSingleSubstitution, SingleSubstitution,
 };
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTarget};
 
@@ -402,4 +403,20 @@ fn empty_ligature_set_decodes_without_rules() {
         LigatureSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
 
     assert!(decoded.is_empty());
+}
+
+#[test]
+fn every_strict_reverse_chain_prefix_is_rejected() {
+    let valid = [
+        0x00, 0x01, 0x00, 0x26, 0x00, 0x02, 0x00, 0x14, 0x00, 0x1a,
+        0x00, 0x01, 0x00, 0x20, 0x00, 0x02, 0x00, 0x1e, 0x00, 0x28,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x01,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x02,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x09,
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04,
+    ];
+    for end in 0..valid.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(ReverseChainSingleSubstitution::decode(&valid[..end], span).is_err());
+    }
 }
