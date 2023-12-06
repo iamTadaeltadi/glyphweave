@@ -438,3 +438,26 @@ fn reverse_chain_rejects_unknown_format() {
         })
     );
 }
+
+#[test]
+fn reverse_outputs_must_match_input_coverage() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x02, 0x00, 0x04, 0x00, 0x05,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic = ReverseChainSingleSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::MismatchedGsubMappingCount {
+            lookup_type: 8,
+            inputs: 1,
+            records: 2,
+        })
+    );
+}
