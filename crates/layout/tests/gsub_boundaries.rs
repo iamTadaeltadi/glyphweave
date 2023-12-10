@@ -1,7 +1,7 @@
 //! Malformed-input boundaries for semantic GSUB decoding.
 
 use glyphweave_layout::{
-    AlternateSubstitution, LigatureSubstitution, MultipleSubstitution,
+    AlternateSubstitution, ContextSubstitution, LigatureSubstitution, MultipleSubstitution,
     ReverseChainSingleSubstitution, SingleSubstitution,
 };
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTarget};
@@ -543,4 +543,20 @@ fn reverse_chain_accepts_empty_context_sequences() {
         decoded.substitutions().replacement(GlyphId::new(3)),
         Some(GlyphId::new(4))
     );
+}
+
+#[test]
+fn every_strict_context_format_one_prefix_is_rejected() {
+    let valid = [
+        0x00, 0x01, 0x00, 0x2a, 0x00, 0x02, 0x00, 0x0a, 0x00, 0x00,
+        0x00, 0x02, 0x00, 0x06, 0x00, 0x16,
+        0x00, 0x03, 0x00, 0x02, 0x00, 0x04, 0x00, 0x05,
+        0x00, 0x01, 0x00, 0x09, 0x00, 0x00, 0x00, 0x04,
+        0x00, 0x02, 0x00, 0x01, 0x00, 0x06, 0x00, 0x00, 0x00, 0x08,
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x07,
+    ];
+    for end in 0..valid.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(ContextSubstitution::decode(&valid[..end], span).is_err());
+    }
 }
