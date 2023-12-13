@@ -642,3 +642,23 @@ fn context_action_must_target_an_input_position() {
         })
     );
 }
+
+#[test]
+fn context_format_three_coverage_cannot_target_header() {
+    let bytes = [0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06];
+    let diagnostic = ContextSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::SubstitutionCoverage,
+            offset: 6,
+            minimum: 8,
+            container_length: 8,
+        })
+    );
+}
