@@ -48,3 +48,18 @@ fn every_strict_chained_format_three_prefix_is_rejected() {
         assert!(ChainedContextSubstitution::decode(&valid[..end], span).is_err());
     }
 }
+
+#[test]
+fn chained_context_rejects_unknown_format() {
+    let bytes = [0x00, 0x04];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, 2).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsupportedGsubFormat {
+            lookup_type: 6,
+            format: 4,
+        })
+    );
+}
