@@ -63,3 +63,16 @@ fn chained_context_rejects_unknown_format() {
         })
     );
 }
+
+#[test]
+fn chained_format_three_rejects_empty_input() {
+    let bytes = [0x00, 0x03, 0x00, 0x00, 0x00, 0x00];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::EmptyContextInput { lookup_type: 6 })
+    );
+}
