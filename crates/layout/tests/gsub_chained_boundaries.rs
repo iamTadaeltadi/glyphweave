@@ -136,3 +136,24 @@ fn chained_backtrack_coverage_cannot_target_header() {
         })
     );
 }
+
+#[test]
+fn chained_lookahead_coverage_cannot_target_header() {
+    let bytes = [
+        0x00, 0x03, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x0c, 0x00, 0x00, 0x00,
+        0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::SubstitutionCoverage,
+            offset: 12,
+            minimum: 14,
+            container_length: 20,
+        })
+    );
+}
