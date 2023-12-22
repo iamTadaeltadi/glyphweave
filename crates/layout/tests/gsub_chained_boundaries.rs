@@ -177,3 +177,23 @@ fn chained_format_one_sets_must_match_coverage() {
         })
     );
 }
+
+#[test]
+fn chained_glyph_rule_set_cannot_target_header() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x06, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::ChainedContextRuleSet,
+            offset: 6,
+            minimum: 8,
+            container_length: 14,
+        })
+    );
+}
