@@ -218,3 +218,19 @@ fn chained_glyph_rule_cannot_target_set_header() {
         })
     );
 }
+
+#[test]
+fn chained_glyph_rule_rejects_empty_input() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x10, 0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::EmptyContextInput { lookup_type: 6 })
+    );
+}
