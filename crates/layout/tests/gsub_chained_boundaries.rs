@@ -254,3 +254,24 @@ fn chained_glyph_rule_bounds_action_positions() {
         })
     );
 }
+
+#[test]
+fn chained_backtrack_class_definition_cannot_target_header() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x0c, 0x00, 0x0a, 0x00, 0x12, 0x00, 0x12, 0x00, 0x00, 0x00, 0x01, 0x00,
+        0x01, 0x00, 0x03,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::ContextClassDefinition,
+            offset: 10,
+            minimum: 12,
+            container_length: 18,
+        })
+    );
+}
