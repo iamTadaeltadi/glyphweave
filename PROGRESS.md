@@ -36,8 +36,8 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 - [x] 3.1 Decode and encode Coverage and Class Definition structures — 654 source / 962 test lines, 63 unit + integration + 7 fixed-seed property + 2 doc tests, 100% line / 100% region cov across the canonical decoders and shortest-format encoders
 - [x] 3.2 Decode Script List, language systems, and Feature List — 776 source / 954 test lines, 25 unit + 35 integration + 5 fixed-seed property + 5 doc tests, 100% line / 100% region cov across the bounded canonical decoders
 - [x] 3.3 Decode Lookup List flags, extensions, and mark filtering — 592 source / 895 test lines, 30 unit + 20 integration + 3 fixed-seed property + 1 doc test, 100% line / 100% region cov across canonical Lookup List, Lookup, flag, and extension dispatch
-- [ ] 3.4 Implement supported GSUB retention, closure, and remapping <-- NEXT
-- [ ] 3.5 Implement supported GPOS retention and remapping
+- [x] 3.4 Implement supported GSUB retention, closure, and remapping — 3,296 source / 2,986 test lines, 26 unit + 93 integration + 3 fixed-seed property + 2 doc tests, 97.60% line / 93.08% region coverage across the layout crate
+- [ ] 3.5 Implement supported GPOS retention and remapping <-- NEXT
 - [ ] 3.6 Prune empty layout paths and repair all indices
 - [ ] 3.7 Differentially probe layout behavior with HarfBuzz
 
