@@ -9,6 +9,7 @@ mod class_definition;
 mod coverage;
 mod feature;
 mod feature_list;
+mod gpos;
 mod gsub;
 mod language_system;
 mod lookup;
@@ -22,6 +23,7 @@ pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
+pub use gpos::ValueRecord;
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,
     GsubClosure, GsubLookup, GsubLookupList, GsubSubtable, LigatureRule, LigatureSubstitution,
