@@ -9,6 +9,7 @@
 
 mod cause;
 mod checksum;
+mod collection_version;
 mod diagnostic;
 mod directory;
 mod face_index;
@@ -20,6 +21,7 @@ mod version;
 
 pub use cause::Cause;
 pub use checksum::Checksum;
+pub use collection_version::CollectionVersion;
 pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
 pub use directory::{TableDirectory, TableRecord};
 pub use face_index::FaceIndex;
