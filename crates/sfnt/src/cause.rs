@@ -21,6 +21,13 @@ pub enum Cause {
         /// The greatest count encodable by all search fields.
         maximum: u16,
     },
+    /// Header search fields disagree with values derived from the table count.
+    InvalidSearchParameters {
+        /// The values `(searchRange, entrySelector, rangeShift)` required by the count.
+        expected: [u16; 3],
+        /// The values stored in the font.
+        actual: [u16; 3],
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -49,6 +56,10 @@ impl fmt::Display for Cause {
                     "table count {count} exceeds representable maximum {maximum}"
                 )
             }
+            Self::InvalidSearchParameters { expected, actual } => write!(
+                f,
+                "directory search parameters {actual:?} do not match derived values {expected:?}"
+            ),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -81,6 +92,18 @@ mod tests {
         assert_eq!(
             cause.to_string(),
             "table count 4096 exceeds representable maximum 4095"
+        );
+    }
+
+    #[test]
+    fn search_parameter_failure_shows_both_triplets() {
+        let cause = Cause::InvalidSearchParameters {
+            expected: [128, 3, 80],
+            actual: [64, 2, 144],
+        };
+        assert_eq!(
+            cause.to_string(),
+            "directory search parameters [64, 2, 144] do not match derived values [128, 3, 80]"
         );
     }
 }
