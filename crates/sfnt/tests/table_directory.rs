@@ -124,3 +124,20 @@ fn rejects_record_whose_table_exceeds_font() {
     );
     assert_eq!(diagnostic.span().unwrap().to_string(), "12..28");
 }
+
+#[test]
+fn rejects_non_trailing_space_inside_table_tag() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'a', b' ', b'b', b' ', 0, 0, 0, 0, // tag and checksum
+        0, 0, 0, 28, 0, 0, 0, 0, // empty table at EOF
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidTableTag {
+            tag: Tag::new(*b"a b ")
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "12..16");
+}
