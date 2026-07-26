@@ -197,6 +197,30 @@ fn nested_tables_cannot_partially_overlap() {
 }
 
 #[test]
+fn overlap_diagnostic_orders_targets_by_physical_position() {
+    let mut bytes = Vec::new();
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, 30);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0xfe0f);
+    push_u32(&mut bytes, 25);
+    push_u32(&mut bytes, 21);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0);
+    push_u16(&mut bytes, 0);
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("nested targets overlap");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::OverlappingCmap14Tables {
+            first: (Cmap14TableKind::NonDefault, ByteSpan::sized(21, 9).unwrap(),),
+            second: (Cmap14TableKind::Default, ByteSpan::sized(25, 4).unwrap(),),
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
+}
+
+#[test]
 fn different_target_kinds_cannot_alias_exact_bytes() {
     let mut bytes = encode_selector(0xfe0f, &[], &[]);
     bytes[17..21].copy_from_slice(&21_u32.to_be_bytes());
