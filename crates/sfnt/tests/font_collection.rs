@@ -555,3 +555,27 @@ fn rejects_every_truncated_prefix_of_version_two_collection() {
     }
     assert!(FontCollection::decode(&bytes).is_ok());
 }
+
+#[test]
+fn rejects_signature_covering_collection_header() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 2);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 28);
+    push_u32(&mut bytes, u32::from_be_bytes(*b"DSIG"));
+    push_u32(&mut bytes, 32);
+    push_u32(&mut bytes, 16);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+    bytes.resize(48, 0);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(0, 48));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::CollectionSignatureOverlapsHeader {
+            signature: ByteSpan::sized(16, 32).unwrap(),
+            header: ByteSpan::sized(0, 28).unwrap()
+        }
+    );
+}
