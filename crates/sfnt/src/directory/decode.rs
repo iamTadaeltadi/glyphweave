@@ -82,6 +82,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
         }
     }
     validate_table_spans(&records)?;
+    validate_checksums(bytes, &records)?;
     Ok(TableDirectory {
         version,
         span,
@@ -110,6 +111,25 @@ fn validate_table_spans(records: &[TableRecord]) -> Decoded<()> {
                 Cause::OverlappingTables {
                     first: (first.tag, first.table_span),
                     second: (second.tag, second.table_span),
+                },
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_checksums(bytes: &[u8], records: &[TableRecord]) -> Decoded<()> {
+    for record in records {
+        let table = record.table_span.slice(bytes)?;
+        let computed = Checksum::compute_for(record.tag, table);
+        if computed != record.checksum {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                record.table_span,
+                Cause::InvalidTableChecksum {
+                    tag: record.tag,
+                    declared: record.checksum,
+                    computed,
                 },
             ));
         }
