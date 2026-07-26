@@ -96,3 +96,23 @@ fn chained_action_must_target_an_input_position() {
         })
     );
 }
+
+#[test]
+fn chained_input_coverage_cannot_target_header() {
+    let bytes = [
+        0x00, 0x03, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::SubstitutionCoverage,
+            offset: 10,
+            minimum: 12,
+            container_length: 12,
+        })
+    );
+}
