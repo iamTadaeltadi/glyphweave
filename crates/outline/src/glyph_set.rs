@@ -63,3 +63,6 @@ impl<'a> IntoIterator for &'a GlyphSet {
         self.glyphs.iter().copied()
     }
 }
+
+#[cfg(test)]
+mod tests;
