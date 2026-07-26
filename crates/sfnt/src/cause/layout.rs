@@ -44,6 +44,27 @@ pub enum LayoutCause {
         /// The unrecognized selector.
         format: u16,
     },
+    /// A format 1 Class Definition range extends beyond glyph ID 65535.
+    ClassDefinitionGlyphRangeOverflow {
+        /// The first glyph ID in the dense range.
+        start: crate::GlyphId,
+        /// The number of class values in the range.
+        count: u16,
+    },
+    /// A Class Definition range ended before it began.
+    InvalidClassDefinitionRange {
+        /// The first glyph ID in the range.
+        start: crate::GlyphId,
+        /// The last glyph ID in the range.
+        end: crate::GlyphId,
+    },
+    /// A Class Definition range began at or before the preceding range ended.
+    OverlappingClassDefinitionRange {
+        /// The preceding range's final glyph ID.
+        previous_end: crate::GlyphId,
+        /// The next range's first glyph ID.
+        start: crate::GlyphId,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -73,6 +94,21 @@ impl fmt::Display for LayoutCause {
             Self::UnsupportedClassDefinitionFormat { format } => {
                 write!(f, "unsupported Class Definition format {format}")
             }
+            Self::ClassDefinitionGlyphRangeOverflow { start, count } => write!(
+                f,
+                "Class Definition range beginning at {start} with {count} value(s) exceeds glyph ID 65535"
+            ),
+            Self::InvalidClassDefinitionRange { start, end } => write!(
+                f,
+                "Class Definition range {start}..={end} has reversed bounds"
+            ),
+            Self::OverlappingClassDefinitionRange {
+                previous_end,
+                start,
+            } => write!(
+                f,
+                "Class Definition range beginning at {start} overlaps preceding end {previous_end}"
+            ),
         }
     }
 }
