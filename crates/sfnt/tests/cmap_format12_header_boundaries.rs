@@ -21,3 +21,16 @@ fn format_other_than_twelve_is_rejected_at_the_format_word() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(0, 2));
 }
+
+#[test]
+fn reserved_word_must_be_zero() {
+    let mut bytes = encode_groups(0, &[]);
+    bytes[2..4].copy_from_slice(&7_u16.to_be_bytes());
+
+    let diagnostic = CmapFormat12::decode(&bytes, 0).expect_err("reserved word is nonzero");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmap12Reserved { found: 7 }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
+}
