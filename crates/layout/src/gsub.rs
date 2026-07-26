@@ -1,6 +1,7 @@
 //! Canonical Glyph Substitution rules, closure, retention, and remapping.
 
 mod alternate;
+mod decode;
 mod ligature_rule;
 mod ligature_substitution;
 mod multiple;
