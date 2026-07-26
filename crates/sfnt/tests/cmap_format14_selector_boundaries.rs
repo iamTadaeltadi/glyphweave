@@ -53,3 +53,19 @@ fn selector_records_must_be_strictly_ordered() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(21, 3));
 }
+
+#[test]
+fn duplicate_selector_records_are_rejected() {
+    let bytes = encode_selectors(&[0xfe0f, 0xfe0f]);
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("selector is duplicated");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14VariationSelector {
+            index: 1,
+            selector: 0xfe0f,
+            previous: Some(0xfe0f),
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(21, 3));
+}
