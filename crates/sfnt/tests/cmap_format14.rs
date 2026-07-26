@@ -70,3 +70,29 @@ fn relative_targets_resolve_from_an_absolute_subtable_offset() {
         Some(VariationMapping::Default)
     );
 }
+
+#[test]
+fn selector_record_may_reference_only_default_sequences() {
+    let mut bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x2764,
+            additional: 0,
+        }],
+        &[],
+    );
+    bytes[17..21].copy_from_slice(&0_u32.to_be_bytes());
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("non-default offset is optional");
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{2764}', selector),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(
+        decoded.variation_selector_map().non_default_mapping_count(),
+        0
+    );
+}
