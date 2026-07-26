@@ -284,3 +284,36 @@ fn rejects_face_table_inside_collection_header() {
         }
     );
 }
+
+#[test]
+fn rejects_table_covering_another_face_directory() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 48);
+    push_u32(&mut bytes, 0x0001_0000);
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 16);
+    push_u16(&mut bytes, 0);
+    push_u16(&mut bytes, 0);
+    bytes.extend_from_slice(b"name");
+    push_u32(&mut bytes, 0x0001_0000);
+    push_u32(&mut bytes, 48);
+    push_u32(&mut bytes, 12);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(48, 12));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::TableOverlapsFaceDirectory {
+            face: FaceIndex::FIRST,
+            tag: Tag::new(*b"name"),
+            table: ByteSpan::sized(48, 12).unwrap(),
+            directory_face: FaceIndex::new(1),
+            directory: ByteSpan::sized(48, 12).unwrap()
+        }
+    );
+}
