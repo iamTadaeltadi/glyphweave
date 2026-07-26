@@ -203,3 +203,25 @@ fn includes_off_curve_points_in_verified_bounds() {
     assert_eq!(glyph.points(), [Point::new(-7, 9, false)]);
     assert_eq!(glyph.bounds(), GlyphBounds::new(-7, 9, -7, 9).unwrap());
 }
+
+#[test]
+fn accumulated_coordinates_may_reach_the_signed_maximum() {
+    let mut bytes = Vec::new();
+    for value in [1i16, 32_760, 0, i16::MAX, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x21, 0x33]);
+    bytes.extend_from_slice(&32_760i16.to_be_bytes());
+    bytes.push(7);
+    bytes.push(0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.points(),
+        [Point::new(32_760, 0, true), Point::new(i16::MAX, 0, true)]
+    );
+}
