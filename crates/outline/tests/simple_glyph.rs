@@ -248,3 +248,17 @@ fn accumulated_coordinates_may_reach_the_signed_minimum() {
         [Point::new(-32_760, 0, true), Point::new(i16::MIN, 0, true)]
     );
 }
+
+#[test]
+fn decoded_instruction_program_is_owned_independently_of_input() {
+    let mut bytes = vec![0; 10];
+    bytes.extend_from_slice(&2u16.to_be_bytes());
+    bytes.extend_from_slice(&[0xb0, 0x01]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+    bytes.fill(0xff);
+
+    assert_eq!(glyph.instructions(), [0xb0, 0x01]);
+    assert_eq!(glyph.span(), span);
+}
