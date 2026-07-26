@@ -85,8 +85,8 @@ fn glyf_iteration_pairs_ids_with_ordered_outlines() {
 
     assert_eq!(outlines.len(), 3);
     assert_eq!(outlines.next().unwrap().0, GlyphId::NOTDEF);
+    assert_eq!(outlines.next_back().unwrap().0, GlyphId::new(2));
     assert_eq!(outlines.next().unwrap().0, GlyphId::new(1));
-    assert_eq!(outlines.next().unwrap().0, GlyphId::new(2));
     assert_eq!(outlines.next(), None);
 }
 
