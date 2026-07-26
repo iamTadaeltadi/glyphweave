@@ -337,3 +337,15 @@ fn invalid_context_sequence_index_names_its_bound() {
         "GSUB lookup type 5 sequence index 3 is outside 3 input glyph(s)"
     );
 }
+
+#[test]
+fn invalid_context_lookup_index_names_the_list_bound() {
+    let cause = LayoutCause::InvalidContextLookupIndex {
+        lookup_index: 5,
+        lookup_count: 3,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "context references LookupList index 5 but only 3 Lookup(s) exist"
+    );
+}
