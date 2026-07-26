@@ -44,3 +44,23 @@ fn every_reserved_component_flag_is_rejected() {
         );
     }
 }
+
+#[test]
+fn component_transform_encodings_are_mutually_exclusive() {
+    for flags in [0x004a_u16, 0x008a, 0x00c2] {
+        let mut bytes = header(-1);
+        bytes.extend(flags.to_be_bytes());
+        let span = ByteSpan::sized(0, bytes.len()).unwrap();
+        let diagnostic = CompositeGlyph::decode(&bytes, span)
+            .expect_err("one component cannot select two transform layouts");
+
+        assert_eq!(diagnostic.span(), ByteSpan::sized(10, 2));
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::Outline(OutlineCause::ConflictingCompositeTransforms {
+                component_index: 0,
+                flags,
+            })
+        );
+    }
+}
