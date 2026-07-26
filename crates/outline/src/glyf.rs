@@ -12,6 +12,12 @@ pub struct Glyf {
 }
 
 impl Glyf {
+    /// Returns the number of input Glyph IDs represented by the collection.
+    #[must_use]
+    pub fn glyph_count(&self) -> usize {
+        self.outlines.len()
+    }
+
     /// Returns the checked span occupied by the source `glyf` table.
     #[must_use]
     pub const fn table_span(&self) -> ByteSpan {
