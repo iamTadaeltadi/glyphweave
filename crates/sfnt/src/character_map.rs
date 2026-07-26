@@ -5,6 +5,14 @@ use std::collections::BTreeMap;
 use crate::GlyphId;
 
 /// A canonical resolved relation from Unicode scalar values to input Glyph IDs.
+///
+/// ```
+/// use glyphweave_sfnt::{CharacterMap, GlyphId};
+///
+/// let map: CharacterMap = [('A', GlyphId::new(7))].into_iter().collect();
+/// assert_eq!(map.glyph_id('A'), GlyphId::new(7));
+/// assert_eq!(map.glyph_id('B'), GlyphId::NOTDEF);
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct CharacterMap {
     mappings: BTreeMap<char, GlyphId>,
