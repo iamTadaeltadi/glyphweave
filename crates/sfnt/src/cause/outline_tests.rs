@@ -161,6 +161,16 @@ fn offset_mode_conflict_names_the_component_and_flags() {
 }
 
 #[test]
+fn unanchored_component_failure_explains_the_missing_parent_points() {
+    let cause = Cause::Outline(OutlineCause::FirstCompositeComponentUsesPoints);
+
+    assert_eq!(
+        cause.to_string(),
+        "first composite component uses point alignment before parent points exist"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
