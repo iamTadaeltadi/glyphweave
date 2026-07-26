@@ -8,6 +8,7 @@
 #![forbid(unsafe_code)]
 
 mod cause;
+mod checksum;
 mod diagnostic;
 mod directory;
 mod reader;
@@ -17,6 +18,7 @@ mod tag;
 mod version;
 
 pub use cause::Cause;
+pub use checksum::Checksum;
 pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
 pub use directory::{TableDirectory, TableRecord};
 pub use reader::Reader;
