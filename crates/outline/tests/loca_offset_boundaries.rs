@@ -21,3 +21,27 @@ fn first_offset_must_start_at_the_beginning_of_glyf() {
         Cause::Outline(OutlineCause::NonzeroLocaStart { offset: 4 })
     );
 }
+
+#[test]
+fn offsets_cannot_move_backward_between_glyphs() {
+    let mut bytes = Vec::new();
+    for offset in [0_u32, 8, 4] {
+        bytes.extend_from_slice(&offset.to_be_bytes());
+    }
+    bytes.extend_from_slice(&[0xaa; 4]);
+    let table_span = ByteSpan::sized(0, 12).unwrap();
+    let glyf_span = ByteSpan::sized(12, 4).unwrap();
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 2, LocaFormat::Long)
+        .expect_err("glyph locations must be nondecreasing");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(8, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::DecreasingLocaOffset {
+            index: 2,
+            offset: 4,
+            previous: 8,
+        })
+    );
+}

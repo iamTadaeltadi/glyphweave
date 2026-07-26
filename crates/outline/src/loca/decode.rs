@@ -48,13 +48,25 @@ pub(super) fn decode(
         offsets.push(offset);
     }
     if let Some(&offset) = offsets.first().filter(|&&offset| offset != 0) {
-        let span = ByteSpan::sized(table_span.start(), width)
-            .unwrap_or_else(|| ByteSpan::empty_at(table_span.start()));
         return Err(Diagnostic::at(
             Stage::Decode,
-            span,
+            entry_span(table_span, 0, width),
             Cause::Outline(OutlineCause::NonzeroLocaStart { offset }),
         ));
+    }
+    for (preceding_index, pair) in offsets.windows(2).enumerate() {
+        if pair[1] < pair[0] {
+            let index = preceding_index + 1;
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                entry_span(table_span, index, width),
+                Cause::Outline(OutlineCause::DecreasingLocaOffset {
+                    index: u32::try_from(index).unwrap_or(u32::MAX),
+                    offset: pair[1],
+                    previous: pair[0],
+                }),
+            ));
+        }
     }
     Ok(Loca {
         table_span,
@@ -63,4 +75,12 @@ pub(super) fn decode(
         glyph_count,
         offsets,
     })
+}
+
+fn entry_span(table: ByteSpan, index: usize, width: usize) -> ByteSpan {
+    index
+        .checked_mul(width)
+        .and_then(|relative| table.start().checked_add(relative))
+        .and_then(|start| ByteSpan::sized(start, width))
+        .unwrap_or_else(|| ByteSpan::empty_at(table.start()))
 }
