@@ -116,3 +116,24 @@ fn final_sentinel_must_cover_the_complete_unpadded_glyf_table() {
         })
     );
 }
+
+#[test]
+fn expanded_short_offset_cannot_exceed_glyf() {
+    let mut bytes = vec![0, 0, 0, 4];
+    bytes.extend_from_slice(&[0xaa; 6]);
+    let table_span = ByteSpan::sized(0, 4).unwrap();
+    let glyf_span = ByteSpan::sized(4, 6).unwrap();
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 1, LocaFormat::Short)
+        .expect_err("expanded half-offset must remain inside glyf");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::LocaOffsetOutOfBounds {
+            index: 1,
+            offset: 8,
+            glyf_length: 6,
+        })
+    );
+}
