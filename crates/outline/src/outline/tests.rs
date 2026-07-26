@@ -10,7 +10,7 @@ const fn bounds() -> GlyphBounds {
     GlyphBounds::new(-2, -3, 5, 7).unwrap()
 }
 
-fn simple() -> SimpleGlyph {
+const fn simple() -> SimpleGlyph {
     SimpleGlyph {
         span: ByteSpan::sized(4, 10).unwrap(),
         bounds: bounds(),
