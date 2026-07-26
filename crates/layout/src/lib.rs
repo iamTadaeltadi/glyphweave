@@ -9,11 +9,13 @@ mod class_definition;
 mod coverage;
 mod feature;
 mod language_system;
+mod script;
 
 pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
 pub use feature::Feature;
 pub use language_system::LanguageSystem;
+pub use script::Script;
 
 fn layout_error(offset: usize, cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::Diagnostic {
     layout_error_sized(offset, 2, cause)
