@@ -128,3 +128,17 @@ fn maximal_declared_glyph_count_keeps_its_extra_sentinel() {
     );
     assert_eq!(decoded.glyph_span(GlyphId::new(glyph_count)), None);
 }
+
+#[test]
+fn glyf_may_precede_loca_in_the_physical_font_layout() {
+    let mut bytes = vec![0xaa; 6];
+    bytes.extend_from_slice(&[0, 0, 0, 1, 0, 3]);
+    let glyf_span = ByteSpan::sized(0, 6).unwrap();
+    let table_span = ByteSpan::sized(6, 6).unwrap();
+
+    let decoded = Loca::decode(&bytes, table_span, glyf_span, 2, LocaFormat::Short)
+        .expect("table directory controls physical order");
+
+    assert_eq!(decoded.glyph_span(GlyphId::NOTDEF), ByteSpan::between(0, 2));
+    assert_eq!(decoded.glyph_span(GlyphId::new(1)), ByteSpan::between(2, 6));
+}
