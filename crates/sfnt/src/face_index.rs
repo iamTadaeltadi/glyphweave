@@ -6,6 +6,13 @@ use core::fmt;
 ///
 /// Keeping the selector distinct from byte offsets prevents a caller from accidentally using a
 /// directory location as a collection index.
+///
+/// ```
+/// use glyphweave_sfnt::FaceIndex;
+///
+/// assert_eq!(FaceIndex::new(3).raw(), 3);
+/// assert_eq!(FaceIndex::FIRST.raw(), 0);
+/// ```
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FaceIndex(u32);
 
