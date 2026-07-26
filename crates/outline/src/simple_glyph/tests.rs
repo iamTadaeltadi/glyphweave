@@ -25,6 +25,7 @@ fn accessors_preserve_validated_source_identity() {
     assert_eq!(glyph.span(), ByteSpan::sized(20, 30).unwrap());
     assert_eq!(glyph.bounds(), GlyphBounds::new(-2, -4, 8, 16).unwrap());
     assert_eq!(glyph.contour_count(), 2);
+    assert_eq!(glyph.point_count(), 3);
     assert_eq!(glyph.contour_ends(), [2, 3]);
     assert_eq!(glyph.instructions(), [0xb0, 0x01]);
     assert!(glyph.has_overlapping_contours());
