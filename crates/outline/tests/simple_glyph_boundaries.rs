@@ -107,3 +107,20 @@ fn reserved_simple_flag_bit_is_rejected_before_coordinates() {
         })
     );
 }
+
+#[test]
+fn overlap_marker_is_valid_only_on_the_first_physical_flag() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x31, 0x71]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("the second physical flag cannot introduce overlap identity");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(15, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::MisplacedSimpleOverlapFlag { point_index: 1 })
+    );
+}
