@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 
 use glyphweave_outline::{GlyphSet, Remap};
-use glyphweave_sfnt::{FaceIndex, Tag};
+use glyphweave_sfnt::{CharacterMap, FaceIndex, Tag};
 
 use crate::{CodepointSet, Retention};
 
@@ -18,6 +18,24 @@ pub struct SubsetPlan {
 }
 
 impl SubsetPlan {
+    /// Constructs an initial plan by resolving requested scalars through `character_map`.
+    ///
+    /// The resulting Glyph Set contains every mapped request plus mandatory `.notdef`. Outline and
+    /// layout closure can later supply an expanded final Glyph Set to [`Self::new`].
+    #[must_use]
+    pub fn from_character_map(
+        face_index: FaceIndex,
+        codepoints: CodepointSet,
+        character_map: &CharacterMap,
+        retentions: impl IntoIterator<Item = (Tag, Retention)>,
+    ) -> Self {
+        let glyphs = codepoints
+            .iter()
+            .map(|codepoint| character_map.glyph_id(codepoint))
+            .collect();
+        Self::new(face_index, codepoints, glyphs, retentions)
+    }
+
     /// Constructs a plan and derives the only valid Remap for `glyphs`.
     ///
     /// Explicit `Drop` entries are canonicalized to absence because unspecified Tags also drop.
