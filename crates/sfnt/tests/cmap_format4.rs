@@ -134,3 +134,18 @@ fn declared_length_cannot_exceed_available_bytes() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
 }
+
+#[test]
+fn segment_count_encoding_must_be_positive_and_even() {
+    for encoded in [0, 3] {
+        let mut words = minimal_words();
+        words[3] = encoded;
+
+        let diagnostic = decode_words(&words).expect_err("invalid segCountX2");
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::InvalidCmapSegmentCount { encoded }
+        );
+        assert_eq!(diagnostic.span(), ByteSpan::sized(6, 2));
+    }
+}
