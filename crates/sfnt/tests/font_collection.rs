@@ -462,3 +462,19 @@ fn selects_first_face_from_standalone_font() {
     assert_eq!(face.directory_offset(), 0);
     assert_eq!(face.directory().version(), SfntVersion::TrueType);
 }
+
+#[test]
+fn rejects_nonzero_face_index_for_standalone_font() {
+    let mut bytes = Vec::new();
+    push_empty_directory(&mut bytes, 0x0001_0000);
+
+    let diagnostic = Face::select(&bytes, FaceIndex::new(1)).unwrap_err();
+    assert_eq!(diagnostic.span(), None);
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::FaceIndexOutOfBounds {
+            index: FaceIndex::new(1),
+            face_count: 1
+        }
+    );
+}
