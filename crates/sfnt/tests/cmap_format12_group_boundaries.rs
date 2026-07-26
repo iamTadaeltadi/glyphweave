@@ -112,3 +112,10 @@ fn nonzero_mapping_above_unicode_maximum_is_rejected() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
 }
+
+#[test]
+fn notdef_mapping_above_unicode_maximum_is_canonicalized_to_absence() {
+    let decoded =
+        decode_groups(0, &[(0x11_0000, 0x11_0000, 0)]).expect("zero non-scalar mapping is absent");
+    assert!(decoded.character_map().is_empty());
+}
