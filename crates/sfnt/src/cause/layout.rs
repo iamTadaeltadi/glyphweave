@@ -75,23 +75,23 @@ pub enum LayoutTarget {
     ExtensionSubtable,
     /// The Coverage table selecting substitution inputs.
     SubstitutionCoverage,
-    /// A MultipleSubst Sequence table.
+    /// A `MultipleSubst` Sequence table.
     SubstitutionSequence,
-    /// An AlternateSubst AlternateSet table.
+    /// An `AlternateSubst` `AlternateSet` table.
     AlternateSet,
-    /// A LigatureSubst LigatureSet table.
+    /// A `LigatureSubst` `LigatureSet` table.
     LigatureSet,
-    /// A Ligature table within a LigatureSet.
+    /// A Ligature table within a `LigatureSet`.
     Ligature,
     /// A contextual glyph Class Definition table.
     ContextClassDefinition,
-    /// A ContextSubst rule-set table.
+    /// A `ContextSubst` rule-set table.
     ContextRuleSet,
-    /// A ContextSubst rule table.
+    /// A `ContextSubst` rule table.
     ContextRule,
-    /// A ChainContextSubst rule-set table.
+    /// A `ChainContextSubst` rule-set table.
     ChainedContextRuleSet,
-    /// A ChainContextSubst rule table.
+    /// A `ChainContextSubst` rule table.
     ChainedContextRule,
     /// A Script table referenced by `ScriptList`.
     Script,
@@ -245,21 +245,21 @@ pub enum LayoutCause {
     },
     /// A contextual GSUB rule declared an empty input sequence.
     EmptyContextInput {
-        /// ContextSubst type 5 or ChainContextSubst type 6.
+        /// `ContextSubst` type 5 or `ChainContextSubst` type 6.
         lookup_type: u16,
     },
     /// A contextual action targeted a position outside its input sequence.
     InvalidSubstitutionSequenceIndex {
-        /// ContextSubst type 5 or ChainContextSubst type 6.
+        /// `ContextSubst` type 5 or `ChainContextSubst` type 6.
         lookup_type: u16,
         /// The zero-based sequence index in the action record.
         sequence_index: u16,
         /// The contextual input sequence length.
         input_count: u16,
     },
-    /// A contextual action referenced a LookupList index that does not exist.
+    /// A contextual action referenced a `LookupList` index that does not exist.
     InvalidContextLookupIndex {
-        /// The referenced zero-based LookupList index.
+        /// The referenced zero-based `LookupList` index.
         lookup_index: u16,
         /// The number of available Lookups.
         lookup_count: usize,
