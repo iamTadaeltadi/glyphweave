@@ -28,8 +28,8 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 - [x] 2.4 Decode Loca offsets in short and long forms — 386 source / 658 test lines, 32 unit + integration + 2 fixed-seed property + 2 doc tests, 99.07% line / 92.16% region cov in decoder (outline crate 99.56% line / 90.65% region cov)
 - [x] 2.5 Decode Simple Glyph contours, flags, and coordinate deltas — 902 source / 1,475 test lines, 70 unit + integration + 4 fixed-seed property + 2 doc tests, 98.87% line / 96.41% region cov across the decoder (outline crate 99.37% line / 94.33% region cov)
 - [x] 2.6 Decode Composite Glyph components and transforms — 765 source / 1,310 test lines, 59 unit + integration + 3 fixed-seed property + 5 doc tests, 99.13% line / 90.30% region cov across the decoder (outline crate 99.36% line / 93.33% region cov)
-- [ ] 2.7 Compute cycle-safe composite Glyph Closure <-- NEXT
-- [ ] 2.8 Differentially test character maps and outlines against reference tools
+- [x] 2.7 Compute cycle-safe composite Glyph Closure — 470 source / 922 test lines, 32 unit + integration + 3 fixed-seed property + 2 doc tests, 100% line / 100% region cov across the eager `glyf` decoder and closure engine
+- [ ] 2.8 Differentially test character maps and outlines against reference tools <-- NEXT
 
 ## M3 — OpenType layout (budget: 4,300 lines)
 
