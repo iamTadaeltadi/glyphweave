@@ -5,6 +5,17 @@ use glyphweave_sfnt::{GlyphId, NewGlyphId};
 use crate::GlyphSet;
 
 /// A total mapping from one Glyph Set into dense emitted glyph indices.
+///
+/// ```
+/// use glyphweave_outline::{GlyphSet, Remap};
+/// use glyphweave_sfnt::{GlyphId, NewGlyphId};
+///
+/// let glyphs: GlyphSet = [GlyphId::new(12), GlyphId::new(4)].into_iter().collect();
+/// let remap = Remap::new(&glyphs);
+///
+/// assert_eq!(remap.new_glyph_id(GlyphId::new(4)), Some(NewGlyphId::new(1)));
+/// assert_eq!(remap.glyph_id(NewGlyphId::new(2)), Some(GlyphId::new(12)));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Remap {
     forward: Vec<Option<NewGlyphId>>,
