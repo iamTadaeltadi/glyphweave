@@ -62,3 +62,24 @@ fn expands_a_repeated_first_flag_and_preserves_overlap_identity() {
     assert!(glyph.instructions().is_empty());
     assert!(glyph.has_overlapping_contours());
 }
+
+#[test]
+fn decodes_zero_contours_with_optional_phantom_point_instructions() {
+    let header_only = [0; 10];
+    let bare_span = ByteSpan::sized(0, header_only.len()).unwrap();
+    let bare = SimpleGlyph::decode(&header_only, bare_span).unwrap();
+
+    assert_eq!(bare.contour_count(), 0);
+    assert!(bare.points().is_empty());
+    assert!(bare.instructions().is_empty());
+
+    let mut instructed = header_only.to_vec();
+    instructed.extend_from_slice(&2u16.to_be_bytes());
+    instructed.extend_from_slice(&[0xb0, 0x01]);
+    let instructed_span = ByteSpan::sized(0, instructed.len()).unwrap();
+    let decoded = SimpleGlyph::decode(&instructed, instructed_span).unwrap();
+
+    assert_eq!(decoded.contour_count(), 0);
+    assert!(decoded.points().is_empty());
+    assert_eq!(decoded.instructions(), [0xb0, 0x01]);
+}
