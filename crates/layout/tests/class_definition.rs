@@ -169,3 +169,30 @@ fn empty_class_definition_encodes_as_format_2() {
         [0x00, 0x02, 0x00, 0x00]
     );
 }
+
+#[test]
+fn encodes_long_class_runs_as_format_2() {
+    let classes = ClassDefinition::from_assignments(
+        (3..=5)
+            .map(|raw| (GlyphId::new(raw), 1))
+            .chain((6..=8).map(|raw| (GlyphId::new(raw), 2))),
+    );
+    assert_eq!(
+        classes.encode(),
+        [
+            0x00, 0x02, 0x00, 0x02, // format, classRangeCount
+            0x00, 0x03, 0x00, 0x05, 0x00, 0x01, // 3..=5 => class 1
+            0x00, 0x06, 0x00, 0x08, 0x00, 0x02, // 6..=8 => class 2
+        ]
+    );
+}
+
+#[test]
+fn maximal_class_domain_encodes_as_one_range() {
+    let classes =
+        ClassDefinition::from_assignments((0..=u16::MAX).map(|raw| (GlyphId::new(raw), 9)));
+    assert_eq!(
+        classes.encode(),
+        [0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0xff, 0xff, 0x00, 0x09]
+    );
+}
