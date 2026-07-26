@@ -45,3 +45,21 @@ fn instruction_failures_are_located_inside_an_absolute_glyph_span() {
         }
     );
 }
+
+#[test]
+fn padding_failures_are_located_inside_an_absolute_glyph_span() {
+    let mut bytes = vec![0xaa; 5];
+    bytes.extend([0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0]);
+    bytes.extend([0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x7f]);
+    bytes.extend([0xbb; 4]);
+    let glyph_span = ByteSpan::between(5, 22).unwrap();
+
+    let diagnostic = CompositeGlyph::decode(&bytes, glyph_span)
+        .expect_err("a neighboring glyph does not change a nonzero pad");
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(21, 22));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::InvalidCompositeGlyphPadding { value: 0x7f })
+    );
+}
