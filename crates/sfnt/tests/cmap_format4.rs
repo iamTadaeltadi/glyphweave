@@ -271,3 +271,21 @@ fn sentinel_must_resolve_to_notdef() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(26, 2));
 }
+
+#[test]
+fn nonzero_surrogate_mapping_is_rejected() {
+    let mut words = direct_delta_words();
+    words[7] = 0xd800;
+    words[10] = 0xd800;
+    words[12] = 1;
+
+    let diagnostic = decode_words(&words).expect_err("surrogate resolves nonzero");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::CmapSurrogateMapping {
+            codepoint: 0xd800,
+            glyph: GlyphId::new(0xd801),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(24, 2));
+}
