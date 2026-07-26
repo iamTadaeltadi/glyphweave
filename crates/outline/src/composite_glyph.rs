@@ -38,4 +38,16 @@ impl CompositeGlyph {
     pub fn component_count(&self) -> usize {
         self.components.len()
     }
+
+    /// Returns the uninterpreted instruction program for the accumulated outline.
+    #[must_use]
+    pub fn instructions(&self) -> &[u8] {
+        &self.instructions
+    }
+
+    /// Returns whether the source marks that component outlines may overlap.
+    #[must_use]
+    pub const fn has_overlapping_components(&self) -> bool {
+        self.overlapping_components
+    }
 }
