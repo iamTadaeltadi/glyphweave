@@ -84,3 +84,18 @@ fn preserves_grid_rounding_for_offset_components() {
         }
     );
 }
+
+#[test]
+fn preserves_scaled_component_offsets() {
+    let glyph = decode_byte_offset(0x0802);
+
+    assert_eq!(
+        glyph.components()[0].placement(),
+        ComponentPlacement::Offset {
+            x: 3,
+            y: -3,
+            round_to_grid: false,
+            mode: ComponentOffsetMode::Scaled,
+        }
+    );
+}
