@@ -180,3 +180,22 @@ fn rejects_a_self_referential_composite() {
         })
     );
 }
+
+#[test]
+fn rejects_a_multi_glyph_cycle_at_its_back_edge() {
+    let glyf = decode_graph(&[
+        Node::Composite(vec![1]),
+        Node::Composite(vec![2]),
+        Node::Composite(vec![0]),
+    ]);
+
+    let diagnostic = GlyphClosure::compute(&GlyphSet::new(), &glyf).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::CompositeGlyphCycle {
+            parent: GlyphId::new(2),
+            component: GlyphId::NOTDEF,
+        })
+    );
+}
