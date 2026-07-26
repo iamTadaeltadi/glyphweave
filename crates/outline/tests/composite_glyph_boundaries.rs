@@ -165,3 +165,22 @@ fn both_axis_scale_coefficients_must_be_complete() {
         }
     );
 }
+
+#[test]
+fn complete_matrix_requires_four_coefficients() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x82, 0x00, 0x01, 0x00, 0x00]);
+    bytes.extend([0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("the final matrix coefficient cannot be truncated");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(22, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
