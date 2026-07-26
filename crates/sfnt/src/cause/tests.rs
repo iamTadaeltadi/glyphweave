@@ -26,6 +26,18 @@ fn empty_collection_failure_is_explicit() {
 }
 
 #[test]
+fn face_index_failure_names_available_count() {
+    let cause = Cause::FaceIndexOutOfBounds {
+        index: crate::FaceIndex::new(4),
+        face_count: 2,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face index 4 is out of bounds for 2 face(s)"
+    );
+}
+
+#[test]
 fn collection_count_failure_names_available_capacity() {
     let cause = Cause::CollectionFaceCountOutOfBounds {
         count: 100,
