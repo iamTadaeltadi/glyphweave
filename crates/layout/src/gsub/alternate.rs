@@ -4,6 +4,8 @@ use glyphweave_sfnt::GlyphId;
 
 use super::sequence_map::SequenceMap;
 
+mod decode;
+
 /// An input-ordered map from one glyph to its ordered alternate choices.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct AlternateSubstitution {
