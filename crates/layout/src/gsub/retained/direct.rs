@@ -2,6 +2,9 @@
 
 use crate::{Coverage, GsubClosure, GsubSubtable};
 
+#[cfg(test)]
+mod tests;
+
 pub(super) fn retain(subtable: &GsubSubtable, closure: &GsubClosure) -> Option<GsubSubtable> {
     match subtable {
         GsubSubtable::Single(value) => {
