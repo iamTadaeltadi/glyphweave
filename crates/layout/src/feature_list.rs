@@ -74,3 +74,6 @@ impl FeatureList {
         self.features.is_empty()
     }
 }
+
+#[cfg(test)]
+mod tests;
