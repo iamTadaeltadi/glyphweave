@@ -1,6 +1,6 @@
 //! One decoded effective GSUB subtable.
 
-use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTableKind};
 
 use crate::{
     AlternateSubstitution, ChainedContextSubstitution, ContextSubstitution, LigatureSubstitution,
@@ -9,24 +9,24 @@ use crate::{
 
 /// Every supported effective GSUB lookup operation after extension flattening.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum GsubSubtable {
+pub enum GsubSubtable<G = GlyphId> {
     /// Lookup type 1.
-    Single(SingleSubstitution),
+    Single(SingleSubstitution<G>),
     /// Lookup type 2.
-    Multiple(MultipleSubstitution),
+    Multiple(MultipleSubstitution<G>),
     /// Lookup type 3.
-    Alternate(AlternateSubstitution),
+    Alternate(AlternateSubstitution<G>),
     /// Lookup type 4.
-    Ligature(LigatureSubstitution),
+    Ligature(LigatureSubstitution<G>),
     /// Lookup type 5.
-    Context(ContextSubstitution),
+    Context(ContextSubstitution<G>),
     /// Lookup type 6.
-    ChainedContext(ChainedContextSubstitution),
+    ChainedContext(ChainedContextSubstitution<G>),
     /// Lookup type 8.
-    ReverseChainSingle(ReverseChainSingleSubstitution),
+    ReverseChainSingle(ReverseChainSingleSubstitution<G>),
 }
 
-impl GsubSubtable {
+impl GsubSubtable<GlyphId> {
     pub(super) fn decode(bytes: &[u8], span: ByteSpan, lookup_type: u16) -> Decoded<Self> {
         match lookup_type {
             1 => SingleSubstitution::decode(bytes, span).map(Self::Single),
@@ -45,7 +45,9 @@ impl GsubSubtable {
             )),
         }
     }
+}
 
+impl<G: Copy + Ord> GsubSubtable<G> {
     /// Returns the effective GSUB lookup type represented by this value.
     #[must_use]
     pub const fn lookup_type(&self) -> u16 {
