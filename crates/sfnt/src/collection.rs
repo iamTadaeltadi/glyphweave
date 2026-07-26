@@ -2,6 +2,8 @@
 
 use crate::{ByteSpan, CollectionSignature, CollectionVersion, Face, FaceIndex};
 
+mod decode;
+
 /// A decoded `ttcf` container whose advertised Faces are all validated.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FontCollection {
@@ -12,6 +14,16 @@ pub struct FontCollection {
 }
 
 impl FontCollection {
+    /// Decodes and validates an OpenType Font Collection from complete file bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware Diagnostic when the TTC Header, any Face directory, shared table
+    /// layout, or optional collection signature descriptor is malformed.
+    pub fn decode(bytes: &[u8]) -> crate::Decoded<Self> {
+        decode::decode(bytes)
+    }
+
     /// The TTC Header version.
     #[must_use]
     pub const fn version(&self) -> CollectionVersion {
