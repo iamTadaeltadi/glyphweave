@@ -26,3 +26,27 @@ fn decodes_wrapping_single_delta_substitution() {
         Some(GlyphId::new(65_533))
     );
 }
+
+#[test]
+fn decodes_explicit_outputs_in_coverage_index_order() {
+    let bytes = [
+        0x00, 0x02, // format 2
+        0x00, 0x0c, // coverageOffset
+        0x00, 0x03, // glyphCount
+        0x00, 0x1e, 0x00, 0x0a, 0x00, 0x28, // substitute glyphs 30, 10, 40
+        0x00, 0x01, // Coverage format 1
+        0x00, 0x03, // coverage glyphCount
+        0x00, 0x03, 0x00, 0x07, 0x00, 0x09, // covered glyphs
+    ];
+    let substitution =
+        SingleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
+
+    assert_eq!(
+        substitution.mappings().collect::<Vec<_>>(),
+        [
+            (GlyphId::new(3), GlyphId::new(30)),
+            (GlyphId::new(7), GlyphId::new(10)),
+            (GlyphId::new(9), GlyphId::new(40)),
+        ]
+    );
+}
