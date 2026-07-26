@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType LookupList tables.
 
 use glyphweave_layout::LookupList;
-use glyphweave_sfnt::{ByteSpan, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind, LayoutTarget};
 
 #[test]
 fn decodes_lookup_index_and_processing_order() {
@@ -42,4 +42,42 @@ fn decodes_empty_lookup_list() {
     .unwrap();
     assert!(list.is_empty());
     assert_eq!(list.table(), None);
+}
+
+#[test]
+fn rejects_lookup_target_inside_offset_array() {
+    let bytes = [0x00, 0x01, 0x00, 0x02];
+    let diagnostic = LookupList::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(2, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::Lookup,
+            offset: 2,
+            minimum: 4,
+            container_length: 4,
+        })
+    );
+}
+
+#[test]
+fn accepts_exact_lookup_target_aliasing() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x06, 0x00, 0x06, // two aliases
+        0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0xfe,
+    ];
+    let list = LookupList::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap();
+
+    assert_eq!(list.lookup(0), list.lookup(1));
 }
