@@ -29,3 +29,6 @@ impl F2Dot14 {
         f64::from(self.0) / 16_384.0
     }
 }
+
+#[cfg(test)]
+mod tests;
