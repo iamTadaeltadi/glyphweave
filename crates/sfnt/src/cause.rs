@@ -23,6 +23,13 @@ pub enum Cause {
     },
     /// A TTC Header advertises no font resources.
     EmptyFontCollection,
+    /// The advertised Face count cannot fit in the available TTC Header bytes.
+    CollectionFaceCountOutOfBounds {
+        /// The number of Faces declared by the header.
+        count: u32,
+        /// The greatest number of directory offsets available in the input.
+        maximum: usize,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -128,6 +135,10 @@ impl fmt::Display for Cause {
                 write!(f, "unsupported collection version {major}.{minor}")
             }
             Self::EmptyFontCollection => f.write_str("font collection contains no faces"),
+            Self::CollectionFaceCountOutOfBounds { count, maximum } => write!(
+                f,
+                "collection face count {count} exceeds available offset capacity {maximum}"
+            ),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }

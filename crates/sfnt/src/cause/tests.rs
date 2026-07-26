@@ -26,6 +26,18 @@ fn empty_collection_failure_is_explicit() {
 }
 
 #[test]
+fn collection_count_failure_names_available_capacity() {
+    let cause = Cause::CollectionFaceCountOutOfBounds {
+        count: 100,
+        maximum: 3,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "collection face count 100 exceeds available offset capacity 3"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
