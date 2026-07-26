@@ -231,6 +231,11 @@ pub enum LayoutCause {
         /// The number of output or rule-set records.
         records: usize,
     },
+    /// A Ligature table declared fewer than two input components.
+    InvalidLigatureComponentCount {
+        /// The declared count, including the implicit first Coverage glyph.
+        count: u16,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -358,6 +363,10 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "GSUB lookup type {lookup_type} has {inputs} input glyph(s) but {records} mapping record(s)"
+            ),
+            Self::InvalidLigatureComponentCount { count } => write!(
+                f,
+                "GSUB Ligature declares {count} component(s), fewer than the required two"
             ),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
