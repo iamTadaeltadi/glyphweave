@@ -158,7 +158,7 @@ mod tests {
     fn default_resolution_delegates_to_the_ordinary_map() {
         let mut map = VariationSelectorMap::new();
         map.insert_default_range(selector('\u{fe0f}'), 'A', 'B');
-        let ordinary: CharacterMap = [('A', GlyphId::new(7))].into_iter().collect();
+        let ordinary: CharacterMap = std::iter::once(('A', GlyphId::new(7))).collect();
 
         assert_eq!(
             map.glyph_id('A', selector('\u{fe0f}'), &ordinary),
@@ -192,7 +192,7 @@ mod tests {
     fn non_default_mapping_resolves_only_its_exact_sequence() {
         let mut map = VariationSelectorMap::new();
         map.insert_non_default(selector('\u{fe0f}'), '\u{2764}', GlyphId::new(19));
-        let ordinary: CharacterMap = [('\u{2764}', GlyphId::new(7))].into_iter().collect();
+        let ordinary: CharacterMap = std::iter::once(('\u{2764}', GlyphId::new(7))).collect();
 
         assert_eq!(
             map.mapping('\u{2764}', selector('\u{fe0f}')),
