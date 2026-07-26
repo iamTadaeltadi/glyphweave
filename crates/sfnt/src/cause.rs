@@ -176,6 +176,44 @@ pub enum Cause {
         /// The encoded reserved value.
         found: u16,
     },
+    /// A format-4 segment is inverted, not ordered, or overlaps its predecessor.
+    InvalidCmapSegment {
+        /// The zero-based segment index.
+        index: u16,
+        /// The segment's inclusive start code.
+        start: u16,
+        /// The segment's inclusive end code.
+        end: u16,
+        /// The preceding segment's end code, when this is not the first segment.
+        previous_end: Option<u16>,
+    },
+    /// The required final format-4 sentinel does not map `0xFFFF` to `.notdef`.
+    InvalidCmapSentinel {
+        /// The final segment start code.
+        start: u16,
+        /// The final segment end code.
+        end: u16,
+        /// The resolved sentinel Glyph ID.
+        glyph: crate::GlyphId,
+    },
+    /// A format-4 range offset targets a word outside `glyphIdArray`.
+    InvalidCmapRangeOffset {
+        /// The zero-based segment index.
+        segment: u16,
+        /// The character code being resolved.
+        codepoint: u16,
+        /// The calculated absolute byte offset.
+        target: usize,
+        /// The legal glyph-array range.
+        glyph_array: crate::ByteSpan,
+    },
+    /// A format-4 entry maps a UTF-16 surrogate to a nonzero glyph.
+    CmapSurrogateMapping {
+        /// The surrogate code unit.
+        codepoint: u16,
+        /// The invalid nonzero Glyph ID.
+        glyph: crate::GlyphId,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
