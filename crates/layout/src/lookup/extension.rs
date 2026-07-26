@@ -11,7 +11,7 @@ pub(super) struct DecodedExtension {
     pub(super) payload: ByteSpan,
 }
 
-pub(super) fn is_extension_type(table: LayoutTableKind, lookup_type: u16) -> bool {
+pub(super) const fn is_extension_type(table: LayoutTableKind, lookup_type: u16) -> bool {
     matches!(
         (table, lookup_type),
         (LayoutTableKind::Substitution, 7) | (LayoutTableKind::Positioning, 9)
