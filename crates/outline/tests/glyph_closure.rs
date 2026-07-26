@@ -90,6 +90,27 @@ fn shared_subgraphs_are_memoized_without_losing_depth() {
 }
 
 #[test]
+fn maximum_depth_follows_the_longest_branch() {
+    let glyf = decode_graph(&[
+        Node::Empty,
+        Node::Simple,
+        Node::Composite(vec![1]),
+        Node::Composite(vec![2]),
+        Node::Simple,
+        Node::Composite(vec![4, 3]),
+    ]);
+    let initial: GlyphSet = [GlyphId::new(5)].into_iter().collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+
+    assert_eq!(closure.maximum_component_depth(), 3);
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 2, 3, 4, 5]
+    );
+}
+
+#[test]
 fn rejects_an_initial_root_outside_glyf() {
     let glyf = decode_graph(&[Node::Simple]);
     let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
