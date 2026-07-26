@@ -263,3 +263,15 @@ fn ignores_offset_modes_for_point_alignment() {
         }
     );
 }
+
+#[test]
+fn preserves_parent_composite_instructions() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x01, 0x02, 0x00, 0x0c, 0x00, 0x00]);
+    bytes.extend([0x00, 0x03, 0xaa, 0xbb, 0xcc]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.instructions(), [0xaa, 0xbb, 0xcc]);
+}
