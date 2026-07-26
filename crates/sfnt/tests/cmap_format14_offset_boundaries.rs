@@ -6,7 +6,7 @@ pub mod support;
 use glyphweave_sfnt::{
     ByteSpan, Cause, Cmap14TableKind, CmapCause, CmapFormat14, VariationMapping, VariationSelector,
 };
-use support::{DefaultRange, NonDefaultMapping, encode_selector};
+use support::{DefaultRange, NonDefaultMapping, encode_selector, push_u16, push_u24, push_u32};
 
 #[test]
 fn default_offset_cannot_target_selector_record_bytes() {
@@ -108,4 +108,32 @@ fn unreferenced_gap_before_target_tables_is_permitted() {
             .mapping('\u{2764}', selector),
         Some(VariationMapping::Default)
     );
+}
+
+#[test]
+fn selector_records_may_share_an_exact_default_table() {
+    let mut bytes = Vec::new();
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, 40);
+    push_u32(&mut bytes, 2);
+    for selector in [0xfe0f, 0xe0100] {
+        push_u24(&mut bytes, selector);
+        push_u32(&mut bytes, 32);
+        push_u32(&mut bytes, 0);
+    }
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0x4e00);
+    bytes.push(0);
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("exact target sharing is valid");
+    for raw_selector in ['\u{fe0f}', '\u{e0100}'] {
+        let selector = VariationSelector::new(raw_selector).unwrap();
+        assert_eq!(
+            decoded
+                .variation_selector_map()
+                .mapping('\u{4e00}', selector),
+            Some(VariationMapping::Default)
+        );
+    }
+    assert_eq!(decoded.variation_selector_map().default_range_count(), 2);
 }
