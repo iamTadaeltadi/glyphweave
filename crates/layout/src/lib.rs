@@ -61,6 +61,13 @@ const fn closure_error(cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::
     )
 }
 
+const fn rewrite_error(cause: glyphweave_sfnt::LayoutCause) -> glyphweave_sfnt::Diagnostic {
+    glyphweave_sfnt::Diagnostic::failure(
+        glyphweave_sfnt::Stage::Rewrite,
+        glyphweave_sfnt::Cause::Layout(cause),
+    )
+}
+
 fn push_u16(bytes: &mut Vec<u8>, value: u16) {
     bytes.extend_from_slice(&value.to_be_bytes());
 }

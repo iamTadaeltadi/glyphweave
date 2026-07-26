@@ -11,6 +11,7 @@ mod ligature_substitution;
 mod lookup;
 mod lookup_list;
 mod multiple;
+mod remap;
 mod remapped;
 mod retained;
 mod reverse_chain;
