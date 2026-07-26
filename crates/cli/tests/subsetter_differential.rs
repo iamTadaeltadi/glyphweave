@@ -56,6 +56,15 @@ fn fonttools_preserves_a_default_variation_sequence() {
     assert_default_variation_sequence(&bytes);
 }
 
+#[test]
+fn harfbuzz_preserves_a_default_variation_sequence() {
+    let Some(bytes) = subset_text("hb-subset", "A\u{fe0f}") else {
+        return;
+    };
+
+    assert_default_variation_sequence(&bytes);
+}
+
 fn assert_reference_closure(bytes: &[u8]) {
     let glyf = glyf_from(bytes);
     let initial: GlyphSet = std::iter::once(GlyphId::new(5)).collect();
