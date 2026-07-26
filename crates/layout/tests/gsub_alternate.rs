@@ -1,4 +1,4 @@
-//! Integration coverage for semantic AlternateSubst decoding.
+//! Integration coverage for semantic `AlternateSubst` decoding.
 
 use glyphweave_layout::AlternateSubstitution;
 use glyphweave_sfnt::{ByteSpan, GlyphId};
