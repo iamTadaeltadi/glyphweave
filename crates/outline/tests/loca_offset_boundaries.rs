@@ -28,9 +28,9 @@ fn offsets_cannot_move_backward_between_glyphs() {
     for offset in [0_u32, 8, 4] {
         bytes.extend_from_slice(&offset.to_be_bytes());
     }
-    bytes.extend_from_slice(&[0xaa; 4]);
+    bytes.extend_from_slice(&[0xaa; 8]);
     let table_span = ByteSpan::sized(0, 12).unwrap();
-    let glyf_span = ByteSpan::sized(12, 4).unwrap();
+    let glyf_span = ByteSpan::sized(12, 8).unwrap();
 
     let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 2, LocaFormat::Long)
         .expect_err("glyph locations must be nondecreasing");
@@ -65,6 +65,30 @@ fn long_offsets_must_be_word_aligned() {
         Cause::Outline(OutlineCause::MisalignedLocaOffset {
             index: 1,
             offset: 3,
+        })
+    );
+}
+
+#[test]
+fn intermediate_offset_cannot_escape_glyf_and_return() {
+    let mut bytes = Vec::new();
+    for offset in [0_u32, 12, 10] {
+        bytes.extend_from_slice(&offset.to_be_bytes());
+    }
+    bytes.extend_from_slice(&[0xaa; 10]);
+    let table_span = ByteSpan::sized(0, 12).unwrap();
+    let glyf_span = ByteSpan::sized(12, 10).unwrap();
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 2, LocaFormat::Long)
+        .expect_err("every location must stay within glyf");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::LocaOffsetOutOfBounds {
+            index: 1,
+            offset: 12,
+            glyf_length: 10,
         })
     );
 }
