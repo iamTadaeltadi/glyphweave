@@ -43,3 +43,6 @@ impl GlyphHeader {
         self.bounds
     }
 }
+
+#[cfg(test)]
+mod tests;
