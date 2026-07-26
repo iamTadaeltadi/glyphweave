@@ -11,6 +11,8 @@ glyphweave-layout = { path = "../layout" }
 glyphweave-outline = { path = "../outline" }
 glyphweave-sfnt = { path = "../sfnt" }
 
+[dev-dependencies]
+proptest.workspace = true
+
 [lints]
 workspace = true
-
