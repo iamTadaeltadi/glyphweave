@@ -73,6 +73,16 @@ pub enum LayoutTarget {
     LookupSubtable,
     /// The real payload referenced by an extension wrapper.
     ExtensionSubtable,
+    /// The Coverage table selecting substitution inputs.
+    SubstitutionCoverage,
+    /// A MultipleSubst Sequence table.
+    SubstitutionSequence,
+    /// An AlternateSubst AlternateSet table.
+    AlternateSet,
+    /// A LigatureSubst LigatureSet table.
+    LigatureSet,
+    /// A Ligature table within a LigatureSet.
+    Ligature,
     /// A Script table referenced by `ScriptList`.
     Script,
     /// The default Language System table of a Script.
@@ -91,6 +101,11 @@ impl fmt::Display for LayoutTarget {
             Self::Lookup => "Lookup",
             Self::LookupSubtable => "Lookup subtable",
             Self::ExtensionSubtable => "extension subtable",
+            Self::SubstitutionCoverage => "substitution Coverage",
+            Self::SubstitutionSequence => "substitution Sequence",
+            Self::AlternateSet => "AlternateSet",
+            Self::LigatureSet => "LigatureSet",
+            Self::Ligature => "Ligature",
             Self::Script => "Script",
             Self::DefaultLanguageSystem => "default Language System",
             Self::LanguageSystem => "Language System",
