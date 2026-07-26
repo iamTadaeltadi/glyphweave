@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, LayoutListKind, LayoutTarget, Reader, Tag};
 
 use super::ScriptList;
@@ -26,19 +28,17 @@ impl ScriptList {
                 ));
             }
             if let Some(preceding) = previous {
-                let cause = if tag < preceding {
-                    Some(LayoutCause::UnsortedLayoutTags {
+                let cause = match tag.cmp(&preceding) {
+                    Ordering::Less => Some(LayoutCause::UnsortedLayoutTags {
                         list: LayoutListKind::Script,
                         previous: preceding,
                         current: tag,
-                    })
-                } else if tag == preceding {
-                    Some(LayoutCause::DuplicateLayoutTag {
+                    }),
+                    Ordering::Equal => Some(LayoutCause::DuplicateLayoutTag {
                         list: LayoutListKind::Script,
                         tag,
-                    })
-                } else {
-                    None
+                    }),
+                    Ordering::Greater => None,
                 };
                 if let Some(cause) = cause {
                     return Err(layout_error_sized(tag_position, 4, cause));
