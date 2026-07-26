@@ -28,3 +28,13 @@ fn insertion_reports_new_membership() {
     assert!(glyphs.contains(GlyphId::new(9)));
     assert_eq!(glyphs.len(), 2);
 }
+
+#[test]
+fn removal_preserves_notdef() {
+    let mut glyphs = GlyphSet::new();
+    glyphs.insert(GlyphId::new(9));
+    assert!(glyphs.remove(GlyphId::new(9)));
+    assert!(!glyphs.remove(GlyphId::new(9)));
+    assert!(!glyphs.remove(GlyphId::NOTDEF));
+    assert_eq!(glyphs, GlyphSet::new());
+}
