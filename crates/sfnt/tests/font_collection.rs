@@ -579,3 +579,28 @@ fn rejects_signature_covering_collection_header() {
         }
     );
 }
+
+#[test]
+fn rejects_signature_covering_face_directory() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 2);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 28);
+    push_u32(&mut bytes, u32::from_be_bytes(*b"DSIG"));
+    push_u32(&mut bytes, 16);
+    push_u32(&mut bytes, 32);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+    bytes.resize(48, 0);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(28, 20));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::CollectionSignatureOverlapsFaceDirectory {
+            signature: ByteSpan::sized(32, 16).unwrap(),
+            face: FaceIndex::FIRST,
+            directory: ByteSpan::sized(28, 12).unwrap()
+        }
+    );
+}
