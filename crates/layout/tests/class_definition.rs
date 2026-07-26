@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType Class Definition tables.
 
 use glyphweave_layout::ClassDefinition;
-use glyphweave_sfnt::GlyphId;
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause};
 
 #[test]
 fn decodes_format_1_and_discards_class_zero() {
@@ -40,4 +40,30 @@ fn decodes_single_class_at_maximum_glyph() {
     let bytes = [0x00, 0x01, 0xff, 0xff, 0x00, 0x01, 0x00, 0x03];
     let classes = ClassDefinition::decode(&bytes, 0).unwrap();
     assert_eq!(classes.class_of(GlyphId::new(u16::MAX)), 3);
+}
+
+#[test]
+fn rejects_unknown_class_definition_format() {
+    let diagnostic = ClassDefinition::decode(&[0xaa, 0x00, 0x03], 1).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(1, 3));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsupportedClassDefinitionFormat { format: 3 })
+    );
+}
+
+#[test]
+fn rejects_format_1_range_beyond_maximum_glyph() {
+    let bytes = [0x00, 0x01, 0xff, 0xfe, 0x00, 0x03];
+    let diagnostic = ClassDefinition::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(2, 6));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::ClassDefinitionGlyphRangeOverflow {
+            start: GlyphId::new(65_534),
+            count: 3,
+        })
+    );
 }
