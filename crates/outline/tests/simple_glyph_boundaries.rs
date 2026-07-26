@@ -220,3 +220,23 @@ fn every_strict_prefix_of_a_complete_simple_glyph_is_rejected() {
             .expect_err("no strict prefix may consume bytes from the following glyph");
     }
 }
+
+#[test]
+fn short_x_vector_must_fit_inside_the_glyph_span() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.push(0x33);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic =
+        SimpleGlyph::decode(&bytes, span).expect_err("the short x magnitude is absent");
+
+    assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(15)));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 1,
+            available: 0
+        }
+    );
+}
