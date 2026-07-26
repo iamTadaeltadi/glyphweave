@@ -1,0 +1,3 @@
+msrv = "1.85.0"
+doc-valid-idents = ["FontTools", "Glyphweave", "HarfBuzz", "OpenType", "TrueType"]
+

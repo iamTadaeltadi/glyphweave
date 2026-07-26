@@ -1,0 +1,11 @@
+[package]
+name = "glyphweave-sfnt"
+description = "Bounded SFNT container and scalar-table decoding for Glyphweave"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+

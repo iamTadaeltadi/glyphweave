@@ -1,0 +1,16 @@
+[package]
+name = "glyphweave-verify"
+description = "Independent structural and referential verification for Glyphweave fonts"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+glyphweave-layout = { path = "../layout" }
+glyphweave-outline = { path = "../outline" }
+glyphweave-sfnt = { path = "../sfnt" }
+
+[lints]
+workspace = true
+
