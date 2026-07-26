@@ -148,6 +148,19 @@ fn transform_conflict_names_the_component_and_flags() {
 }
 
 #[test]
+fn offset_mode_conflict_names_the_component_and_flags() {
+    let cause = Cause::Outline(OutlineCause::ConflictingComponentOffsetModes {
+        component_index: 2,
+        flags: 0x1802,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite component 2 selects conflicting offset modes in 0x1802"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
