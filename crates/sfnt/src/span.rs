@@ -107,6 +107,12 @@ impl ByteSpan {
         Self { start, end }
     }
 
+    /// Returns `true` when both spans cover at least one common byte.
+    #[must_use]
+    pub const fn overlaps(self, other: Self) -> bool {
+        !self.is_empty() && !other.is_empty() && self.start < other.end && other.start < self.end
+    }
+
     /// Borrows the bytes the span covers.
     ///
     /// # Errors
@@ -184,6 +190,15 @@ mod tests {
         let joined = left.join(right);
         assert_eq!((joined.start(), joined.end()), (2, 9));
         assert_eq!(joined, right.join(left));
+    }
+
+    #[test]
+    fn overlap_excludes_touching_and_empty_spans() {
+        let left = ByteSpan::between(2, 6).unwrap();
+        assert!(left.overlaps(ByteSpan::between(5, 8).unwrap()));
+        assert!(!left.overlaps(ByteSpan::between(6, 9).unwrap()));
+        assert!(!left.overlaps(ByteSpan::empty_at(4)));
+        assert!(!ByteSpan::empty_at(4).overlaps(left));
     }
 
     #[test]
