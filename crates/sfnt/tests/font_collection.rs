@@ -536,3 +536,22 @@ fn rejects_malformed_unselected_face() {
         }
     );
 }
+
+#[test]
+fn rejects_every_truncated_prefix_of_version_two_collection() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 2);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 28);
+    bytes.extend_from_slice(&[0; 12]);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+
+    for length in 0..bytes.len() {
+        assert!(
+            FontCollection::decode(&bytes[..length]).is_err(),
+            "prefix of length {length} unexpectedly decoded"
+        );
+    }
+    assert!(FontCollection::decode(&bytes).is_ok());
+}
