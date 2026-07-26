@@ -6,6 +6,15 @@ use crate::{
 };
 
 /// One decoded OpenType font resource.
+///
+/// ```
+/// use glyphweave_sfnt::{Face, FaceIndex, SfntVersion};
+///
+/// let bytes = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+/// let face = Face::select(&bytes, FaceIndex::FIRST).unwrap();
+/// assert_eq!(face.index(), FaceIndex::FIRST);
+/// assert_eq!(face.directory().version(), SfntVersion::TrueType);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Face {
     pub(crate) index: FaceIndex,
