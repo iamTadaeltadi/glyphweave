@@ -54,3 +54,6 @@ impl Component {
         self.use_my_metrics
     }
 }
+
+#[cfg(test)]
+mod tests;
