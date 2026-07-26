@@ -22,8 +22,8 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 
 ## M2 — Character maps and TrueType outlines (budget: 4,800 lines)
 
-- [ ] 2.1 Decode and resolve `cmap` format 4 <-- NEXT
-- [ ] 2.2 Decode and resolve `cmap` format 12
+- [x] 2.1 Decode and resolve `cmap` format 4 — 530 source / 702 test lines, 35 unit + integration + 3 fixed-seed property + 1 doc tests, 98.46% line / 88.75% region cov in decoder (SFNT crate 97.71% line / 93.64% region cov)
+- [ ] 2.2 Decode and resolve `cmap` format 12 <-- NEXT
 - [ ] 2.3 Decode Variation Selector mappings in `cmap` format 14
 - [ ] 2.4 Decode Loca offsets in short and long forms
 - [ ] 2.5 Decode Simple Glyph contours, flags, and coordinate deltas
