@@ -1,7 +1,7 @@
 //! Integration tests for bounded Font Collection decoding and Face selection.
 
 use glyphweave_sfnt::{
-    ByteSpan, Cause, CollectionVersion, FaceIndex, FontCollection, SfntVersion, Tag,
+    ByteSpan, Cause, CollectionVersion, Face, FaceIndex, FontCollection, SfntVersion, Tag,
 };
 
 fn push_u16(bytes: &mut Vec<u8>, value: u16) {
@@ -450,4 +450,15 @@ fn preserves_face_order_when_directory_offsets_descend() {
     );
     assert_eq!(collection.faces()[0].index(), FaceIndex::new(0));
     assert_eq!(collection.faces()[1].index(), FaceIndex::new(1));
+}
+
+#[test]
+fn selects_first_face_from_standalone_font() {
+    let mut bytes = Vec::new();
+    push_empty_directory(&mut bytes, 0x0001_0000);
+
+    let face = Face::select(&bytes, FaceIndex::FIRST).unwrap();
+    assert_eq!(face.index(), FaceIndex::FIRST);
+    assert_eq!(face.directory_offset(), 0);
+    assert_eq!(face.directory().version(), SfntVersion::TrueType);
 }
