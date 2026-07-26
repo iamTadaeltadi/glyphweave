@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType Script Lists.
 
 use glyphweave_layout::ScriptList;
-use glyphweave_sfnt::{ByteSpan, Tag};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, Tag};
 
 const ARAB: Tag = Tag::new(*b"arab");
 const LATN: Tag = Tag::new(*b"latn");
@@ -35,4 +35,56 @@ fn decodes_empty_script_list() {
     let bytes = [0x00, 0x00];
     let list = ScriptList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
     assert!(list.is_empty());
+}
+
+#[test]
+fn rejects_malformed_script_tag() {
+    let bytes = [0x00, 0x01, b' ', b' ', b' ', b' ', 0x00, 0x08];
+    let diagnostic =
+        ScriptList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(2, 6));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutTag {
+            list: LayoutListKind::Script,
+            tag: Tag::new(*b"    "),
+        })
+    );
+}
+
+#[test]
+fn rejects_decreasing_script_tags() {
+    let bytes = [
+        0x00, 0x02, b'l', b'a', b't', b'n', 0x00, 0x0e, b'a', b'r', b'a', b'b', 0x00, 0x0e,
+    ];
+    let diagnostic =
+        ScriptList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(8, 12));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsortedLayoutTags {
+            list: LayoutListKind::Script,
+            previous: LATN,
+            current: ARAB,
+        })
+    );
+}
+
+#[test]
+fn rejects_duplicate_script_tags() {
+    let bytes = [
+        0x00, 0x02, b'l', b'a', b't', b'n', 0x00, 0x0e, b'l', b'a', b't', b'n', 0x00, 0x0e,
+    ];
+    let diagnostic =
+        ScriptList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::DuplicateLayoutTag {
+            list: LayoutListKind::Script,
+            tag: LATN,
+        })
+    );
 }
