@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, LayoutListKind, LayoutTarget, Reader, Tag};
 
 use super::Script;
@@ -30,22 +32,22 @@ impl Script {
                 ));
             }
             if let Some(preceding) = previous {
-                let cause = if tag < preceding {
-                    LayoutCause::UnsortedLayoutTags {
+                let cause = match tag.cmp(&preceding) {
+                    Ordering::Less => LayoutCause::UnsortedLayoutTags {
                         list: LayoutListKind::Language,
                         previous: preceding,
                         current: tag,
-                    }
-                } else if tag == preceding {
-                    LayoutCause::DuplicateLayoutTag {
+                    },
+                    Ordering::Equal => LayoutCause::DuplicateLayoutTag {
                         list: LayoutListKind::Language,
                         tag,
+                    },
+                    Ordering::Greater => {
+                        previous = Some(tag);
+                        let offset_position = reader.offset();
+                        records.push((tag, offset_position, reader.u16()?));
+                        continue;
                     }
-                } else {
-                    previous = Some(tag);
-                    let offset_position = reader.offset();
-                    records.push((tag, offset_position, reader.u16()?));
-                    continue;
                 };
                 return Err(layout_error_sized(tag_position, 4, cause));
             }
