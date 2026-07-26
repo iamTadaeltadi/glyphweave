@@ -49,3 +49,19 @@ fn ignore_marks_dominates_declared_mark_filters() {
 
     assert_eq!(lookup.flags().mark_filter(), MarkFilter::IgnoreAll);
 }
+
+#[test]
+fn decodes_mark_attachment_class_without_filtering_set() {
+    let bytes = [0x00, 0x01, 0x0b, 0x00, 0x00, 0x01, 0x00, 0x08, 0xfe];
+    let lookup = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap();
+
+    assert_eq!(
+        lookup.flags().mark_filter(),
+        MarkFilter::AttachmentClass(11)
+    );
+}
