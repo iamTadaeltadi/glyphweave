@@ -1,6 +1,8 @@
 //! Integration coverage for family-aware semantic GSUB Lookup decoding.
 
-use glyphweave_layout::{GsubLookup, GsubSubtable, Lookup, LookupFlags};
+use glyphweave_layout::{
+    GsubLookup, GsubLookupList, GsubSubtable, Lookup, LookupFlags, LookupList,
+};
 use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTableKind};
 
 #[test]
@@ -52,4 +54,38 @@ fn rejects_positioning_lookup_before_subtable_dispatch() {
             actual: LayoutTableKind::Positioning,
         })
     );
+}
+
+#[test]
+fn semantic_lookup_list_preserves_mixed_lookup_indices() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x06, 0x00, 0x01, // SingleSubst
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+        0x00, 0x01, 0x00, 0x0c, 0x00, 0x01, 0x00, 0x08, // AlternateSubst
+        0x00, 0x01, 0x00, 0x09, // AlternateSet {9}
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x07, // Coverage {7}
+    ];
+    let list = LookupList::new(
+        LayoutTableKind::Substitution,
+        [
+            Lookup::new(
+                LayoutTableKind::Substitution,
+                1,
+                LookupFlags::default(),
+                [ByteSpan::between(0, 12).unwrap()],
+            ),
+            Lookup::new(
+                LayoutTableKind::Substitution,
+                3,
+                LookupFlags::default(),
+                [ByteSpan::between(12, bytes.len()).unwrap()],
+            ),
+        ],
+    );
+    let decoded = GsubLookupList::decode(&bytes, &list).unwrap();
+
+    assert_eq!(decoded.len(), 2);
+    assert_eq!(decoded.lookup(0).unwrap().lookup_type(), 1);
+    assert_eq!(decoded.lookup(1).unwrap().lookup_type(), 3);
+    assert_eq!(decoded.lookup(2), None);
 }
