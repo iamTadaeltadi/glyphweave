@@ -96,3 +96,26 @@ fn selector_record_may_reference_only_default_sequences() {
         0
     );
 }
+
+#[test]
+fn selector_record_may_reference_only_non_default_sequences() {
+    let mut bytes = encode_selector(
+        0xe0100,
+        &[],
+        &[NonDefaultMapping {
+            base: 0x82a6,
+            glyph: 19,
+        }],
+    );
+    bytes[13..17].copy_from_slice(&0_u32.to_be_bytes());
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("default offset is optional");
+    let selector = VariationSelector::new('\u{e0100}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{82a6}', selector),
+        Some(VariationMapping::NonDefault(GlyphId::new(19)))
+    );
+    assert_eq!(decoded.variation_selector_map().default_range_count(), 0);
+}
