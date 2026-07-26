@@ -1,8 +1,9 @@
 //! Bounded Language System table decoding.
 
-use glyphweave_sfnt::{ByteSpan, Cause, Decoded, Diagnostic, LayoutCause, Reader, Stage};
+use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, Reader};
 
 use super::LanguageSystem;
+use crate::layout_error;
 
 impl LanguageSystem {
     /// Decodes a Language System table at the beginning of `span`.
@@ -16,13 +17,11 @@ impl LanguageSystem {
         let lookup_order_position = reader.offset();
         let lookup_order_offset = reader.u16()?;
         if lookup_order_offset != 0 {
-            return Err(Diagnostic::at(
-                Stage::Decode,
-                ByteSpan::sized(lookup_order_position, 2)
-                    .unwrap_or_else(|| ByteSpan::empty_at(lookup_order_position)),
-                Cause::Layout(LayoutCause::ReservedLookupOrderOffset {
+            return Err(layout_error(
+                lookup_order_position,
+                LayoutCause::ReservedLookupOrderOffset {
                     offset: lookup_order_offset,
-                }),
+                },
             ));
         }
 
