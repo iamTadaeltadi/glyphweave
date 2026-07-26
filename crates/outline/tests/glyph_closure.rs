@@ -93,6 +93,21 @@ fn rejects_an_initial_root_outside_glyf() {
 }
 
 #[test]
+fn rejects_glyf_without_mandatory_notdef() {
+    let glyf = decode_graph(&[]);
+
+    let diagnostic = GlyphClosure::compute(&GlyphSet::new(), &glyf).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::GlyphClosureRootOutOfBounds {
+            glyph: GlyphId::NOTDEF,
+            glyph_count: 0,
+        })
+    );
+}
+
+#[test]
 fn rejects_a_reachable_dangling_component() {
     let glyf = decode_graph(&[Node::Empty, Node::Composite(vec![2])]);
     let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
