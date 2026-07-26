@@ -2,6 +2,24 @@
 
 use core::fmt;
 
+/// One coordinate axis in a TrueType outline.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum CoordinateAxis {
+    /// The horizontal x axis.
+    Horizontal,
+    /// The vertical y axis.
+    Vertical,
+}
+
+impl fmt::Display for CoordinateAxis {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Horizontal => f.write_str("x"),
+            Self::Vertical => f.write_str("y"),
+        }
+    }
+}
+
 /// An outline-specific cause produced while decoding `loca` or `glyf` data.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]

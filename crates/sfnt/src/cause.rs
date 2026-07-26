@@ -5,7 +5,7 @@ mod display;
 mod outline;
 
 pub use cmap::{Cmap14TableKind, CmapCause};
-pub use outline::OutlineCause;
+pub use outline::{CoordinateAxis, OutlineCause};
 
 /// The domain-specific cause of a Diagnostic.
 ///
