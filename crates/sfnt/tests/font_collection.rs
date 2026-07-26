@@ -96,3 +96,15 @@ fn rejects_unknown_collection_header_version() {
         Cause::UnsupportedCollectionVersion { major: 2, minor: 1 }
     );
 }
+
+#[test]
+fn rejects_collection_without_faces() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 0);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(8, 4));
+    assert_eq!(diagnostic.cause(), Cause::EmptyFontCollection);
+}
