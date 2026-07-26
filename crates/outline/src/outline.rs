@@ -2,7 +2,7 @@
 
 use glyphweave_sfnt::ByteSpan;
 
-use crate::{CompositeGlyph, SimpleGlyph};
+use crate::{CompositeGlyph, GlyphBounds, SimpleGlyph};
 
 /// One decoded TrueType outline or an explicitly empty `loca` interval.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -19,6 +19,16 @@ pub enum Outline {
 }
 
 impl Outline {
+    /// Returns recorded bounds for encoded outlines, or `None` for an empty interval.
+    #[must_use]
+    pub const fn bounds(&self) -> Option<GlyphBounds> {
+        match self {
+            Self::Empty { .. } => None,
+            Self::Simple(glyph) => Some(glyph.bounds()),
+            Self::Composite(glyph) => Some(glyph.bounds()),
+        }
+    }
+
     /// Borrows the decoded composite glyph when this outline references children.
     #[must_use]
     pub const fn as_composite(&self) -> Option<&CompositeGlyph> {
