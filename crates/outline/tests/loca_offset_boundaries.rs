@@ -137,3 +137,25 @@ fn expanded_short_offset_cannot_exceed_glyf() {
         })
     );
 }
+
+#[test]
+fn maximal_even_long_offset_is_checked_without_narrowing() {
+    let mut bytes = Vec::new();
+    bytes.extend_from_slice(&0_u32.to_be_bytes());
+    bytes.extend_from_slice(&(u32::MAX - 1).to_be_bytes());
+    let table_span = ByteSpan::sized(0, 8).unwrap();
+    let glyf_span = ByteSpan::empty_at(8);
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 1, LocaFormat::Long)
+        .expect_err("the complete Offset32 domain is bounds checked");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::LocaOffsetOutOfBounds {
+            index: 1,
+            offset: u32::MAX - 1,
+            glyf_length: 0,
+        })
+    );
+}
