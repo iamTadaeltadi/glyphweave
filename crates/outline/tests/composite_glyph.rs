@@ -299,3 +299,17 @@ fn accepts_explicit_empty_composite_instructions() {
 
     assert!(glyph.instructions().is_empty());
 }
+
+#[test]
+fn owns_composite_instructions_independently_of_input() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x01, 0x02, 0x00, 0x0f, 0x00, 0x00]);
+    bytes.extend([0x00, 0x02, 0xaa, 0xbb]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+    bytes[18] = 0;
+    bytes[19] = 0;
+
+    assert_eq!(glyph.instructions(), [0xaa, 0xbb]);
+}
