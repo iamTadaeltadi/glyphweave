@@ -226,3 +226,26 @@ fn coverage_format_ties_prefer_format_1() {
 fn empty_coverage_encodes_as_format_1() {
     assert_eq!(Coverage::default().encode(), [0x00, 0x01, 0x00, 0x00]);
 }
+
+#[test]
+fn encodes_dense_runs_as_format_2() {
+    let coverage = Coverage::from_glyphs((3..=8).chain(12..=20).map(GlyphId::new));
+
+    assert_eq!(
+        coverage.encode(),
+        [
+            0x00, 0x02, 0x00, 0x02, // format, rangeCount
+            0x00, 0x03, 0x00, 0x08, 0x00, 0x00, // 3..=8 at 0
+            0x00, 0x0c, 0x00, 0x14, 0x00, 0x06, // 12..=20 at 6
+        ]
+    );
+}
+
+#[test]
+fn maximal_domain_encodes_as_one_range() {
+    let coverage = Coverage::from_glyphs((0..=u16::MAX).map(GlyphId::new));
+    assert_eq!(
+        coverage.encode(),
+        [0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00]
+    );
+}
