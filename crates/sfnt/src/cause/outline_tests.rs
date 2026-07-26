@@ -191,6 +191,16 @@ fn trailing_composite_failure_reports_unconsumed_length() {
 }
 
 #[test]
+fn composite_padding_failure_renders_the_nonzero_byte() {
+    let cause = Cause::Outline(OutlineCause::InvalidCompositeGlyphPadding { value: 0x80 });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite glyph alignment byte is 0x80, not zero"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
