@@ -13,6 +13,18 @@ pub enum ComponentOffsetMode {
 }
 
 /// The placement arguments for one composite-glyph component.
+///
+/// ```
+/// use glyphweave_outline::{ComponentOffsetMode, ComponentPlacement};
+///
+/// let placement = ComponentPlacement::Offset {
+///     x: 12,
+///     y: -4,
+///     round_to_grid: true,
+///     mode: ComponentOffsetMode::Unscaled,
+/// };
+/// assert!(matches!(placement, ComponentPlacement::Offset { x: 12, .. }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum ComponentPlacement {
     /// Positions the component by a signed design-unit offset.
