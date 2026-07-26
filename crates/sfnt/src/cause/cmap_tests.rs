@@ -34,6 +34,40 @@ fn cmap_odd_length_failure_names_declared_value() {
 }
 
 #[test]
+fn cmap_twelve_length_failure_names_declared_and_available_bytes() {
+    let cause = Cause::InvalidCmap12Length {
+        declared: 12,
+        minimum: 16,
+        available: 14,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 12 length 12 needs at least 16 byte(s) with 14 available"
+    );
+}
+
+#[test]
+fn cmap_twelve_group_length_failure_names_exact_expectation() {
+    let cause = Cause::Cmap12LengthMismatch {
+        declared: 40,
+        expected: 52,
+        groups: 3,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 12 length 40 does not equal 52 bytes required by 3 group(s)"
+    );
+}
+
+#[test]
+fn cmap_twelve_reserved_failure_names_found_word() {
+    assert_eq!(
+        Cause::InvalidCmap12Reserved { found: 1 }.to_string(),
+        "cmap format 12 reserved word must be zero but is 1"
+    );
+}
+
+#[test]
 fn cmap_segment_count_failure_names_encoded_value() {
     assert_eq!(
         Cause::InvalidCmapSegmentCount { encoded: 3 }.to_string(),

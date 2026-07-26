@@ -24,6 +24,28 @@ impl Cause {
             Self::OddCmapLength { declared } => {
                 write!(f, "cmap format 4 length {declared} is not even")
             }
+            Self::InvalidCmap12Length {
+                declared,
+                minimum,
+                available,
+            } => write!(
+                f,
+                "cmap format 12 length {declared} needs at least {minimum} byte(s) with {available} available"
+            ),
+            Self::Cmap12LengthMismatch {
+                declared,
+                expected,
+                groups,
+            } => write!(
+                f,
+                "cmap format 12 length {declared} does not equal {expected} bytes required by {groups} group(s)"
+            ),
+            Self::InvalidCmap12Reserved { found } => {
+                write!(
+                    f,
+                    "cmap format 12 reserved word must be zero but is {found}"
+                )
+            }
             Self::InvalidCmapSegmentCount { encoded } => {
                 write!(
                     f,
@@ -220,6 +242,9 @@ impl fmt::Display for Cause {
             | Self::UnsupportedCmapFormat { .. }
             | Self::InvalidCmapLength { .. }
             | Self::OddCmapLength { .. }
+            | Self::InvalidCmap12Length { .. }
+            | Self::Cmap12LengthMismatch { .. }
+            | Self::InvalidCmap12Reserved { .. }
             | Self::InvalidCmapSegmentCount { .. }
             | Self::InvalidCmapSearchParameters { .. }
             | Self::InvalidCmapReservedPad { .. }
