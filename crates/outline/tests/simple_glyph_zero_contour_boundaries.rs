@@ -1,6 +1,6 @@
 //! Boundary coverage for zero-contour simple glyphs.
 
-use glyphweave_outline::SimpleGlyph;
+use glyphweave_outline::{GlyphBounds, SimpleGlyph};
 use glyphweave_sfnt::{ByteSpan, Cause};
 
 #[test]
@@ -32,4 +32,18 @@ fn explicit_zero_instruction_length_is_a_complete_zero_contour_glyph() {
     assert_eq!(glyph.span(), span);
     assert_eq!(glyph.contour_count(), 0);
     assert!(glyph.instructions().is_empty());
+}
+
+#[test]
+fn ordered_zero_contour_bounds_are_preserved_without_point_extrema() {
+    let mut bytes = Vec::new();
+    for value in [0i16, -5, -6, 7, 8] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.bounds(), GlyphBounds::new(-5, -6, 7, 8).unwrap());
+    assert!(glyph.points().is_empty());
 }
