@@ -4,6 +4,8 @@ use glyphweave_sfnt::{Decoded, GlyphId, LayoutCause, LayoutTableKind, NewGlyphId
 
 use crate::{ClassDefinition, ContextRule, Coverage, SubstitutionRecord, rewrite_error};
 
+mod direct;
+
 pub(super) fn glyph(
     input: GlyphId,
     mapping: &mut impl FnMut(GlyphId) -> Option<NewGlyphId>,
