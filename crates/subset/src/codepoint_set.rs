@@ -61,6 +61,20 @@ impl CodepointSet {
     }
 }
 
+impl Extend<char> for CodepointSet {
+    fn extend<T: IntoIterator<Item = char>>(&mut self, codepoints: T) {
+        self.codepoints.extend(codepoints);
+    }
+}
+
+impl FromIterator<char> for CodepointSet {
+    fn from_iter<T: IntoIterator<Item = char>>(codepoints: T) -> Self {
+        Self {
+            codepoints: codepoints.into_iter().collect(),
+        }
+    }
+}
+
 impl<'a> IntoIterator for &'a CodepointSet {
     type Item = char;
     type IntoIter = std::iter::Copied<std::collections::btree_set::Iter<'a, char>>;

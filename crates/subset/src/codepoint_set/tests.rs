@@ -38,3 +38,13 @@ fn retention_filters_requested_scalars() {
     codepoints.retain(char::is_ascii);
     assert_eq!(codepoints.iter().collect::<Vec<_>>(), ['A']);
 }
+
+#[test]
+fn collection_deduplicates_and_orders_unicode_scalars() {
+    let mut codepoints: CodepointSet = ['🦀', 'A', 'β', 'A'].into_iter().collect();
+    codepoints.extend(['中', 'β']);
+    assert_eq!(
+        codepoints.iter().collect::<Vec<_>>(),
+        ['A', 'β', '中', '🦀']
+    );
+}
