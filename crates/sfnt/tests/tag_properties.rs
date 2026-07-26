@@ -38,4 +38,12 @@ proptest! {
             prop_assert!(bytes[first_space..].iter().all(|byte| *byte == b' '));
         }
     }
+
+
+    #[test]
+    fn arbitrary_tag_bits_round_trip(raw in any::<u32>()) {
+        let tag = Tag::from_u32(raw);
+        prop_assert_eq!(tag.to_u32(), raw);
+        prop_assert_eq!(Tag::new(tag.to_bytes()), tag);
+    }
 }
