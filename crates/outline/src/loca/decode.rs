@@ -47,6 +47,15 @@ pub(super) fn decode(
         };
         offsets.push(offset);
     }
+    if let Some(&offset) = offsets.first().filter(|&&offset| offset != 0) {
+        let span = ByteSpan::sized(table_span.start(), width)
+            .unwrap_or_else(|| ByteSpan::empty_at(table_span.start()));
+        return Err(Diagnostic::at(
+            Stage::Decode,
+            span,
+            Cause::Outline(OutlineCause::NonzeroLocaStart { offset }),
+        ));
+    }
     Ok(Loca {
         table_span,
         glyf_span,
