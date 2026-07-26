@@ -103,3 +103,28 @@ fn short_format_reaches_its_maximal_even_glyf_offset() {
         Some(glyf_length)
     );
 }
+
+#[test]
+fn maximal_declared_glyph_count_keeps_its_extra_sentinel() {
+    let glyph_count = u16::MAX;
+    let table_length = (usize::from(glyph_count) + 1) * 2;
+    let bytes = vec![0_u8; table_length];
+    let table_span = ByteSpan::sized(0, table_length).unwrap();
+    let glyf_span = ByteSpan::empty_at(table_length);
+
+    let decoded = Loca::decode(
+        &bytes,
+        table_span,
+        glyf_span,
+        glyph_count,
+        LocaFormat::Short,
+    )
+    .expect("the complete maxp glyph-count domain is representable");
+
+    assert_eq!(decoded.offsets().len(), usize::from(glyph_count) + 1);
+    assert_eq!(
+        decoded.glyph_span(GlyphId::new(glyph_count - 1)),
+        Some(glyf_span)
+    );
+    assert_eq!(decoded.glyph_span(GlyphId::new(glyph_count)), None);
+}
