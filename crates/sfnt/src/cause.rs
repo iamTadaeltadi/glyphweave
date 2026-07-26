@@ -6,7 +6,7 @@ mod layout;
 mod outline;
 
 pub use cmap::{Cmap14TableKind, CmapCause};
-pub use layout::LayoutCause;
+pub use layout::{LayoutCause, LayoutListKind, LayoutTarget};
 pub use outline::{CoordinateAxis, OutlineCause};
 
 /// The domain-specific cause of a Diagnostic.
