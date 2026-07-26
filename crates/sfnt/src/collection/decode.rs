@@ -60,6 +60,7 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
     };
     let header_span =
         ByteSpan::between(0, reader.offset()).unwrap_or_else(|| ByteSpan::empty_at(0));
+    validate_unique_offsets(&offsets)?;
     let mut faces = Vec::with_capacity(offsets.len());
     for (raw_index, raw_offset) in offsets.into_iter().enumerate() {
         let directory_offset = usize::try_from(raw_offset).map_err(|_| {
@@ -85,6 +86,33 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
         faces,
         signature,
     })
+}
+
+fn validate_unique_offsets(offsets: &[u32]) -> Decoded<()> {
+    let mut indexed: Vec<_> = offsets.iter().copied().enumerate().collect();
+    indexed.sort_unstable_by_key(|&(index, offset)| (offset, index));
+    for pair in indexed.windows(2) {
+        let [(first_index, first_offset), (second_index, second_offset)] = pair else {
+            continue;
+        };
+        if first_offset == second_offset {
+            let first = FaceIndex::new(u32::try_from(*first_index).unwrap_or(u32::MAX));
+            let second = FaceIndex::new(u32::try_from(*second_index).unwrap_or(u32::MAX));
+            let field_start = 12usize.saturating_add(second_index.saturating_mul(4));
+            let span =
+                ByteSpan::sized(field_start, 4).unwrap_or_else(|| ByteSpan::empty_at(field_start));
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                span,
+                Cause::DuplicateFaceDirectoryOffset {
+                    first,
+                    second,
+                    offset: usize::try_from(*first_offset).unwrap_or(usize::MAX),
+                },
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn decode_signature(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<Option<CollectionSignature>> {
