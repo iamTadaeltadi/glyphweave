@@ -4,6 +4,8 @@ use glyphweave_sfnt::Tag;
 
 use crate::Script;
 
+mod decode;
+
 /// The sorted unique Script records used by a GSUB or GPOS table.
 ///
 /// ```
