@@ -32,3 +32,11 @@ fn empty_group_array_resolves_to_an_empty_character_map() {
     assert_eq!(decoded.group_count(), 0);
     assert!(decoded.character_map().is_empty());
 }
+
+#[test]
+fn zero_start_glyph_is_missing_but_later_glyphs_remain_sequential() {
+    let decoded = decode_groups(0, &[(0x0041, 0x0042, 0)]).expect("zero start glyph is valid");
+    assert_eq!(decoded.character_map().len(), 1);
+    assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::NOTDEF);
+    assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::new(1));
+}
