@@ -167,3 +167,20 @@ fn filtering_set_extends_the_protected_header() {
         })
     );
 }
+
+#[test]
+fn accepts_exact_subtable_target_aliasing() {
+    let bytes = [
+        0x00, 0x04, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0a, 0x00, 0x0a, 0xde, 0xad,
+    ];
+    let lookup = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap();
+
+    assert_eq!(lookup.len(), 2);
+    assert_eq!(lookup.subtables()[0], lookup.subtables()[1]);
+    assert_eq!(lookup.subtables()[0], ByteSpan::between(10, 12).unwrap());
+}
