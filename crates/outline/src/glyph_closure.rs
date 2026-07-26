@@ -8,3 +8,11 @@ pub struct GlyphClosure {
     pub(crate) glyphs: GlyphSet,
     pub(crate) maximum_component_depth: u16,
 }
+
+impl GlyphClosure {
+    /// Borrows the complete retained Glyph Set.
+    #[must_use]
+    pub const fn glyphs(&self) -> &GlyphSet {
+        &self.glyphs
+    }
+}
