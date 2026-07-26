@@ -2,9 +2,9 @@
 
 mod support;
 
-use glyphweave_sfnt::GlyphId;
+use glyphweave_sfnt::{GlyphId, VariationMapping, VariationSelector};
 
-use support::reference_map::{format4, format12};
+use support::reference_map::{format4, format12, format14};
 
 #[test]
 fn format_four_matches_the_fonttools_bmp_map() {
@@ -35,5 +35,20 @@ fn format_twelve_matches_the_fonttools_full_repertoire_map() {
             (0x0301, 3),
             (0x01f600, 5),
         ]
+    );
+}
+
+#[test]
+fn format_fourteen_matches_the_fonttools_default_sequence() {
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    let mappings = format14().variation_selector_map().clone();
+
+    assert_eq!(
+        mappings.mapping('A', selector),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(
+        mappings.glyph_id('A', selector, format12().character_map()),
+        Some(GlyphId::new(2))
     );
 }
