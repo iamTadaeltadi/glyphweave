@@ -121,6 +121,21 @@ fn table_collection_header_overlap_names_owning_face() {
 }
 
 #[test]
+fn table_face_directory_overlap_names_both_faces() {
+    let cause = Cause::TableOverlapsFaceDirectory {
+        face: crate::FaceIndex::FIRST,
+        tag: crate::Tag::new(*b"cmap"),
+        table: crate::ByteSpan::sized(48, 20).unwrap(),
+        directory_face: crate::FaceIndex::new(1),
+        directory: crate::ByteSpan::sized(60, 12).unwrap(),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face 0 table cmap at 48..68 overlaps face 1 directory 60..72"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
