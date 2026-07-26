@@ -186,3 +186,24 @@ fn decodes_complete_component_matrices() {
         }
     );
 }
+
+#[test]
+fn decodes_ordered_point_aligned_components() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x22, 0x00, 0x0a, 0x00, 0x00]);
+    bytes.extend([0x00, 0x00, 0x00, 0x0b, 0x07, 0x09]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.component_count(), 2);
+    assert_eq!(glyph.components()[0].glyph_id().raw(), 10);
+    assert_eq!(glyph.components()[1].glyph_id().raw(), 11);
+    assert_eq!(
+        glyph.components()[1].placement(),
+        ComponentPlacement::MatchPoints {
+            parent: 7,
+            child: 9,
+        }
+    );
+}
