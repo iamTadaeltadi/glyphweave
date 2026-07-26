@@ -135,6 +135,19 @@ fn reserved_component_failure_renders_the_complete_word() {
 }
 
 #[test]
+fn transform_conflict_names_the_component_and_flags() {
+    let cause = Cause::Outline(OutlineCause::ConflictingCompositeTransforms {
+        component_index: 9,
+        flags: 0x00c8,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "composite component 9 selects conflicting transforms in 0x00c8"
+    );
+}
+
+#[test]
 fn invalid_bounds_failure_names_both_corners() {
     let cause = Cause::Outline(OutlineCause::InvalidGlyphBounds {
         minimum_x: 9,
