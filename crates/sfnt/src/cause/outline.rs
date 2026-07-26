@@ -107,6 +107,8 @@ pub enum OutlineCause {
         /// The complete conflicting flag word.
         flags: u16,
     },
+    /// The first component requests point alignment before parent points exist.
+    FirstCompositeComponentUsesPoints,
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -259,6 +261,9 @@ impl OutlineCause {
             } => write!(
                 f,
                 "composite component {component_index} selects conflicting offset modes in {flags:#06x}"
+            ),
+            Self::FirstCompositeComponentUsesPoints => f.write_str(
+                "first composite component uses point alignment before parent points exist",
             ),
             Self::InvalidGlyphBounds {
                 minimum_x,
