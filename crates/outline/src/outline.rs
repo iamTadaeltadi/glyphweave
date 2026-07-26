@@ -19,6 +19,12 @@ pub enum Outline {
 }
 
 impl Outline {
+    /// Returns whether this Glyph ID has no encoded outline data.
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        matches!(self, Self::Empty { .. })
+    }
+
     /// Returns the checked Glyph Byte Span represented by this outline.
     #[must_use]
     pub const fn span(&self) -> ByteSpan {
