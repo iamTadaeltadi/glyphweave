@@ -1,7 +1,8 @@
 //! Integration coverage for glyph-closed GSUB retention.
 
 use glyphweave_layout::{
-    ContextSubstitution, GsubClosure, GsubLookupList, GsubSubtable, Lookup, LookupFlags, LookupList,
+    ChainedContextSubstitution, ContextSubstitution, GsubClosure, GsubLookupList, GsubSubtable,
+    Lookup, LookupFlags, LookupList,
 };
 use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind};
 
@@ -154,6 +155,40 @@ fn drops_unreachable_exact_context_rules_in_encoded_order() {
     };
     assert_eq!(rules.len(), 1);
     assert_eq!(rules[0].input(), [GlyphId::new(3), GlyphId::new(4)]);
+}
+
+#[test]
+fn drops_chained_rules_with_an_unreachable_context_position() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x26, 0x00, 0x01, 0x00, 0x08, // chained format 1
+        0x00, 0x01, 0x00, 0x04, // one rule
+        0x00, 0x02, 0x00, 0x02, 0x00, 0x01, // backtrack [2,1]
+        0x00, 0x03, 0x00, 0x04, 0x00, 0x05, // inputs [3,4,5]
+        0x00, 0x01, 0x00, 0x09, // unreachable lookahead [9]
+        0x00, 0x02, 0x00, 0x01, 0x00, 0x07, // actions are never reached
+        0x00, 0x00, 0x00, 0x05, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+    ];
+    let semantic = decode(&bytes, [(6, ByteSpan::between(0, bytes.len()).unwrap())]);
+    let closure = GsubClosure::compute(
+        &semantic,
+        [
+            GlyphId::new(1),
+            GlyphId::new(2),
+            GlyphId::new(3),
+            GlyphId::new(4),
+            GlyphId::new(5),
+        ],
+        [0],
+    )
+    .unwrap();
+    let retained = semantic.retain(&closure);
+
+    assert!(retained.lookup(0).unwrap().is_empty());
+    assert_eq!(retained.lookup(0).unwrap().lookup_type(), 6);
+    assert!(matches!(
+        semantic.lookup(0).unwrap().subtables()[0],
+        GsubSubtable::ChainedContext(ChainedContextSubstitution::GlyphRules(_))
+    ));
 }
 
 fn decode<const N: usize>(bytes: &[u8], entries: [(u16, ByteSpan); N]) -> GsubLookupList {
