@@ -4,6 +4,8 @@ use glyphweave_sfnt::GlyphId;
 
 use crate::{ClassDefinition, ContextRule, Coverage};
 
+mod decode;
+
 /// A ChainContextSubst subtable in its exact-glyph, class, or Coverage predicate domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ChainedContextSubstitution {
