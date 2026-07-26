@@ -7,6 +7,9 @@ use glyphweave_sfnt::GlyphId;
 use super::feasible;
 use crate::{ChainedContextSubstitution, ContextSubstitution, GsubSubtable, SubstitutionRecord};
 
+#[cfg(test)]
+mod tests;
+
 pub(super) fn apply(
     subtable: &GsubSubtable,
     glyphs: &BTreeSet<GlyphId>,
