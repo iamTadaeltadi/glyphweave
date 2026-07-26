@@ -9,6 +9,8 @@ use crate::{
     layout_error,
 };
 
+mod format_1;
+
 impl ChainedContextSubstitution {
     /// Decodes a ChainContextSubst subtable at the beginning of `span`.
     /// # Errors
@@ -17,6 +19,7 @@ impl ChainedContextSubstitution {
         let mut reader = Reader::within(bytes, span)?;
         let format_position = reader.offset();
         match reader.u16()? {
+            1 => format_1::decode(bytes, span, &mut reader),
             3 => Self::decode_format_3(bytes, span, &mut reader),
             format => Err(layout_error(
                 format_position,
