@@ -1,6 +1,9 @@
 //! One validated face selected from standalone or collection font bytes.
 
-use crate::{FaceIndex, TableDirectory, TableRecord, Tag};
+use crate::cause::Cause;
+use crate::{
+    Decoded, Diagnostic, FaceIndex, FontCollection, Stage, TableDirectory, TableRecord, Tag,
+};
 
 /// One decoded OpenType font resource.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -11,6 +14,35 @@ pub struct Face {
 }
 
 impl Face {
+    /// Selects and validates one Face from standalone SFNT or Font Collection bytes.
+    ///
+    /// Standalone fonts expose only [`FaceIndex::FIRST`]. Collection input is fully validated
+    /// before the selected Face is returned.
+    ///
+    /// # Errors
+    ///
+    /// Returns a Diagnostic when the file is malformed or the requested Face Index is absent.
+    pub fn select(bytes: &[u8], index: FaceIndex) -> Decoded<Self> {
+        if bytes.get(0..4) == Some(b"ttcf") {
+            let collection = FontCollection::decode(bytes)?;
+            return collection.select(index).cloned();
+        }
+        if index != FaceIndex::FIRST {
+            return Err(Diagnostic::failure(
+                Stage::Decode,
+                Cause::FaceIndexOutOfBounds {
+                    index,
+                    face_count: 1,
+                },
+            ));
+        }
+        Ok(Self {
+            index,
+            directory_offset: 0,
+            directory: TableDirectory::decode(bytes, 0)?,
+        })
+    }
+
     /// This Face's zero-based position in its containing font file.
     #[must_use]
     pub const fn index(&self) -> FaceIndex {
