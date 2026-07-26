@@ -64,3 +64,16 @@ fn direct_reference_composite_closes_over_both_children() {
     );
     assert_eq!(closure.maximum_component_depth(), 1);
 }
+
+#[test]
+fn nested_reference_composite_closes_transitively() {
+    let initial: GlyphSet = std::iter::once(GlyphId::new(5)).collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf()).unwrap();
+
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 2, 3, 4, 5]
+    );
+    assert_eq!(closure.maximum_component_depth(), 2);
+}
