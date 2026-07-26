@@ -21,3 +21,19 @@ fn group_start_cannot_exceed_its_end() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
 }
+
+#[test]
+fn groups_cannot_overlap_their_predecessor() {
+    let diagnostic = decode_groups(0, &[(0x0041, 0x0043, 1), (0x0043, 0x0044, 9)])
+        .expect_err("second group overlaps first");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmap12Group {
+            index: 1,
+            start: 0x0043,
+            end: 0x0044,
+            previous_end: Some(0x0043),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(28, 12));
+}
