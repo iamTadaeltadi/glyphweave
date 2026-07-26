@@ -39,3 +39,16 @@ fn decreasing_loca_failure_names_both_offsets() {
         "loca offset 2 value 4 precedes previous offset 8"
     );
 }
+
+#[test]
+fn misaligned_loca_failure_names_the_entry_and_offset() {
+    let cause = Cause::Outline(OutlineCause::MisalignedLocaOffset {
+        index: 1,
+        offset: 3,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "loca offset 1 value 3 is not word aligned"
+    );
+}

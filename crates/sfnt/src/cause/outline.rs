@@ -31,6 +31,13 @@ pub enum OutlineCause {
         /// The immediately preceding relative offset.
         previous: u32,
     },
+    /// A long-format `loca` entry is not word aligned.
+    MisalignedLocaOffset {
+        /// The zero-based location-entry index.
+        index: u32,
+        /// The odd relative offset.
+        offset: u32,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -56,6 +63,9 @@ impl fmt::Display for OutlineCause {
                 f,
                 "loca offset {index} value {offset} precedes previous offset {previous}"
             ),
+            Self::MisalignedLocaOffset { index, offset } => {
+                write!(f, "loca offset {index} value {offset} is not word aligned")
+            }
         }
     }
 }
