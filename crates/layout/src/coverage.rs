@@ -111,4 +111,13 @@ mod tests {
         assert_eq!(coverage.coverage_index(GlyphId::new(3)), None);
         assert_eq!(coverage.glyph_at(1), None);
     }
+
+    #[test]
+    fn iterator_collection_preserves_canonical_form() {
+        let coverage: Coverage = [3, 1, 3]
+            .into_iter()
+            .map(GlyphId::new)
+            .collect();
+        assert_eq!(coverage.glyphs(), &[GlyphId::new(1), GlyphId::new(3)]);
+    }
 }
