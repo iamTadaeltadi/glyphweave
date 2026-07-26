@@ -9,6 +9,7 @@ const CONTOUR_COUNT_LENGTH: usize = 2;
 const BOUNDS_LENGTH: usize = 8;
 
 pub(super) fn decode(bytes: &[u8], glyph_span: ByteSpan) -> Decoded<GlyphHeader> {
+    glyph_span.slice(bytes)?;
     if glyph_span.is_empty() {
         return Err(Diagnostic::at(
             Stage::Decode,
