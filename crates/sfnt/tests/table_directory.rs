@@ -198,3 +198,21 @@ fn rejects_table_not_aligned_to_four_byte_boundary() {
     );
     assert_eq!(diagnostic.span().unwrap().to_string(), "20..24");
 }
+
+#[test]
+fn rejects_table_bytes_inside_directory_records() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'c', b'm', b'a', b'p', 0, 0, 0, 0, // tag and checksum
+        0, 0, 0, 24, 0, 0, 0, 4, // table covers final length field
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::TableOverlapsDirectory {
+            tag: Tag::new(*b"cmap"),
+            table: glyphweave_sfnt::ByteSpan::between(24, 28).unwrap(),
+            directory: glyphweave_sfnt::ByteSpan::between(0, 28).unwrap(),
+        }
+    );
+}
