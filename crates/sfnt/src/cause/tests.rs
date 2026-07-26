@@ -107,6 +107,20 @@ fn overlapping_directory_failure_names_both_faces() {
 }
 
 #[test]
+fn table_collection_header_overlap_names_owning_face() {
+    let cause = Cause::TableOverlapsCollectionHeader {
+        face: crate::FaceIndex::new(2),
+        tag: crate::Tag::new(*b"name"),
+        table: crate::ByteSpan::sized(8, 12).unwrap(),
+        header: crate::ByteSpan::sized(0, 16).unwrap(),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face 2 table name at 8..20 overlaps collection header 0..16"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
