@@ -2,6 +2,8 @@
 
 use crate::{Coverage, SingleSubstitution};
 
+mod decode;
+
 /// One input map guarded by ordered backtrack and lookahead Coverages.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ReverseChainSingleSubstitution {
