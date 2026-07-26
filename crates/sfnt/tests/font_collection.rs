@@ -317,3 +317,37 @@ fn rejects_table_covering_another_face_directory() {
         }
     );
 }
+
+#[test]
+fn rejects_face_table_covering_collection_signature() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 2);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 28);
+    push_u32(&mut bytes, u32::from_be_bytes(*b"DSIG"));
+    push_u32(&mut bytes, 8);
+    push_u32(&mut bytes, 56);
+    push_u32(&mut bytes, 0x0001_0000);
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 16);
+    push_u16(&mut bytes, 0);
+    push_u16(&mut bytes, 0);
+    bytes.extend_from_slice(b"name");
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 56);
+    push_u32(&mut bytes, 8);
+    bytes.extend_from_slice(&[0, 0, 0, 1, 0, 0, 0, 0]);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(56, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::TableOverlapsCollectionSignature {
+            face: FaceIndex::FIRST,
+            tag: Tag::new(*b"name"),
+            table: ByteSpan::sized(56, 8).unwrap(),
+            signature: ByteSpan::sized(56, 8).unwrap()
+        }
+    );
+}

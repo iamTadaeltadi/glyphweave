@@ -100,12 +100,39 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
     validate_directory_spans(&faces)?;
     validate_tables_outside_header(&faces, header_span)?;
     validate_tables_outside_directories(&faces)?;
+    validate_tables_outside_signature(&faces, signature)?;
     Ok(FontCollection {
         version,
         header_span,
         faces,
         signature,
     })
+}
+
+fn validate_tables_outside_signature(
+    faces: &[Face],
+    signature: Option<CollectionSignature>,
+) -> Decoded<()> {
+    let Some(signature) = signature else {
+        return Ok(());
+    };
+    for face in faces {
+        for record in face.directory.records() {
+            if record.table_span().overlaps(signature.span()) {
+                return Err(Diagnostic::at(
+                    Stage::Decode,
+                    record.table_span().join(signature.span()),
+                    Cause::TableOverlapsCollectionSignature {
+                        face: face.index,
+                        tag: record.tag(),
+                        table: record.table_span(),
+                        signature: signature.span(),
+                    },
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn validate_tables_outside_directories(faces: &[Face]) -> Decoded<()> {
