@@ -193,6 +193,29 @@ pub enum OutlineCause {
         /// The nonzero padding byte.
         value: u8,
     },
+    /// The initial Glyph Set names a Glyph ID absent from `glyf`.
+    GlyphClosureRootOutOfBounds {
+        /// The retained root that cannot be resolved.
+        glyph: crate::GlyphId,
+        /// The number of outlines available in `glyf`.
+        glyph_count: usize,
+    },
+    /// A reachable composite component names a Glyph ID absent from `glyf`.
+    CompositeComponentOutOfBounds {
+        /// The reachable composite containing the reference.
+        parent: crate::GlyphId,
+        /// The unresolved child reference.
+        component: crate::GlyphId,
+        /// The number of outlines available in `glyf`.
+        glyph_count: usize,
+    },
+    /// A reachable component edge returns to an active ancestor.
+    CompositeGlyphCycle {
+        /// The active composite containing the back edge.
+        parent: crate::GlyphId,
+        /// The active ancestor reached by that edge.
+        component: crate::GlyphId,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -321,6 +344,31 @@ impl OutlineCause {
             Self::InvalidSimpleGlyphPadding { value } => {
                 write!(f, "simple glyph alignment byte is {value:#04x}, not zero")
             }
+            Self::GlyphClosureRootOutOfBounds { .. }
+            | Self::CompositeComponentOutOfBounds { .. }
+            | Self::CompositeGlyphCycle { .. } => self.fmt_closure(f),
+            _ => Err(fmt::Error),
+        }
+    }
+
+    fn fmt_closure(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::GlyphClosureRootOutOfBounds { glyph, glyph_count } => write!(
+                f,
+                "closure root glyph {glyph} is outside {glyph_count} available glyph(s)"
+            ),
+            Self::CompositeComponentOutOfBounds {
+                parent,
+                component,
+                glyph_count,
+            } => write!(
+                f,
+                "composite glyph {parent} references glyph {component} outside {glyph_count} available glyph(s)"
+            ),
+            Self::CompositeGlyphCycle { parent, component } => write!(
+                f,
+                "composite glyph {parent} references active ancestor glyph {component}"
+            ),
             _ => Err(fmt::Error),
         }
     }
