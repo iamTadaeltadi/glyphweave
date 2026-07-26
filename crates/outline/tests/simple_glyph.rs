@@ -124,6 +124,7 @@ fn expands_the_maximal_point_count_without_narrowing() {
 
     assert_eq!(glyph.contour_ends(), [65_536]);
     assert_eq!(glyph.points().len(), 65_536);
+    assert_eq!(glyph.contour(0).unwrap().len(), 65_536);
     assert_eq!(glyph.points().first(), Some(&Point::new(0, 0, true)));
     assert_eq!(glyph.points().last(), Some(&Point::new(0, 0, true)));
 }
