@@ -5,9 +5,9 @@ use crate::{Coverage, GsubClosure, GsubSubtable};
 pub(super) fn retain(subtable: &GsubSubtable, closure: &GsubClosure) -> Option<GsubSubtable> {
     match subtable {
         GsubSubtable::Single(value) => {
-            let retained = value.mappings().filter(|(input, output)| {
-                closure.contains(*input) && closure.contains(*output)
-            });
+            let retained = value
+                .mappings()
+                .filter(|(input, output)| closure.contains(*input) && closure.contains(*output));
             let retained = crate::SingleSubstitution::from_mappings(retained);
             (!retained.is_empty()).then_some(GsubSubtable::Single(retained))
         }
@@ -46,12 +46,15 @@ pub(super) fn retain(subtable: &GsubSubtable, closure: &GsubClosure) -> Option<G
         GsubSubtable::ReverseChainSingle(value) => {
             let backtrack = retain_coverages(value.backtrack(), closure)?;
             let lookahead = retain_coverages(value.lookahead(), closure)?;
-            let mappings = value.substitutions().mappings().filter(|(input, output)| {
-                closure.contains(*input) && closure.contains(*output)
-            });
+            let mappings = value
+                .substitutions()
+                .mappings()
+                .filter(|(input, output)| closure.contains(*input) && closure.contains(*output));
             let substitutions = crate::SingleSubstitution::from_mappings(mappings);
             (!substitutions.is_empty())
-                .then(|| crate::ReverseChainSingleSubstitution::new(backtrack, substitutions, lookahead))
+                .then(|| {
+                    crate::ReverseChainSingleSubstitution::new(backtrack, substitutions, lookahead)
+                })
                 .map(GsubSubtable::ReverseChainSingle)
         }
         _ => None,
@@ -63,7 +66,11 @@ fn retain_coverages(coverages: &[Coverage], closure: &GsubClosure) -> Option<Vec
         .iter()
         .map(|coverage| {
             let retained = Coverage::from_glyphs(
-                coverage.glyphs().iter().copied().filter(|glyph| closure.contains(*glyph)),
+                coverage
+                    .glyphs()
+                    .iter()
+                    .copied()
+                    .filter(|glyph| closure.contains(*glyph)),
             );
             (!retained.is_empty()).then_some(retained)
         })
