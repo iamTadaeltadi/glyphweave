@@ -1,6 +1,14 @@
 //! Explicit table and record retention decisions.
 
 /// The action a subset pass takes for a table or record.
+///
+/// ```
+/// use glyphweave_subset::Retention;
+///
+/// assert!(Retention::Keep.keeps_verbatim());
+/// assert!(Retention::Rewrite.requires_rewrite());
+/// assert!(!Retention::Drop.is_retained());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub enum Retention {
     /// Omit the original structure and its bytes.
