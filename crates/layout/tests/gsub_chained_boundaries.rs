@@ -234,3 +234,23 @@ fn chained_glyph_rule_rejects_empty_input() {
         Cause::Layout(LayoutCause::EmptyContextInput { lookup_type: 6 })
     );
 }
+
+#[test]
+fn chained_glyph_rule_bounds_action_positions() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x18, 0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00,
+        0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidSubstitutionSequenceIndex {
+            lookup_type: 6,
+            sequence_index: 1,
+            input_count: 1,
+        })
+    );
+}
