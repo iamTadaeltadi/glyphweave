@@ -4,3 +4,7 @@
 //! spans.
 
 #![forbid(unsafe_code)]
+
+mod glyph_set;
+
+pub use glyph_set::GlyphSet;
