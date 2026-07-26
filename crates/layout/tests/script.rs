@@ -154,3 +154,18 @@ fn accepts_exact_language_target_aliasing() {
     assert_eq!(script.default_language(), script.language(DEU));
     assert_eq!(script.language(DEU).unwrap().required_feature(), Some(4));
 }
+
+#[test]
+fn every_strict_script_prefix_is_rejected() {
+    let complete = [
+        0x00, 0x00, 0x00, 0x01, b'D', b'E', b'U', b' ', 0x00, 0x0a, // record
+        0x00, 0x00, 0xff, 0xff, 0x00, 0x00, // Language System
+    ];
+    for end in 0..complete.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(
+            Script::decode(&complete, span).is_err(),
+            "strict prefix {end} decoded"
+        );
+    }
+}
