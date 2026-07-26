@@ -74,6 +74,36 @@ pub enum OutlineCause {
         /// The recorded maximum vertical coordinate.
         maximum_y: i16,
     },
+    /// A simple glyph contour does not end after its predecessor.
+    NonIncreasingContourEnd {
+        /// The zero-based contour index.
+        contour_index: u16,
+        /// The repeated or decreasing inclusive point index.
+        end_point: u16,
+        /// The preceding contour's inclusive point index.
+        previous_end_point: u16,
+    },
+    /// A packed flag run expands past the simple glyph's point count.
+    SimpleFlagRepeatOutOfBounds {
+        /// The first logical point receiving the physical flag.
+        point_index: u32,
+        /// The number of additional repetitions encoded after the flag.
+        additional_repetitions: u8,
+        /// The exact logical point count derived from contour ends.
+        point_count: u32,
+    },
+    /// A simple glyph flag sets the reserved high bit.
+    ReservedSimpleGlyphFlag {
+        /// The first logical point receiving the physical flag.
+        point_index: u32,
+        /// The complete offending flag byte.
+        flag: u8,
+    },
+    /// `OVERLAP_SIMPLE` appears on a physical flag after the first.
+    MisplacedSimpleOverlapFlag {
+        /// The first logical point receiving the physical flag.
+        point_index: u32,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -133,6 +163,30 @@ impl fmt::Display for OutlineCause {
             } => write!(
                 f,
                 "glyph bounds ({minimum_x}, {minimum_y})..({maximum_x}, {maximum_y}) are inverted"
+            ),
+            Self::NonIncreasingContourEnd {
+                contour_index,
+                end_point,
+                previous_end_point,
+            } => write!(
+                f,
+                "simple contour {contour_index} ends at point {end_point}, not after point {previous_end_point}"
+            ),
+            Self::SimpleFlagRepeatOutOfBounds {
+                point_index,
+                additional_repetitions,
+                point_count,
+            } => write!(
+                f,
+                "simple flag at point {point_index} repeats {additional_repetitions} additional time(s) past {point_count} point(s)"
+            ),
+            Self::ReservedSimpleGlyphFlag { point_index, flag } => write!(
+                f,
+                "simple flag at point {point_index} sets reserved bits in {flag:#04x}"
+            ),
+            Self::MisplacedSimpleOverlapFlag { point_index } => write!(
+                f,
+                "simple overlap flag appears after the first physical flag at point {point_index}"
             ),
         }
     }
