@@ -142,6 +142,29 @@ pub enum LayoutCause {
         /// The complete raw flag word.
         flags: u16,
     },
+    /// An extension wrapper used a format other than format 1.
+    UnsupportedExtensionFormat {
+        /// The containing layout table family.
+        table: LayoutTableKind,
+        /// The unsupported wrapper format.
+        format: u16,
+    },
+    /// An extension wrapper targeted its own transport lookup type.
+    RecursiveExtensionLookupType {
+        /// The containing layout table family.
+        table: LayoutTableKind,
+        /// The recursively declared extension type.
+        lookup_type: u16,
+    },
+    /// Extension wrappers in one Lookup declared different real types.
+    MismatchedExtensionLookupTypes {
+        /// The containing layout table family.
+        table: LayoutTableKind,
+        /// The real type declared by the first wrapper.
+        expected: u16,
+        /// The different real type declared by a later wrapper.
+        actual: u16,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -238,6 +261,23 @@ impl fmt::Display for LayoutCause {
             Self::ReservedLookupFlags { flags } => {
                 write!(f, "lookup flags {flags:#06x} set reserved bits")
             }
+            Self::UnsupportedExtensionFormat { table, format } => {
+                write!(f, "unsupported {table} extension format {format}")
+            }
+            Self::RecursiveExtensionLookupType { table, lookup_type } => {
+                write!(
+                    f,
+                    "{table} extension cannot target lookup type {lookup_type}"
+                )
+            }
+            Self::MismatchedExtensionLookupTypes {
+                table,
+                expected,
+                actual,
+            } => write!(
+                f,
+                "{table} extension lookup type {actual} differs from preceding type {expected}"
+            ),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
             }
