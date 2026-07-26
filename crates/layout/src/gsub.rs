@@ -2,6 +2,7 @@
 
 mod alternate;
 mod context_rule;
+mod context_substitution;
 mod decode;
 mod ligature_rule;
 mod ligature_substitution;
@@ -13,6 +14,7 @@ mod substitution_record;
 
 pub use alternate::AlternateSubstitution;
 pub use context_rule::ContextRule;
+pub use context_substitution::ContextSubstitution;
 pub use ligature_rule::LigatureRule;
 pub use ligature_substitution::LigatureSubstitution;
 pub use multiple::MultipleSubstitution;
