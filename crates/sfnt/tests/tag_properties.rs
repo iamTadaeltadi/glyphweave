@@ -46,4 +46,12 @@ proptest! {
         prop_assert_eq!(tag.to_u32(), raw);
         prop_assert_eq!(Tag::new(tag.to_bytes()), tag);
     }
+
+    #[test]
+    fn tag_order_matches_big_endian_integer_order(first in any::<u32>(), second in any::<u32>()) {
+        prop_assert_eq!(
+            Tag::from_u32(first).cmp(&Tag::from_u32(second)),
+            first.cmp(&second),
+        );
+    }
 }
