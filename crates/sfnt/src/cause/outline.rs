@@ -252,50 +252,14 @@ impl OutlineCause {
                 f,
                 "simple glyph decoder received composite contour count {number_of_contours}"
             ),
-            Self::SimpleGlyphForCompositeDecoder { number_of_contours } => write!(
-                f,
-                "composite glyph decoder received simple contour count {number_of_contours}"
-            ),
-            Self::ReservedCompositeGlyphFlags {
-                component_index,
-                flags,
-            } => write!(
-                f,
-                "composite component {component_index} sets reserved flags in {flags:#06x}"
-            ),
-            Self::ConflictingCompositeTransforms {
-                component_index,
-                flags,
-            } => write!(
-                f,
-                "composite component {component_index} selects conflicting transforms in {flags:#06x}"
-            ),
-            Self::ConflictingComponentOffsetModes {
-                component_index,
-                flags,
-            } => write!(
-                f,
-                "composite component {component_index} selects conflicting offset modes in {flags:#06x}"
-            ),
-            Self::FirstCompositeComponentUsesPoints => f.write_str(
-                "first composite component uses point alignment before parent points exist",
-            ),
-            Self::MisplacedCompositeOverlapFlag { component_index } => write!(
-                f,
-                "composite overlap flag appears on component {component_index}, not the first"
-            ),
-            Self::UnexpectedCompositeGlyphData { length } => {
-                write!(
-                    f,
-                    "composite glyph has {length} unexpected trailing byte(s)"
-                )
-            }
-            Self::InvalidCompositeGlyphPadding { value } => {
-                write!(
-                    f,
-                    "composite glyph alignment byte is {value:#04x}, not zero"
-                )
-            }
+            Self::SimpleGlyphForCompositeDecoder { .. }
+            | Self::ReservedCompositeGlyphFlags { .. }
+            | Self::ConflictingCompositeTransforms { .. }
+            | Self::ConflictingComponentOffsetModes { .. }
+            | Self::FirstCompositeComponentUsesPoints
+            | Self::MisplacedCompositeOverlapFlag { .. }
+            | Self::UnexpectedCompositeGlyphData { .. }
+            | Self::InvalidCompositeGlyphPadding { .. } => self.fmt_composite(f),
             Self::InvalidGlyphBounds {
                 minimum_x,
                 minimum_y,
@@ -357,6 +321,52 @@ impl OutlineCause {
             Self::InvalidSimpleGlyphPadding { value } => {
                 write!(f, "simple glyph alignment byte is {value:#04x}, not zero")
             }
+            _ => Err(fmt::Error),
+        }
+    }
+
+    fn fmt_composite(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::SimpleGlyphForCompositeDecoder { number_of_contours } => write!(
+                f,
+                "composite glyph decoder received simple contour count {number_of_contours}"
+            ),
+            Self::ReservedCompositeGlyphFlags {
+                component_index,
+                flags,
+            } => write!(
+                f,
+                "composite component {component_index} sets reserved flags in {flags:#06x}"
+            ),
+            Self::ConflictingCompositeTransforms {
+                component_index,
+                flags,
+            } => write!(
+                f,
+                "composite component {component_index} selects conflicting transforms in {flags:#06x}"
+            ),
+            Self::ConflictingComponentOffsetModes {
+                component_index,
+                flags,
+            } => write!(
+                f,
+                "composite component {component_index} selects conflicting offset modes in {flags:#06x}"
+            ),
+            Self::FirstCompositeComponentUsesPoints => f.write_str(
+                "first composite component uses point alignment before parent points exist",
+            ),
+            Self::MisplacedCompositeOverlapFlag { component_index } => write!(
+                f,
+                "composite overlap flag appears on component {component_index}, not the first"
+            ),
+            Self::UnexpectedCompositeGlyphData { length } => write!(
+                f,
+                "composite glyph has {length} unexpected trailing byte(s)"
+            ),
+            Self::InvalidCompositeGlyphPadding { value } => write!(
+                f,
+                "composite glyph alignment byte is {value:#04x}, not zero"
+            ),
             _ => Err(fmt::Error),
         }
     }
