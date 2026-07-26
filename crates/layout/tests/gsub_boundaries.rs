@@ -578,3 +578,17 @@ fn every_strict_context_format_two_prefix_is_rejected() {
         assert!(ContextSubstitution::decode(&valid[..end], span).is_err());
     }
 }
+
+#[test]
+fn every_strict_context_format_three_prefix_is_rejected() {
+    let valid = [
+        0x00, 0x03, 0x00, 0x02, 0x00, 0x01, 0x00, 0x0e, 0x00, 0x14,
+        0x00, 0x00, 0x00, 0x01,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x04,
+    ];
+    for end in 0..valid.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(ContextSubstitution::decode(&valid[..end], span).is_err());
+    }
+}
