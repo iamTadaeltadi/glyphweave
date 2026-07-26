@@ -3,6 +3,7 @@
 use glyphweave_sfnt::GlyphId;
 
 use super::Coverage;
+use crate::push_u16;
 
 #[derive(Clone, Copy)]
 struct Range {
@@ -68,8 +69,4 @@ impl Coverage {
         }
         bytes
     }
-}
-
-fn push_u16(bytes: &mut Vec<u8>, value: u16) {
-    bytes.extend_from_slice(&value.to_be_bytes());
 }
