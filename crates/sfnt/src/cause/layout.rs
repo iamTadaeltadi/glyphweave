@@ -2,6 +2,8 @@
 
 use core::fmt;
 
+mod display;
+
 /// The OpenType layout table family that assigns meaning to a lookup type.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
@@ -351,75 +353,19 @@ impl fmt::Display for LayoutCause {
             Self::ReservedLookupOrderOffset { offset } => {
                 write!(f, "reserved lookup-order offset must be zero, not {offset}")
             }
-            Self::InvalidLookupType { table, lookup_type } => {
-                write!(f, "invalid {table} lookup type {lookup_type}")
-            }
-            Self::UnexpectedLayoutTableKind { expected, actual } => {
-                write!(f, "expected {expected} Lookup, found {actual} Lookup")
-            }
-            Self::EmptyLookupSubtables { table, lookup_type } => {
-                write!(f, "{table} lookup type {lookup_type} has no subtables")
-            }
-            Self::ReservedLookupFlags { flags } => {
-                write!(f, "lookup flags {flags:#06x} set reserved bits")
-            }
-            Self::UnsupportedExtensionFormat { table, format } => {
-                write!(f, "unsupported {table} extension format {format}")
-            }
-            Self::RecursiveExtensionLookupType { table, lookup_type } => {
-                write!(
-                    f,
-                    "{table} extension cannot target lookup type {lookup_type}"
-                )
-            }
-            Self::MismatchedExtensionLookupTypes {
-                table,
-                expected,
-                actual,
-            } => write!(
-                f,
-                "{table} extension lookup type {actual} differs from preceding type {expected}"
-            ),
-            Self::UnsupportedGsubFormat {
-                lookup_type,
-                format,
-            } => write!(
-                f,
-                "unsupported GSUB lookup type {lookup_type} format {format}"
-            ),
-            Self::MismatchedGsubMappingCount {
-                lookup_type,
-                inputs,
-                records,
-            } => write!(
-                f,
-                "GSUB lookup type {lookup_type} has {inputs} input glyph(s) but {records} mapping record(s)"
-            ),
-            Self::InvalidLigatureComponentCount { count } => write!(
-                f,
-                "GSUB Ligature declares {count} component(s), fewer than the required two"
-            ),
-            Self::EmptyContextInput { lookup_type } => {
-                write!(
-                    f,
-                    "GSUB lookup type {lookup_type} context has no input glyphs"
-                )
-            }
-            Self::InvalidSubstitutionSequenceIndex {
-                lookup_type,
-                sequence_index,
-                input_count,
-            } => write!(
-                f,
-                "GSUB lookup type {lookup_type} sequence index {sequence_index} is outside {input_count} input glyph(s)"
-            ),
-            Self::InvalidContextLookupIndex {
-                lookup_index,
-                lookup_count,
-            } => write!(
-                f,
-                "context references LookupList index {lookup_index} but only {lookup_count} Lookup(s) exist"
-            ),
+            Self::InvalidLookupType { .. }
+            | Self::UnexpectedLayoutTableKind { .. }
+            | Self::EmptyLookupSubtables { .. }
+            | Self::ReservedLookupFlags { .. }
+            | Self::UnsupportedExtensionFormat { .. }
+            | Self::RecursiveExtensionLookupType { .. }
+            | Self::MismatchedExtensionLookupTypes { .. } => display::lookup(self, f),
+            Self::UnsupportedGsubFormat { .. }
+            | Self::MismatchedGsubMappingCount { .. }
+            | Self::InvalidLigatureComponentCount { .. }
+            | Self::EmptyContextInput { .. }
+            | Self::InvalidSubstitutionSequenceIndex { .. }
+            | Self::InvalidContextLookupIndex { .. } => display::gsub(self, f),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
             }
