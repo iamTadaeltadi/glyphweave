@@ -1,6 +1,8 @@
 //! Canonical locations of TrueType glyph descriptions.
 
-use glyphweave_sfnt::{ByteSpan, GlyphId, LocaFormat};
+mod decode;
+
+use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LocaFormat};
 
 /// Validated `loca` offsets paired with the `glyf` table they delimit.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -13,6 +15,34 @@ pub struct Loca {
 }
 
 impl Loca {
+    /// Decodes a `loca` table and resolves its offsets against `glyf`.
+    ///
+    /// ```
+    /// use glyphweave_outline::Loca;
+    /// use glyphweave_sfnt::{ByteSpan, LocaFormat};
+    ///
+    /// let bytes = [0, 0];
+    /// let loca = ByteSpan::sized(0, 2).unwrap();
+    /// let glyf = ByteSpan::empty_at(2);
+    /// let decoded = Loca::decode(&bytes, loca, glyf, 0, LocaFormat::Short)?;
+    /// assert_eq!(decoded.offsets(), [0]);
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware Diagnostic when either table span is out of bounds or the location
+    /// array's length and offsets violate the selected format, Glyph count, or `glyf` bounds.
+    pub fn decode(
+        bytes: &[u8],
+        table_span: ByteSpan,
+        glyf_span: ByteSpan,
+        glyph_count: u16,
+        format: LocaFormat,
+    ) -> Decoded<Self> {
+        decode::decode(bytes, table_span, glyf_span, glyph_count, format)
+    }
+
     /// Returns the checked span occupied by the `loca` table.
     #[must_use]
     pub const fn table_span(&self) -> ByteSpan {
