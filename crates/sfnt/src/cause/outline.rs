@@ -119,6 +119,11 @@ pub enum OutlineCause {
         /// The number of unconsumed bytes inside the Glyph Byte Span.
         length: usize,
     },
+    /// The optional one-byte composite glyph alignment pad is nonzero.
+    InvalidCompositeGlyphPadding {
+        /// The nonzero padding byte.
+        value: u8,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -284,6 +289,9 @@ impl OutlineCause {
                     f,
                     "composite glyph has {length} unexpected trailing byte(s)"
                 )
+            }
+            Self::InvalidCompositeGlyphPadding { value } => {
+                write!(f, "composite glyph alignment byte is {value:#04x}, not zero")
             }
             Self::InvalidGlyphBounds {
                 minimum_x,
