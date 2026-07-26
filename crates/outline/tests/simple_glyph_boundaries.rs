@@ -148,3 +148,23 @@ fn accumulated_coordinates_must_remain_signed_design_units() {
         })
     );
 }
+
+#[test]
+fn recorded_bounds_must_equal_decoded_point_extrema() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x33, 1]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("the only point lies outside the recorded zero bounds");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::SimpleGlyphBoundsMismatch {
+            recorded: [0, 0, 0, 0],
+            calculated: [1, 0, 1, 0],
+        })
+    );
+}
