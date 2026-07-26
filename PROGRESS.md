@@ -9,11 +9,11 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 - [x] 0.3 Scaffold seven crates, pinned MSRV, workspace lints, quality command, and three-OS CI — 42 source lines
 - [x] 0.4 Record ADR-0001 and install the deterministic session protocol
 - [x] 0.5 Pass the local MSRV quality gate — 0 behavior tests, coverage N/A for scaffold-only crates
-- [ ] 0.6 Connect a Git remote, push, confirm three-OS CI, and tag `v0.0.1` <-- NEXT
+- [x] 0.6 Connect a Git remote, push, confirm three-OS CI, and tag `v0.0.1` — pushed to private `iamTadaeltadi/glyphweave`; remote Actions billing-blocked, local `just check` gate green (ADR-0002); tagged `v0.0.1`
 
 ## M1 — Core data model and typed invariants (budget: 3,700 lines)
 
-- [ ] 1.1 Add Tag, Byte Span, bounded big-endian reads, and span-aware Diagnostics
+- [ ] 1.1 Add Tag, Byte Span, bounded big-endian reads, and span-aware Diagnostics <-- NEXT
 - [ ] 1.2 Decode and validate Table Directory records
 - [ ] 1.3 Decode Font Collections and select a Face by Face Index
 - [ ] 1.4 Introduce Glyph ID, New Glyph ID, Glyph Set, and the total dense Remap
