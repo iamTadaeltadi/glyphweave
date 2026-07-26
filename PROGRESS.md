@@ -18,11 +18,11 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 - [x] 1.3 Decode Font Collections and select a Face by Face Index — 959 source / 983 test lines, 24 unit + 27 integration + 3 doc tests, 97% line / 94% region cov (budget 420; +539 for eager collection-wide directory, shared-table, and DSIG span validation with typed diagnostics)
 - [x] 1.4 Introduce Glyph ID, New Glyph ID, Glyph Set, and the total dense Remap — 311 source / 214 test lines, 16 unit + 1 integration + 4 doc tests, 100% line / 100% region cov (budget 360; -49 through shared compact scalar types)
 - [x] 1.5 Model Codepoint Set, Character Map, Retention, Subset Plan, and Font Artifact — 437 source / 296 test lines, 21 unit + 1 integration + 5 doc tests, 100% line / 100% region cov for new core (M1 cumulative 2,959 / 3,700 source lines)
-- [ ] 1.6 Establish property generators and prove M1 invariants <-- NEXT
+- [x] 1.6 Establish property generators and prove M1 invariants — 0 source / 1,051 test lines, 28 fixed-seed property tests, 97.75% line / 94.79% region cov across M1 core (M1 total 2,959 source / 3,495 test lines)
 
 ## M2 — Character maps and TrueType outlines (budget: 4,800 lines)
 
-- [ ] 2.1 Decode and resolve `cmap` format 4
+- [ ] 2.1 Decode and resolve `cmap` format 4 <-- NEXT
 - [ ] 2.2 Decode and resolve `cmap` format 12
 - [ ] 2.3 Decode Variation Selector mappings in `cmap` format 14
 - [ ] 2.4 Decode Loca offsets in short and long forms
