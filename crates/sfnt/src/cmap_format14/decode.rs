@@ -138,7 +138,7 @@ fn decode_mappings(
 ) -> Decoded<VariationSelectorMap> {
     let mut default_cache = BTreeMap::<u32, DefaultTable>::new();
     let mut non_default_cache = BTreeMap::<u32, NonDefaultTable>::new();
-    let mut targets = Vec::new();
+    let mut targets = BTreeMap::new();
     let mut map = VariationSelectorMap::new();
 
     for record in records {
@@ -218,29 +218,36 @@ fn conflicting_base(defaults: &DefaultTable, non_defaults: &NonDefaultTable) -> 
 fn register_target(
     kind: Cmap14TableKind,
     span: ByteSpan,
-    targets: &mut Vec<Target>,
+    targets: &mut BTreeMap<usize, Target>,
 ) -> Decoded<()> {
-    for previous in targets.iter().copied() {
-        if previous.kind == kind && previous.span == span {
-            return Ok(());
-        }
-        if previous.span.overlaps(span) {
-            let current = Target { kind, span };
-            let (first, second) = if previous.span.start() <= span.start() {
-                (previous, current)
-            } else {
-                (current, previous)
-            };
-            return Err(failure(
-                second.span,
-                CmapCause::OverlappingCmap14Tables {
-                    first: (first.kind, first.span),
-                    second: (second.kind, second.span),
-                },
-            ));
-        }
+    let current = Target { kind, span };
+    let preceding = targets
+        .range(..=span.start())
+        .next_back()
+        .map(|(_, target)| *target);
+    let following = targets
+        .range(span.start()..)
+        .next()
+        .map(|(_, target)| *target);
+    let overlap = preceding
+        .filter(|target| target.span.overlaps(span))
+        .or_else(|| following.filter(|target| target.span.overlaps(span)));
+
+    if let Some(previous) = overlap {
+        let (first, second) = if previous.span.start() <= span.start() {
+            (previous, current)
+        } else {
+            (current, previous)
+        };
+        return Err(failure(
+            second.span,
+            CmapCause::OverlappingCmap14Tables {
+                first: (first.kind, first.span),
+                second: (second.kind, second.span),
+            },
+        ));
     }
-    targets.push(Target { kind, span });
+    targets.insert(span.start(), current);
     Ok(())
 }
 
