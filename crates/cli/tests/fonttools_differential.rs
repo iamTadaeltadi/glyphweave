@@ -6,7 +6,9 @@ use std::collections::BTreeMap;
 
 use glyphweave_outline::{CompositeGlyph, F2Dot14, SimpleGlyph};
 
-use support::{reference_font::glyf, reference_tool::ttx_xml};
+use support::{reference_font::glyf, reference_map::format4, reference_tool::ttx_xml};
+
+const GLYPH_NAMES: [&str; 6] = [".notdef", "space", "triangle", "acute", "Aacute", "nested"];
 
 #[test]
 fn ttx_matches_the_glyphweave_outline_census() {
@@ -38,9 +40,7 @@ fn ttx_matches_every_glyphweave_outline_bound() {
     let Some(xml) = ttx_xml(&["glyf"]) else {
         return;
     };
-    let names = [".notdef", "space", "triangle", "acute", "Aacute", "nested"];
-
-    for ((_, outline), name) in glyf().iter().zip(names) {
+    for ((_, outline), name) in glyf().iter().zip(GLYPH_NAMES) {
         if let Some(bounds) = outline.bounds() {
             let expected = format!(
                 "<TTGlyph name=\"{name}\" xMin=\"{}\" yMin=\"{}\" xMax=\"{}\" yMax=\"{}\">",
@@ -112,4 +112,35 @@ fn ttx_matches_the_scaled_nested_component() {
     assert!(xml.contains(
         "<component glyphName=\"triangle\" x=\"300\" y=\"0\" scale=\"0.5\" flags=\"0x4\"/>"
     ));
+}
+
+#[test]
+fn ttx_matches_the_glyphweave_format_four_map() {
+    let Some(xml) = ttx_xml(&["cmap"]) else {
+        return;
+    };
+    let section = xml_section(
+        &xml,
+        "<cmap_format_4 platformID=\"0\" platEncID=\"3\"",
+        "</cmap_format_4>",
+    );
+    let mappings = format4();
+
+    for (codepoint, glyph) in mappings.character_map().iter() {
+        let name = GLYPH_NAMES.get(usize::from(glyph.raw())).unwrap();
+        let expected = format!(
+            "<map code=\"0x{:x}\" name=\"{name}\"/>",
+            u32::from(codepoint)
+        );
+        assert!(section.contains(&expected), "ttx omitted {expected}");
+    }
+    assert_eq!(
+        section.matches("<map ").count(),
+        mappings.character_map().len()
+    );
+}
+
+fn xml_section<'a>(xml: &'a str, opening: &str, closing: &str) -> &'a str {
+    let suffix = xml.split_once(opening).expect("ttx opening element").1;
+    suffix.split_once(closing).expect("ttx closing element").0
 }
