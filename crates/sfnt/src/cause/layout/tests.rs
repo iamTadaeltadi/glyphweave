@@ -306,3 +306,25 @@ fn invalid_ligature_count_names_the_minimum() {
         "GSUB Ligature declares 1 component(s), fewer than the required two"
     );
 }
+
+#[test]
+fn empty_context_names_its_lookup_type() {
+    let cause = LayoutCause::EmptyContextInput { lookup_type: 6 };
+    assert_eq!(
+        cause.to_string(),
+        "GSUB lookup type 6 context has no input glyphs"
+    );
+}
+
+#[test]
+fn invalid_context_sequence_index_names_its_bound() {
+    let cause = LayoutCause::InvalidSubstitutionSequenceIndex {
+        lookup_type: 5,
+        sequence_index: 3,
+        input_count: 3,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "GSUB lookup type 5 sequence index 3 is outside 3 input glyph(s)"
+    );
+}
