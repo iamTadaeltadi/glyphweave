@@ -238,3 +238,19 @@ fn segment_ranges_cannot_overlap_their_predecessor() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 10));
 }
+
+#[test]
+fn final_segment_must_be_the_single_code_unit_sentinel() {
+    let mut words = direct_delta_words();
+    words[11] = 0xfffe;
+
+    let diagnostic = decode_words(&words).expect_err("sentinel starts below 0xffff");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapSentinelRange {
+            start: 0xfffe,
+            end: 0xffff,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 8));
+}
