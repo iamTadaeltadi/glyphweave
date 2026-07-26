@@ -99,13 +99,21 @@ impl VariationSelectorMap {
             .map(|(&(selector, base), &glyph)| (selector, base, glyph))
     }
 
-    #[cfg(test)]
-    fn insert_default_range(&mut self, selector: VariationSelector, start: char, end: char) {
+    pub(crate) fn insert_default_range(
+        &mut self,
+        selector: VariationSelector,
+        start: char,
+        end: char,
+    ) {
         self.default_ranges.insert((selector, start), end);
     }
 
-    #[cfg(test)]
-    fn insert_non_default(&mut self, selector: VariationSelector, base: char, glyph: GlyphId) {
+    pub(crate) fn insert_non_default(
+        &mut self,
+        selector: VariationSelector,
+        base: char,
+        glyph: GlyphId,
+    ) {
         self.non_default_mappings.insert((selector, base), glyph);
     }
 }

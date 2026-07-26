@@ -1,6 +1,8 @@
 //! Decoded Unicode variation sequences from a `cmap` format 14 subtable.
 
-use crate::{ByteSpan, VariationSelectorMap};
+mod decode;
+
+use crate::{ByteSpan, Decoded, VariationSelectorMap};
 
 /// A validated and semantically resolved `cmap` format 14 subtable.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -11,6 +13,29 @@ pub struct CmapFormat14 {
 }
 
 impl CmapFormat14 {
+    /// Decodes and resolves a format-14 subtable at an absolute byte offset.
+    ///
+    /// ```
+    /// use glyphweave_sfnt::CmapFormat14;
+    ///
+    /// let empty = [
+    ///     0, 14, // format
+    ///     0, 0, 0, 10, // length
+    ///     0, 0, 0, 0, // numVarSelectorRecords
+    /// ];
+    /// let decoded = CmapFormat14::decode(&empty, 0)?;
+    /// assert!(decoded.variation_selector_map().is_empty());
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns a span-aware decode Diagnostic when the header, selector records, nested offsets,
+    /// default ranges, explicit mappings, or target topology violates format-14 invariants.
+    pub fn decode(bytes: &[u8], offset: usize) -> Decoded<Self> {
+        decode::decode(bytes, offset)
+    }
+
     /// Returns the complete declared subtable Byte Span.
     #[must_use]
     pub const fn span(&self) -> ByteSpan {
