@@ -2,8 +2,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use glyphweave_layout::{Coverage, GsubClosure, GsubLookupList, Lookup, LookupFlags, LookupList};
-use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind};
+use glyphweave_layout::{
+    Coverage, GsubClosure, GsubLookupList, GsubSubtable, Lookup, LookupFlags, LookupList,
+};
+use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind, NewGlyphId};
 use proptest::{
     collection,
     prelude::*,
@@ -61,6 +63,38 @@ proptest! {
             closure.glyphs().map(GlyphId::raw).collect::<Vec<_>>(),
             expected.into_iter().collect::<Vec<_>>(),
         );
+    }
+
+    #[test]
+    fn retained_single_rules_remap_totally_and_deterministically(
+        mappings in collection::btree_map(any::<u16>(), any::<u16>(), 0..65),
+        initial in collection::vec(any::<u16>(), 0..65),
+    ) {
+        let semantic = single_lookup(&mappings);
+        let closure = GsubClosure::compute(
+            &semantic,
+            initial.into_iter().map(GlyphId::new),
+            [0],
+        ).unwrap();
+        let dense = closure.glyphs().enumerate().map(|(index, glyph)| {
+            (glyph, NewGlyphId::new(u16::try_from(index).unwrap()))
+        }).collect::<BTreeMap<_, _>>();
+        let retained = semantic.retain(&closure);
+        let remapped = retained.remap(|glyph| dense.get(&glyph).copied()).unwrap();
+        let retained_subtables = retained.lookup(0).unwrap().subtables();
+        let remapped_subtables = remapped.lookup(0).unwrap().subtables();
+
+        prop_assert_eq!(remapped_subtables.len(), retained_subtables.len());
+        if let ([GsubSubtable::Single(before)], [GsubSubtable::Single(after)]) =
+            (retained_subtables, remapped_subtables)
+        {
+            let expected = before.mappings().map(|(input, output)| {
+                (dense[&input], dense[&output])
+            }).collect::<Vec<_>>();
+            prop_assert_eq!(after.mappings().collect::<Vec<_>>(), expected);
+        } else {
+            prop_assert!(retained_subtables.is_empty() && remapped_subtables.is_empty());
+        }
     }
 }
 
