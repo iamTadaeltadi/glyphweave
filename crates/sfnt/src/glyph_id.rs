@@ -52,6 +52,14 @@ impl fmt::Display for GlyphId {
 /// A glyph index in an emitted font.
 ///
 /// This type is deliberately not convertible from [`GlyphId`] without an explicit Remap lookup.
+///
+/// ```
+/// use glyphweave_sfnt::NewGlyphId;
+///
+/// let emitted = NewGlyphId::new(3);
+/// assert_eq!(emitted.raw(), 3);
+/// assert_eq!(NewGlyphId::NOTDEF.raw(), 0);
+/// ```
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NewGlyphId(u16);
 
