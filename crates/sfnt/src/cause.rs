@@ -59,7 +59,7 @@ pub enum Cause {
     FaceDirectoryOverlapsCollectionHeader {
         /// The offending Face Index.
         index: crate::FaceIndex,
-        /// The decoded directory range.
+        /// The minimum range needed by the directory header.
         directory: crate::ByteSpan,
         /// The TTC Header range.
         header: crate::ByteSpan,
@@ -159,9 +159,9 @@ pub enum Cause {
     },
 }
 
-impl fmt::Display for Cause {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
+impl Cause {
+    fn fmt_collection(self, f: &mut fmt::Formatter<'_>) -> Option<fmt::Result> {
+        let rendered = match self {
             Self::InvalidCollectionTag { found } => {
                 write!(f, "expected collection tag ttcf but found {found:?}")
             }
@@ -204,6 +204,26 @@ impl fmt::Display for Cause {
                 f,
                 "face {index} directory at {directory} overlaps collection header {header}"
             ),
+            _ => return None,
+        };
+        Some(rendered)
+    }
+}
+
+impl fmt::Display for Cause {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(rendered) = self.fmt_collection(f) {
+            return rendered;
+        }
+        match *self {
+            Self::InvalidCollectionTag { .. }
+            | Self::UnsupportedCollectionVersion { .. }
+            | Self::EmptyFontCollection
+            | Self::CollectionFaceCountOutOfBounds { .. }
+            | Self::InvalidCollectionSignatureDescriptor { .. }
+            | Self::CollectionSignatureNotAtEnd { .. }
+            | Self::DuplicateFaceDirectoryOffset { .. }
+            | Self::FaceDirectoryOverlapsCollectionHeader { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }
