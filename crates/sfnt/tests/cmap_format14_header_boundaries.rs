@@ -21,3 +21,20 @@ fn format_other_than_fourteen_is_rejected_at_the_format_word() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(0, 2));
 }
+
+#[test]
+fn declared_length_must_hold_the_complete_header() {
+    let mut bytes = encode_empty();
+    bytes[2..6].copy_from_slice(&9_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("header needs ten bytes");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14Length {
+            declared: 9,
+            minimum: 10,
+            available: 10,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 4));
+}
