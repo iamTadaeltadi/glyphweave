@@ -1,5 +1,7 @@
 //! Derived binary-search parameters in an SFNT Table Directory header.
 
+#![allow(clippy::redundant_pub_crate)]
+
 /// The greatest table count whose byte ranges fit the header's `u16` fields.
 pub(crate) const MAX_TABLES: u16 = 4_095;
 
@@ -28,10 +30,14 @@ impl SearchParameters {
         let search_range = power_of_two * 16;
         let range_shift = u32::from(table_count) * 16 - search_range;
         Some(Self {
-            search_range: search_range as u16,
-            entry_selector: entry_selector as u16,
-            range_shift: range_shift as u16,
+            search_range: u16::try_from(search_range).ok()?,
+            entry_selector: u16::try_from(entry_selector).ok()?,
+            range_shift: u16::try_from(range_shift).ok()?,
         })
+    }
+
+    pub(crate) const fn into_array(self) -> [u16; 3] {
+        [self.search_range, self.entry_selector, self.range_shift]
     }
 }
 
