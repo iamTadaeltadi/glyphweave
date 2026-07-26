@@ -243,6 +243,9 @@ fn retained_list_dispatches_every_supported_subtable() {
     let remapped = retained
         .remap(|glyph| Some(NewGlyphId::new(glyph.raw())))
         .unwrap();
+    assert_eq!(remapped.len(), 7);
+    assert!(!remapped.is_empty());
+    assert_eq!(remapped.lookup(7), None);
     let types = remapped
         .lookup_list()
         .lookups()
