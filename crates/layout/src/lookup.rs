@@ -4,6 +4,7 @@ use glyphweave_sfnt::{ByteSpan, LayoutTableKind};
 
 use crate::LookupFlags;
 
+mod decode;
 mod extension;
 
 /// An effective lookup type and its ordered payload subtables.
