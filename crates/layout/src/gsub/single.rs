@@ -7,14 +7,14 @@ use glyphweave_sfnt::GlyphId;
 mod decode;
 /// An input-ordered map replacing one glyph with one glyph.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct SingleSubstitution {
-    mappings: BTreeMap<GlyphId, GlyphId>,
+pub struct SingleSubstitution<G = GlyphId> {
+    mappings: BTreeMap<G, G>,
 }
 
-impl SingleSubstitution {
+impl<G: Copy + Ord> SingleSubstitution<G> {
     /// Builds canonical mappings; a later duplicate input replaces an earlier mapping.
     #[must_use]
-    pub fn from_mappings(mappings: impl IntoIterator<Item = (GlyphId, GlyphId)>) -> Self {
+    pub fn from_mappings(mappings: impl IntoIterator<Item = (G, G)>) -> Self {
         Self {
             mappings: mappings.into_iter().collect(),
         }
@@ -22,13 +22,13 @@ impl SingleSubstitution {
 
     /// Returns the replacement for one input glyph.
     #[must_use]
-    pub fn replacement(&self, input: GlyphId) -> Option<GlyphId> {
+    pub fn replacement(&self, input: G) -> Option<G> {
         self.mappings.get(&input).copied()
     }
 
     /// Iterates mappings in ascending input Glyph ID order.
     #[must_use]
-    pub fn mappings(&self) -> impl ExactSizeIterator<Item = (GlyphId, GlyphId)> + '_ {
+    pub fn mappings(&self) -> impl ExactSizeIterator<Item = (G, G)> + '_ {
         self.mappings
             .iter()
             .map(|(&input, &output)| (input, output))
@@ -74,6 +74,6 @@ mod tests {
         );
         assert_eq!(substitutions.len(), 2);
         assert!(!substitutions.is_empty());
-        assert!(SingleSubstitution::default().is_empty());
+        assert!(SingleSubstitution::<GlyphId>::default().is_empty());
     }
 }
