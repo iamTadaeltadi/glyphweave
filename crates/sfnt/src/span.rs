@@ -2,7 +2,8 @@
 
 use core::fmt;
 
-use crate::diagnostic::{Cause, Diagnostic, Stage};
+use crate::cause::Cause;
+use crate::diagnostic::{Diagnostic, Stage};
 
 /// A checked half-open byte range `[start, end)` into an immutable input or output artifact.
 ///
@@ -143,7 +144,7 @@ impl fmt::Display for ByteSpan {
 #[cfg(test)]
 mod tests {
     use super::ByteSpan;
-    use crate::diagnostic::Cause;
+    use crate::cause::Cause;
 
     #[test]
     fn sized_rejects_overflow() {

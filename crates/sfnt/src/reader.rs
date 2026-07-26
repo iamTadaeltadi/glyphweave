@@ -1,6 +1,7 @@
 //! Bounded big-endian reads over immutable bytes.
 
-use crate::diagnostic::{Cause, Diagnostic, Stage};
+use crate::cause::Cause;
+use crate::diagnostic::{Diagnostic, Stage};
 use crate::span::ByteSpan;
 use crate::tag::Tag;
 
@@ -183,7 +184,7 @@ impl<'a> Reader<'a> {
 #[cfg(test)]
 mod tests {
     use super::Reader;
-    use crate::diagnostic::Cause;
+    use crate::cause::Cause;
 
     #[test]
     fn new_positions_at_the_start() {
