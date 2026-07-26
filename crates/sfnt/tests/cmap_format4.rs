@@ -214,3 +214,27 @@ fn segment_start_cannot_exceed_its_end() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(14, 8));
 }
+
+#[test]
+fn segment_ranges_cannot_overlap_their_predecessor() {
+    let words = [
+        4, 40, 0, 6, 4, 1, 2, // header
+        0x0043, 0x0045, 0xffff, // endCode
+        0,      // reservedPad
+        0x0041, 0x0043, 0xffff, // startCode
+        0, 0, 1, // idDelta
+        0, 0, 0, // idRangeOffset
+    ];
+
+    let diagnostic = decode_words(&words).expect_err("second segment overlaps first");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapSegment {
+            index: 1,
+            start: 0x0043,
+            end: 0x0045,
+            previous_end: Some(0x0043),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 10));
+}
