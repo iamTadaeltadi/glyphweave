@@ -50,7 +50,9 @@ fn decode_rule(bytes: &[u8], span: ByteSpan, first: GlyphId) -> Decoded<ContextR
     let lookahead = read_glyphs(&mut reader)?;
     let record_count = reader.u16()?;
     let records = decode_records(&mut reader, record_count, input_count, 6)?;
-    Ok(ContextRule::chained(backtrack, first, input, lookahead, records))
+    Ok(ContextRule::chained(
+        backtrack, first, input, lookahead, records,
+    ))
 }
 
 fn read_glyphs(reader: &mut Reader<'_>) -> Decoded<Vec<GlyphId>> {
