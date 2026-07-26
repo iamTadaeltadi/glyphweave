@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType Feature Lists.
 
 use glyphweave_layout::FeatureList;
-use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, Tag};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, LayoutTarget, Tag};
 
 const KERN: Tag = Tag::new(*b"kern");
 const LIGA: Tag = Tag::new(*b"liga");
@@ -71,4 +71,34 @@ fn rejects_decreasing_feature_tags() {
             current: KERN,
         })
     );
+}
+
+#[test]
+fn rejects_feature_target_inside_records() {
+    let bytes = [0x00, 0x01, b'k', b'e', b'r', b'n', 0x00, 0x02];
+    let diagnostic =
+        FeatureList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(6, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::Feature,
+            offset: 2,
+            minimum: 8,
+            container_length: 8,
+        })
+    );
+}
+
+#[test]
+fn accepts_exact_feature_target_aliasing() {
+    let bytes = [
+        0x00, 0x02, b'l', b'i', b'g', b'a', 0x00, 0x0e, b'l', b'i', b'g', b'a', 0x00, 0x0e, 0x00,
+        0x00, 0x00, 0x01, 0x00, 0x05,
+    ];
+    let list = FeatureList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
+
+    assert_eq!(list.feature(0), list.feature(1));
+    assert_eq!(list.feature(1).unwrap().lookup_indices(), &[5]);
 }
