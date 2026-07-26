@@ -15,6 +15,9 @@ glyphweave-emit = { path = "../emit" }
 glyphweave-subset = { path = "../subset" }
 glyphweave-verify = { path = "../verify" }
 
+[dev-dependencies]
+glyphweave-outline = { path = "../outline" }
+glyphweave-sfnt = { path = "../sfnt" }
+
 [lints]
 workspace = true
-
