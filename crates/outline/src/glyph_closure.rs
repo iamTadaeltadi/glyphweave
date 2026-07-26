@@ -12,6 +12,12 @@ pub struct GlyphClosure {
 }
 
 impl GlyphClosure {
+    /// Visits closed Glyph IDs in ascending input order.
+    #[must_use]
+    pub fn iter(&self) -> impl ExactSizeIterator<Item = GlyphId> + DoubleEndedIterator + '_ {
+        self.glyphs.iter()
+    }
+
     /// Returns the greatest number of component edges from a retained root to a leaf.
     #[must_use]
     pub const fn maximum_component_depth(&self) -> u16 {
