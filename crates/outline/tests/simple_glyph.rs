@@ -166,3 +166,20 @@ fn decodes_the_maximal_simple_contour_count() {
     assert_eq!(glyph.contour_ends().last(), Some(&32_767));
     assert_eq!(glyph.points().len(), 32_767);
 }
+
+#[test]
+fn accepts_a_zero_additional_repeat_count() {
+    let mut bytes = Vec::new();
+    for value in [1i16, 0, 0, 0, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x39, 0, 0x31, 0]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.points(), [Point::new(0, 0, true); 2]);
+    assert_eq!(glyph.contour_ends(), [2]);
+}
