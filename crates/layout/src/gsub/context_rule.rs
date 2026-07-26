@@ -65,3 +65,6 @@ impl<T> ContextRule<T> {
         &self.records
     }
 }
+
+#[cfg(test)]
+mod tests;
