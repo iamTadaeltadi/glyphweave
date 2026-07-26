@@ -47,6 +47,12 @@ impl fmt::Display for LayoutListKind {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum LayoutTarget {
+    /// A Lookup table referenced by `LookupList`.
+    Lookup,
+    /// A direct or extension-wrapper Lookup subtable.
+    LookupSubtable,
+    /// The real payload referenced by an extension wrapper.
+    ExtensionSubtable,
     /// A Script table referenced by `ScriptList`.
     Script,
     /// The default Language System table of a Script.
@@ -62,6 +68,9 @@ pub enum LayoutTarget {
 impl fmt::Display for LayoutTarget {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
+            Self::Lookup => "Lookup",
+            Self::LookupSubtable => "Lookup subtable",
+            Self::ExtensionSubtable => "extension subtable",
             Self::Script => "Script",
             Self::DefaultLanguageSystem => "default Language System",
             Self::LanguageSystem => "Language System",
