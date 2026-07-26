@@ -117,3 +117,54 @@ fn invalid_bounds_failure_names_both_corners() {
         "glyph bounds (9, 7)..(-3, -5) are inverted"
     );
 }
+
+#[test]
+fn contour_end_failure_names_both_point_indices() {
+    let cause = Cause::Outline(OutlineCause::NonIncreasingContourEnd {
+        contour_index: 2,
+        end_point: 7,
+        previous_end_point: 9,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple contour 2 ends at point 7, not after point 9"
+    );
+}
+
+#[test]
+fn flag_repeat_failure_names_the_complete_expansion() {
+    let cause = Cause::Outline(OutlineCause::SimpleFlagRepeatOutOfBounds {
+        point_index: 4,
+        additional_repetitions: 9,
+        point_count: 10,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple flag at point 4 repeats 9 additional time(s) past 10 point(s)"
+    );
+}
+
+#[test]
+fn reserved_flag_failure_renders_the_full_byte() {
+    let cause = Cause::Outline(OutlineCause::ReservedSimpleGlyphFlag {
+        point_index: 3,
+        flag: 0x91,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple flag at point 3 sets reserved bits in 0x91"
+    );
+}
+
+#[test]
+fn overlap_failure_names_the_late_logical_point() {
+    let cause = Cause::Outline(OutlineCause::MisplacedSimpleOverlapFlag { point_index: 8 });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple overlap flag appears after the first physical flag at point 8"
+    );
+}
