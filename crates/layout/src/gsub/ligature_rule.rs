@@ -4,19 +4,19 @@ use glyphweave_sfnt::GlyphId;
 
 /// An ordered sequence of at least two components replaced by one ligature glyph.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct LigatureRule {
-    components: Vec<GlyphId>,
-    replacement: GlyphId,
+pub struct LigatureRule<G = GlyphId> {
+    components: Vec<G>,
+    replacement: G,
 }
 
-impl LigatureRule {
+impl<G: Copy> LigatureRule<G> {
     /// Creates a rule from its first two components, any remaining components, and output glyph.
     #[must_use]
     pub fn new(
-        first: GlyphId,
-        second: GlyphId,
-        remaining: impl IntoIterator<Item = GlyphId>,
-        replacement: GlyphId,
+        first: G,
+        second: G,
+        remaining: impl IntoIterator<Item = G>,
+        replacement: G,
     ) -> Self {
         let mut components = vec![first, second];
         components.extend(remaining);
@@ -28,19 +28,19 @@ impl LigatureRule {
 
     /// Returns every input component in matching order, including the first.
     #[must_use]
-    pub fn components(&self) -> &[GlyphId] {
+    pub fn components(&self) -> &[G] {
         &self.components
     }
 
     /// Returns the first component used to select the source `LigatureSet`.
     #[must_use]
-    pub fn first(&self) -> GlyphId {
+    pub fn first(&self) -> G {
         self.components[0]
     }
 
     /// Returns the replacement ligature glyph.
     #[must_use]
-    pub const fn replacement(&self) -> GlyphId {
+    pub const fn replacement(&self) -> G {
         self.replacement
     }
 }
