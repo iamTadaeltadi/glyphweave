@@ -2,6 +2,10 @@ use glyphweave_outline::{Glyf, Loca};
 use glyphweave_sfnt::{ByteSpan, LocaFormat};
 
 #[derive(Clone, Debug)]
+#[allow(
+    dead_code,
+    reason = "each integration crate uses a different node subset"
+)]
 pub(crate) enum Node {
     Empty,
     Simple,
