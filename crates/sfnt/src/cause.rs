@@ -55,6 +55,15 @@ pub enum Cause {
         /// The duplicated absolute byte offset.
         offset: usize,
     },
+    /// A Face's Table Directory occupies bytes belonging to the TTC Header.
+    FaceDirectoryOverlapsCollectionHeader {
+        /// The offending Face Index.
+        index: crate::FaceIndex,
+        /// The decoded directory range.
+        directory: crate::ByteSpan,
+        /// The TTC Header range.
+        header: crate::ByteSpan,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -186,6 +195,14 @@ impl fmt::Display for Cause {
             } => write!(
                 f,
                 "face indices {first} and {second} share directory offset {offset}"
+            ),
+            Self::FaceDirectoryOverlapsCollectionHeader {
+                index,
+                directory,
+                header,
+            } => write!(
+                f,
+                "face {index} directory at {directory} overlaps collection header {header}"
             ),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
