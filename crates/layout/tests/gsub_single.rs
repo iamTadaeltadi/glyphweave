@@ -1,7 +1,7 @@
 //! Integration coverage for semantic SingleSubst decoding.
 
 use glyphweave_layout::SingleSubstitution;
-use glyphweave_sfnt::{ByteSpan, GlyphId};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause};
 
 #[test]
 fn decodes_wrapping_single_delta_substitution() {
@@ -48,5 +48,21 @@ fn decodes_explicit_outputs_in_coverage_index_order() {
             (GlyphId::new(7), GlyphId::new(10)),
             (GlyphId::new(9), GlyphId::new(40)),
         ]
+    );
+}
+
+#[test]
+fn rejects_unknown_single_substitution_format() {
+    let bytes = [0xaa, 0x00, 0x03];
+    let diagnostic =
+        SingleSubstitution::decode(&bytes, ByteSpan::between(1, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(1, 3));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsupportedGsubFormat {
+            lookup_type: 1,
+            format: 3,
+        })
     );
 }
