@@ -13,6 +13,18 @@ pub struct GsubLookup {
 }
 
 impl GsubLookup {
+    pub(super) const fn from_parts(
+        lookup_type: u16,
+        flags: LookupFlags,
+        subtables: Vec<GsubSubtable>,
+    ) -> Self {
+        Self {
+            lookup_type,
+            flags,
+            subtables,
+        }
+    }
+
     /// Semantically decodes every real payload span of a shared Lookup.
     /// # Errors
     /// For a non-GSUB family or any malformed effective subtable.
