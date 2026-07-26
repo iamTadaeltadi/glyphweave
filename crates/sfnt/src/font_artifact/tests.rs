@@ -17,6 +17,8 @@ fn clones_share_the_same_allocation() {
     let cloned = artifact.clone();
     assert!(Arc::ptr_eq(&artifact.bytes, &cloned.bytes));
     assert_eq!(artifact, cloned);
+    drop(artifact);
+    assert_eq!(cloned.as_bytes(), &[7; 4096]);
 }
 
 #[test]
