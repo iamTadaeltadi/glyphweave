@@ -55,3 +55,19 @@ fn declared_length_cannot_exceed_available_bytes() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 4));
 }
+
+#[test]
+fn selector_count_must_fit_the_declared_record_array() {
+    let mut bytes = encode_empty();
+    bytes[6..10].copy_from_slice(&1_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("one selector needs 11 bytes");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::Cmap14SelectorCountOutOfBounds {
+            count: 1,
+            maximum: 0,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(6, 4));
+}
