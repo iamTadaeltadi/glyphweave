@@ -6,6 +6,7 @@ use glyphweave_outline::{GlyphClosure, GlyphSet};
 use glyphweave_sfnt::GlyphId;
 
 use support::{reference_font::glyf_from, reference_tool::subset};
+use support::{reference_map::format12_from, reference_tool::subset_unicode};
 
 #[test]
 fn fonttools_retains_the_glyphweave_component_closure() {
@@ -23,6 +24,15 @@ fn harfbuzz_retains_the_glyphweave_component_closure() {
     };
 
     assert_reference_closure(&bytes);
+}
+
+#[test]
+fn fonttools_preserves_the_selected_supplementary_mapping() {
+    let Some(bytes) = subset_unicode("pyftsubset", 0x0001_f600) else {
+        return;
+    };
+
+    assert_unicode_subset(&bytes);
 }
 
 fn assert_reference_closure(bytes: &[u8]) {
@@ -68,4 +78,13 @@ fn component_ids(glyf: &glyphweave_outline::Glyf, raw: u16) -> Vec<u16> {
         .iter()
         .map(|component| component.glyph_id().raw())
         .collect()
+}
+
+fn assert_unicode_subset(bytes: &[u8]) {
+    let cmap = format12_from(bytes);
+
+    assert_eq!(cmap.character_map().len(), 1);
+    assert_eq!(cmap.character_map().glyph_id('\u{1f600}'), GlyphId::new(5));
+    assert_eq!(cmap.character_map().glyph_id('A'), GlyphId::NOTDEF);
+    assert_reference_closure(bytes);
 }
