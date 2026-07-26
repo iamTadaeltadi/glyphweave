@@ -114,6 +114,11 @@ pub enum OutlineCause {
         /// The zero-based component index.
         component_index: u32,
     },
+    /// More than one byte remains after a complete composite glyph description.
+    UnexpectedCompositeGlyphData {
+        /// The number of unconsumed bytes inside the Glyph Byte Span.
+        length: usize,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -274,6 +279,12 @@ impl OutlineCause {
                 f,
                 "composite overlap flag appears on component {component_index}, not the first"
             ),
+            Self::UnexpectedCompositeGlyphData { length } => {
+                write!(
+                    f,
+                    "composite glyph has {length} unexpected trailing byte(s)"
+                )
+            }
             Self::InvalidGlyphBounds {
                 minimum_x,
                 minimum_y,
