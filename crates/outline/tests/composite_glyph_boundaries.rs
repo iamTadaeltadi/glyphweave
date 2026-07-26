@@ -221,3 +221,21 @@ fn composite_instruction_program_cannot_cross_the_span() {
         }
     );
 }
+
+#[test]
+fn more_components_requires_another_complete_flag_word() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x22, 0x00, 0x01, 0x00, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("MORE_COMPONENTS promises a following component record");
+
+    assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(16)));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 0,
+        }
+    );
+}
