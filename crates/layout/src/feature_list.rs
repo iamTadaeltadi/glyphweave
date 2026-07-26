@@ -4,6 +4,8 @@ use glyphweave_sfnt::Tag;
 
 use crate::Feature;
 
+mod decode;
+
 /// Feature records in stable Tag order, including legal duplicate Tags.
 ///
 /// Stable sorting preserves the relative order and therefore the index identity of equal-tagged
