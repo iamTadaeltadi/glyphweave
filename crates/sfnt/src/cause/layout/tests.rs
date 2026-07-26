@@ -228,6 +228,15 @@ fn invalid_lookup_type_names_its_table() {
 }
 
 #[test]
+fn unexpected_layout_family_names_both_tables() {
+    let cause = LayoutCause::UnexpectedLayoutTableKind {
+        expected: LayoutTableKind::Substitution,
+        actual: LayoutTableKind::Positioning,
+    };
+    assert_eq!(cause.to_string(), "expected GSUB Lookup, found GPOS Lookup");
+}
+
+#[test]
 fn empty_lookup_names_its_type() {
     let cause = LayoutCause::EmptyLookupSubtables {
         table: LayoutTableKind::Positioning,
