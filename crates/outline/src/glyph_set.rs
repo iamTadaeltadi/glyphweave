@@ -56,6 +56,12 @@ impl GlyphSet {
         !glyph.is_notdef() && self.glyphs.remove(&glyph)
     }
 
+    /// Retains only Glyph IDs accepted by `predicate`, plus mandatory `.notdef`.
+    pub fn retain(&mut self, mut predicate: impl FnMut(GlyphId) -> bool) {
+        self.glyphs
+            .retain(|glyph| glyph.is_notdef() || predicate(*glyph));
+    }
+
     /// Visits retained Glyph IDs in ascending order.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = GlyphId> + DoubleEndedIterator + '_ {
