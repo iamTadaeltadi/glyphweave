@@ -227,3 +227,30 @@ fn rejects_face_directory_inside_collection_header() {
         }
     );
 }
+
+#[test]
+fn rejects_overlapping_face_directories() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 32);
+    push_u32(&mut bytes, 0x0001_0000);
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 16);
+    push_u16(&mut bytes, 0);
+    push_u16(&mut bytes, 0);
+    bytes.extend_from_slice(b"OTTO");
+    bytes.extend_from_slice(&[0; 12]);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(20, 28));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::OverlappingFaceDirectories {
+            first: (FaceIndex::new(0), ByteSpan::sized(20, 28).unwrap()),
+            second: (FaceIndex::new(1), ByteSpan::sized(32, 12).unwrap())
+        }
+    );
+}
