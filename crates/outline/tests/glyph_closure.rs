@@ -36,6 +36,21 @@ fn direct_components_join_the_initial_set() {
 }
 
 #[test]
+fn borrowed_closure_iteration_is_sorted_and_exact() {
+    let glyf = decode_graph(&[Node::Empty, Node::Simple, Node::Composite(vec![1])]);
+    let initial: GlyphSet = [GlyphId::new(2)].into_iter().collect();
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+
+    let mut glyphs = (&closure).into_iter();
+
+    assert_eq!(glyphs.len(), 3);
+    assert_eq!(glyphs.next(), Some(GlyphId::NOTDEF));
+    assert_eq!(glyphs.next_back(), Some(GlyphId::new(2)));
+    assert_eq!(glyphs.next(), Some(GlyphId::new(1)));
+    assert_eq!(glyphs.next(), None);
+}
+
+#[test]
 fn closure_follows_transitive_component_edges() {
     let glyf = decode_graph(&[
         Node::Empty,
