@@ -25,3 +25,12 @@ fn empty_and_debug_behavior_is_bounded() {
     assert!(artifact.is_empty());
     assert_eq!(format!("{artifact:?}"), "FontArtifact { length: 0, .. }");
 }
+
+#[test]
+fn construction_from_a_borrowed_slice_copies_ownership() {
+    let mut source = vec![1, 2, 3];
+    let artifact = FontArtifact::new(source.as_slice());
+    source[0] = 9;
+    assert_eq!(artifact.as_bytes(), [1, 2, 3]);
+    assert_eq!(source, [9, 2, 3]);
+}
