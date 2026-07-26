@@ -339,3 +339,25 @@ fn chained_class_rule_set_cannot_target_header() {
         })
     );
 }
+
+#[test]
+fn chained_class_rule_cannot_target_set_header() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x12, 0x00, 0x18, 0x00, 0x1c, 0x00, 0x20, 0x00, 0x01, 0x00, 0x0e, 0x00,
+        0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x01, 0x00, 0x03, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02,
+        0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
+    ];
+    let diagnostic =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::ChainedContextRule,
+            offset: 2,
+            minimum: 4,
+            container_length: 22,
+        })
+    );
+}
