@@ -30,6 +30,18 @@ fn direct_delta_words() -> Vec<u16> {
     ]
 }
 
+fn range_offset_words() -> Vec<u16> {
+    vec![
+        4, 38, 0, 4, 4, 1, 0, // header
+        0x0043, 0xffff, // endCode
+        0,      // reservedPad
+        0x0041, 0xffff, // startCode
+        2, 1, // idDelta
+        4, 0, // idRangeOffset
+        10, 0, 12, // glyphIdArray
+    ]
+}
+
 fn encode_words(words: &[u16]) -> Vec<u8> {
     let mut bytes = Vec::with_capacity(words.len() * 2);
     append_words(&mut bytes, words);
@@ -59,18 +71,7 @@ fn direct_delta_segments_resolve_at_an_absolute_offset() {
 #[test]
 fn range_offset_segments_apply_delta_only_to_nonzero_glyph_words() {
     let mut bytes = vec![0xde, 0xad];
-    append_words(
-        &mut bytes,
-        &[
-            4, 38, 0, 4, 4, 1, 0, // header
-            0x0043, 0xffff, // endCode
-            0,      // reservedPad
-            0x0041, 0xffff, // startCode
-            2, 1, // idDelta
-            4, 0, // idRangeOffset
-            10, 0, 12, // glyphIdArray
-        ],
-    );
+    append_words(&mut bytes, &range_offset_words());
 
     let decoded = CmapFormat4::decode(&bytes, 2).expect("valid range format-4 subtable");
     assert_eq!(decoded.character_map().len(), 2);
