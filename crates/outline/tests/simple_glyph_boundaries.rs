@@ -168,3 +168,41 @@ fn recorded_bounds_must_equal_decoded_point_extrema() {
         })
     );
 }
+
+fn odd_zero_point_description() -> Vec<u8> {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.push(0x31);
+    bytes
+}
+
+#[test]
+fn only_one_trailing_alignment_byte_is_permitted() {
+    let mut bytes = odd_zero_point_description();
+    bytes.extend_from_slice(&[0, 0]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("two unconsumed bytes are not one alignment pad");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(15, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::UnexpectedSimpleGlyphData { length: 2 })
+    );
+}
+
+#[test]
+fn optional_alignment_byte_must_be_zero() {
+    let mut bytes = odd_zero_point_description();
+    bytes.push(0xa5);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic =
+        SimpleGlyph::decode(&bytes, span).expect_err("a nonzero trailing byte is semantic data");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(15, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::InvalidSimpleGlyphPadding { value: 0xa5 })
+    );
+}
