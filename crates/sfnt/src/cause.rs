@@ -95,6 +95,17 @@ pub enum Cause {
         /// The covered directory range.
         directory: crate::ByteSpan,
     },
+    /// A Face table occupies file-level DSIG bytes.
+    TableOverlapsCollectionSignature {
+        /// The Face that references the table.
+        face: crate::FaceIndex,
+        /// The offending table.
+        tag: crate::Tag,
+        /// The table range.
+        table: crate::ByteSpan,
+        /// The file-level DSIG range.
+        signature: crate::ByteSpan,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -259,6 +270,15 @@ impl Cause {
                 f,
                 "face {face} table {tag} at {table} overlaps face {directory_face} directory {directory}"
             ),
+            Self::TableOverlapsCollectionSignature {
+                face,
+                tag,
+                table,
+                signature,
+            } => write!(
+                f,
+                "face {face} table {tag} at {table} overlaps collection signature {signature}"
+            ),
             _ => return None,
         };
         Some(rendered)
@@ -281,7 +301,8 @@ impl fmt::Display for Cause {
             | Self::FaceDirectoryOverlapsCollectionHeader { .. }
             | Self::OverlappingFaceDirectories { .. }
             | Self::TableOverlapsCollectionHeader { .. }
-            | Self::TableOverlapsFaceDirectory { .. } => unreachable!(),
+            | Self::TableOverlapsFaceDirectory { .. }
+            | Self::TableOverlapsCollectionSignature { .. } => unreachable!(),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
             }
