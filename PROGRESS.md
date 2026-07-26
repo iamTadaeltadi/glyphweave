@@ -13,8 +13,8 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 
 ## M1 — Core data model and typed invariants (budget: 3,700 lines)
 
-- [ ] 1.1 Add Tag, Byte Span, bounded big-endian reads, and span-aware Diagnostics <-- NEXT
-- [ ] 1.2 Decode and validate Table Directory records
+- [x] 1.1 Add Tag, Byte Span, bounded big-endian reads, and span-aware Diagnostics — 614 source / 302 test lines, 28 unit + 4 doc tests, 99% line / 98% region cov (budget 520; +94 from mandatory doc lines)
+- [ ] 1.2 Decode and validate Table Directory records <-- NEXT
 - [ ] 1.3 Decode Font Collections and select a Face by Face Index
 - [ ] 1.4 Introduce Glyph ID, New Glyph ID, Glyph Set, and the total dense Remap
 - [ ] 1.5 Model Codepoint Set, Character Map, Retention, Subset Plan, and Font Artifact
