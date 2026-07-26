@@ -301,3 +301,21 @@ fn notdef_surrogate_mapping_is_canonicalized_to_absence() {
     let decoded = decode_words(&words).expect("zero surrogate mapping is absent");
     assert!(decoded.character_map().is_empty());
 }
+
+#[test]
+fn range_offset_must_be_even() {
+    let mut words = range_offset_words();
+    words[14] = 3;
+
+    let diagnostic = decode_words(&words).expect_err("odd idRangeOffset is invalid");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapRangeOffset {
+            segment: 0,
+            codepoint: 0x0041,
+            target: 31,
+            glyph_array: ByteSpan::sized(32, 6).unwrap(),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(28, 2));
+}
