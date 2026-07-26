@@ -1,6 +1,6 @@
 //! Deterministic properties for OpenType checksums.
 
-use glyphweave_sfnt::Checksum;
+use glyphweave_sfnt::{Checksum, Tag};
 use proptest::{
     collection,
     prelude::*,
@@ -26,5 +26,19 @@ proptest! {
         let mut padded = bytes.clone();
         padded.resize((padded.len() + 3) & !3, 0);
         prop_assert_eq!(Checksum::compute(&bytes), Checksum::compute(&padded));
+    }
+
+
+    #[test]
+    fn head_checksum_is_independent_of_adjustment_bytes(
+        mut bytes in collection::vec(any::<u8>(), 12..4097),
+        first_adjustment in any::<u32>(),
+        second_adjustment in any::<u32>(),
+    ) {
+        bytes[8..12].copy_from_slice(&first_adjustment.to_be_bytes());
+        let first = Checksum::compute_for(Tag::new(*b"head"), &bytes);
+        bytes[8..12].copy_from_slice(&second_adjustment.to_be_bytes());
+        let second = Checksum::compute_for(Tag::new(*b"head"), &bytes);
+        prop_assert_eq!(first, second);
     }
 }
