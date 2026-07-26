@@ -3,7 +3,9 @@
 #[path = "support/cmap_format14.rs"]
 pub mod support;
 
-use glyphweave_sfnt::{ByteSpan, Cause, CmapCause, CmapFormat14};
+use glyphweave_sfnt::{
+    ByteSpan, Cause, CmapCause, CmapFormat14, VariationMapping, VariationSelector,
+};
 use support::{DefaultRange, encode_selector};
 
 #[test]
@@ -35,4 +37,38 @@ fn default_ranges_cannot_overlap_their_predecessor() {
         })
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(29, 4));
+}
+
+#[test]
+fn adjacent_default_ranges_remain_separately_compressed() {
+    let bytes = encode_selector(
+        0xfe0f,
+        &[
+            DefaultRange {
+                start: 0x4e00,
+                additional: 2,
+            },
+            DefaultRange {
+                start: 0x4e03,
+                additional: 0,
+            },
+        ],
+        &[],
+    );
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("adjacent ranges do not overlap");
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{4e02}', selector),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{4e03}', selector),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(decoded.variation_selector_map().default_range_count(), 2);
 }
