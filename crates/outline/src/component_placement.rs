@@ -34,3 +34,6 @@ pub enum ComponentPlacement {
         child: u16,
     },
 }
+
+#[cfg(test)]
+mod tests;
