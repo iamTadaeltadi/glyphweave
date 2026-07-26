@@ -66,3 +66,42 @@ fn decodes_format_1_exact_glyph_chained_rule() {
         [SubstitutionRecord::new(1, 7), SubstitutionRecord::new(0, 5),]
     );
 }
+
+#[test]
+fn decodes_format_2_independent_class_domains() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x4a, 0x00, 0x2c, 0x00, 0x36, // format, Coverage, classes
+        0x00, 0x42, 0x00, 0x03, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, // sets
+        0x00, 0x01, 0x00, 0x04, // one ChainSubClassRule
+        0x00, 0x02, 0x00, 0x02, 0x00, 0x01, // backtrack classes [2,1]
+        0x00, 0x03, 0x00, 0x02, 0x00, 0x00, // input classes [implicit 1,2,0]
+        0x00, 0x01, 0x00, 0x04, // lookahead class [4]
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x07, // action
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x02, // backtrack ClassDef
+        0x00, 0x01, 0x00, 0x03, 0x00, 0x03, 0x00, 0x01, 0x00, 0x02, // input ClassDef
+        0x00, 0x00, // input class zero
+        0x00, 0x01, 0x00, 0x09, 0x00, 0x01, 0x00, 0x04, // lookahead ClassDef
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x05, // Coverage
+    ];
+    let substitution =
+        ChainedContextSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap())
+            .unwrap();
+
+    let ChainedContextSubstitution::ClassRules {
+        coverage,
+        backtrack_classes,
+        input_classes,
+        lookahead_classes,
+        rules,
+    } = substitution
+    else {
+        panic!("format 2 must retain independent class domains");
+    };
+    assert_eq!(coverage.glyphs(), [GlyphId::new(3), GlyphId::new(5)]);
+    assert_eq!(backtrack_classes.class_of(GlyphId::new(2)), 2);
+    assert_eq!(input_classes.class_of(GlyphId::new(5)), 0);
+    assert_eq!(lookahead_classes.class_of(GlyphId::new(9)), 4);
+    assert_eq!(rules[0].backtrack(), [2, 1]);
+    assert_eq!(rules[0].input(), [1, 2, 0]);
+    assert_eq!(rules[0].lookahead(), [4]);
+}
