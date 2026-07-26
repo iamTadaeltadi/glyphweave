@@ -1,7 +1,9 @@
 //! Bounded parsing and eager resolution of format-4 segment arrays.
 
 use super::CmapFormat4;
-use crate::{ByteSpan, Cause, CharacterMap, Decoded, Diagnostic, GlyphId, Reader, Stage};
+use crate::{
+    ByteSpan, Cause, CharacterMap, CmapCause, Decoded, Diagnostic, GlyphId, Reader, Stage,
+};
 
 const FORMAT: u16 = 4;
 const MINIMUM_LENGTH: usize = 24;
@@ -50,7 +52,7 @@ fn decode_header(bytes: &[u8], offset: usize) -> Decoded<Header> {
     if format != FORMAT {
         return Err(failure(
             field_span(offset, 0, 2),
-            Cause::UnsupportedCmapFormat {
+            CmapCause::UnsupportedCmapFormat {
                 expected: FORMAT,
                 found: format,
             },
@@ -61,7 +63,7 @@ fn decode_header(bytes: &[u8], offset: usize) -> Decoded<Header> {
     if declared % 2 != 0 {
         return Err(failure(
             field_span(offset, 2, 2),
-            Cause::OddCmapLength { declared },
+            CmapCause::OddCmapLength { declared },
         ));
     }
     let declared_length = usize::from(declared);
@@ -76,7 +78,7 @@ fn decode_header(bytes: &[u8], offset: usize) -> Decoded<Header> {
     if encoded_segment_count == 0 || encoded_segment_count % 2 != 0 {
         return Err(failure(
             field_span(offset, 6, 2),
-            Cause::InvalidCmapSegmentCount {
+            CmapCause::InvalidCmapSegmentCount {
                 encoded: encoded_segment_count,
             },
         ));
@@ -87,7 +89,7 @@ fn decode_header(bytes: &[u8], offset: usize) -> Decoded<Header> {
     if actual_search != expected_search {
         return Err(failure(
             field_span(offset, 8, 6),
-            Cause::InvalidCmapSearchParameters {
+            CmapCause::InvalidCmapSearchParameters {
                 expected: expected_search,
                 actual: actual_search,
             },
@@ -105,7 +107,7 @@ fn decode_header(bytes: &[u8], offset: usize) -> Decoded<Header> {
     if reserved_pad != 0 {
         return Err(failure(
             field_span(reserved_pad_offset, 0, 2),
-            Cause::InvalidCmapReservedPad {
+            CmapCause::InvalidCmapReservedPad {
                 found: reserved_pad,
             },
         ));
@@ -142,7 +144,7 @@ fn decode_segments(bytes: &[u8], header: Header) -> Decoded<Vec<Segment>> {
         if start > end || previous_end.is_some_and(|preceding| start <= preceding) {
             return Err(failure(
                 start_span.join(end_span),
-                Cause::InvalidCmapSegment {
+                CmapCause::InvalidCmapSegment {
                     index,
                     start,
                     end,
@@ -164,14 +166,16 @@ fn decode_segments(bytes: &[u8], header: Header) -> Decoded<Vec<Segment>> {
         previous_end = Some(end);
     }
 
-    let final_segment = segments
-        .last()
-        .copied()
-        .ok_or_else(|| failure(header.span, Cause::InvalidCmapSegmentCount { encoded: 0 }))?;
+    let final_segment = segments.last().copied().ok_or_else(|| {
+        failure(
+            header.span,
+            CmapCause::InvalidCmapSegmentCount { encoded: 0 },
+        )
+    })?;
     if final_segment.start != u16::MAX || final_segment.end != u16::MAX {
         return Err(failure(
             final_segment.span,
-            Cause::InvalidCmapSentinelRange {
+            CmapCause::InvalidCmapSentinelRange {
                 start: final_segment.start,
                 end: final_segment.end,
             },
@@ -189,7 +193,7 @@ fn resolve_segments(bytes: &[u8], header: Header, segments: &[Segment]) -> Decod
                 if !glyph.is_notdef() {
                     return Err(failure(
                         source_span,
-                        Cause::InvalidCmapSentinel {
+                        CmapCause::InvalidCmapSentinel {
                             start: segment.start,
                             end: segment.end,
                             glyph,
@@ -204,7 +208,7 @@ fn resolve_segments(bytes: &[u8], header: Header, segments: &[Segment]) -> Decod
             let Some(scalar) = char::from_u32(u32::from(codepoint)) else {
                 return Err(failure(
                     source_span,
-                    Cause::CmapSurrogateMapping { codepoint, glyph },
+                    CmapCause::CmapSurrogateMapping { codepoint, glyph },
                 ));
             };
             character_map.insert(scalar, glyph);
@@ -244,7 +248,7 @@ fn resolve_glyph(
     let Some(target) = valid_target else {
         return Err(failure(
             segment.range_offset_span,
-            Cause::InvalidCmapRangeOffset {
+            CmapCause::InvalidCmapRangeOffset {
                 segment: segment.index,
                 codepoint,
                 target: target.unwrap_or(usize::MAX),
@@ -284,7 +288,7 @@ fn read_word(bytes: &[u8], offset: usize) -> Decoded<u16> {
 fn invalid_length(offset: usize, declared: u16, minimum: usize, available: usize) -> Diagnostic {
     failure(
         field_span(offset, 2, 2),
-        Cause::InvalidCmapLength {
+        CmapCause::InvalidCmapLength {
             declared,
             minimum,
             available,
@@ -292,8 +296,8 @@ fn invalid_length(offset: usize, declared: u16, minimum: usize, available: usize
     )
 }
 
-const fn failure(span: ByteSpan, cause: Cause) -> Diagnostic {
-    Diagnostic::at(Stage::Decode, span, cause)
+const fn failure(span: ByteSpan, cause: CmapCause) -> Diagnostic {
+    Diagnostic::at(Stage::Decode, span, Cause::Cmap(cause))
 }
 
 fn field_span(base: usize, relative: usize, length: usize) -> ByteSpan {

@@ -27,7 +27,7 @@ mod span;
 mod tag;
 mod version;
 
-pub use cause::Cause;
+pub use cause::{Cause, CmapCause};
 pub use character_map::CharacterMap;
 pub use checksum::Checksum;
 pub use cmap_format4::CmapFormat4;
