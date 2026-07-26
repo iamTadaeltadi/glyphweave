@@ -8,27 +8,27 @@ mod decode;
 
 /// A `ChainContextSubst` subtable in its exact-glyph, class, or Coverage predicate domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ChainedContextSubstitution {
+pub enum ChainedContextSubstitution<G = GlyphId> {
     /// Format 1 rules expanded with their Coverage-selected first input glyph.
-    GlyphRules(Vec<ContextRule<GlyphId>>),
+    GlyphRules(Vec<ContextRule<G>>),
     /// Format 2 rules retaining first-glyph Coverage and three Class Definitions.
     ClassRules {
         /// Glyphs eligible for the first input position.
-        coverage: Coverage,
+        coverage: Coverage<G>,
         /// Class assignments for backtrack predicates.
-        backtrack_classes: ClassDefinition,
+        backtrack_classes: ClassDefinition<G>,
         /// Class assignments for input predicates.
-        input_classes: ClassDefinition,
+        input_classes: ClassDefinition<G>,
         /// Class assignments for lookahead predicates.
-        lookahead_classes: ClassDefinition,
+        lookahead_classes: ClassDefinition<G>,
         /// Class rules in `ChainSubClassSet` and encoded preference order.
         rules: Vec<ContextRule<u16>>,
     },
     /// One format 3 rule with independent Coverage predicates at every position.
-    CoverageRule(ContextRule<Coverage>),
+    CoverageRule(ContextRule<Coverage<G>>),
 }
 
-impl ChainedContextSubstitution {
+impl<G> ChainedContextSubstitution<G> {
     /// Returns whether the subtable contains no rule that can invoke a nested Lookup.
     #[must_use]
     pub fn is_empty(&self) -> bool {

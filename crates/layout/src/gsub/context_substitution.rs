@@ -8,23 +8,23 @@ mod decode;
 
 /// A `ContextSubst` subtable represented in its exact-glyph, class, or Coverage predicate domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ContextSubstitution {
+pub enum ContextSubstitution<G = GlyphId> {
     /// Format 1 rules expanded with their Coverage-selected first glyph.
-    GlyphRules(Vec<ContextRule<GlyphId>>),
+    GlyphRules(Vec<ContextRule<G>>),
     /// Format 2 rules retaining first-glyph Coverage and one shared input Class Definition.
     ClassRules {
         /// Glyphs eligible for the first input position.
-        coverage: Coverage,
+        coverage: Coverage<G>,
         /// Class assignments used by every input predicate.
-        classes: ClassDefinition,
+        classes: ClassDefinition<G>,
         /// Class rules in `ClassSet` and encoded preference order.
         rules: Vec<ContextRule<u16>>,
     },
     /// One format 3 rule with an independent Coverage for each input position.
-    CoverageRule(ContextRule<Coverage>),
+    CoverageRule(ContextRule<Coverage<G>>),
 }
 
-impl ContextSubstitution {
+impl<G> ContextSubstitution<G> {
     /// Returns whether the subtable contains no rule that can invoke a nested Lookup.
     #[must_use]
     pub fn is_empty(&self) -> bool {
