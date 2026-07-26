@@ -3,6 +3,14 @@
 use core::fmt;
 
 /// A glyph index in an input font.
+///
+/// ```
+/// use glyphweave_sfnt::GlyphId;
+///
+/// let glyph = GlyphId::new(42);
+/// assert_eq!(glyph.raw(), 42);
+/// assert!(!glyph.is_notdef());
+/// ```
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GlyphId(u16);
 
