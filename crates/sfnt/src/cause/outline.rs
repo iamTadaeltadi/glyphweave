@@ -81,6 +81,11 @@ pub enum OutlineCause {
         /// The signed contour count read from the Glyph Header.
         number_of_contours: i16,
     },
+    /// A nonnegative contour count identifies a simple rather than a composite glyph.
+    SimpleGlyphForCompositeDecoder {
+        /// The signed contour count read from the Glyph Header.
+        number_of_contours: i16,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -208,6 +213,10 @@ impl OutlineCause {
             Self::CompositeGlyphForSimpleDecoder { number_of_contours } => write!(
                 f,
                 "simple glyph decoder received composite contour count {number_of_contours}"
+            ),
+            Self::SimpleGlyphForCompositeDecoder { number_of_contours } => write!(
+                f,
+                "composite glyph decoder received simple contour count {number_of_contours}"
             ),
             Self::InvalidGlyphBounds {
                 minimum_x,
