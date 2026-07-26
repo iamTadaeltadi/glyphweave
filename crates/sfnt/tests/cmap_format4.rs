@@ -19,6 +19,17 @@ fn minimal_words() -> Vec<u16> {
     ]
 }
 
+fn direct_delta_words() -> Vec<u16> {
+    vec![
+        4, 32, 7, 4, 4, 1, 0, // header
+        0x0043, 0xffff, // endCode
+        0,      // reservedPad
+        0x0041, 0xffff, // startCode
+        0xffc2, 1, // idDelta
+        0, 0, // idRangeOffset
+    ]
+}
+
 fn encode_words(words: &[u16]) -> Vec<u8> {
     let mut bytes = Vec::with_capacity(words.len() * 2);
     append_words(&mut bytes, words);
@@ -32,17 +43,7 @@ fn decode_words(words: &[u16]) -> glyphweave_sfnt::Decoded<CmapFormat4> {
 #[test]
 fn direct_delta_segments_resolve_at_an_absolute_offset() {
     let mut bytes = vec![0xaa, 0xbb, 0xcc];
-    append_words(
-        &mut bytes,
-        &[
-            4, 32, 7, 4, 4, 1, 0, // header
-            0x0043, 0xffff, // endCode
-            0,      // reservedPad
-            0x0041, 0xffff, // startCode
-            0xffc2, 1, // idDelta
-            0, 0, // idRangeOffset
-        ],
-    );
+    append_words(&mut bytes, &direct_delta_words());
 
     let decoded = CmapFormat4::decode(&bytes, 3).expect("valid direct format-4 subtable");
     assert_eq!(decoded.span(), ByteSpan::sized(3, 32).unwrap());
