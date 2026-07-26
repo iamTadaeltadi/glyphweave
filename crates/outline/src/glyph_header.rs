@@ -16,6 +16,17 @@ pub struct GlyphHeader {
 impl GlyphHeader {
     /// Decodes the common header at the start of one non-empty Glyph Byte Span.
     ///
+    /// ```
+    /// use glyphweave_outline::GlyphHeader;
+    /// use glyphweave_sfnt::ByteSpan;
+    ///
+    /// let bytes = [0; 10];
+    /// let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    /// let header = GlyphHeader::decode(&bytes, span)?;
+    /// assert_eq!(header.simple_contour_count(), Some(0));
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Returns a span-aware Diagnostic when the span is empty, out of bounds, shorter than the
