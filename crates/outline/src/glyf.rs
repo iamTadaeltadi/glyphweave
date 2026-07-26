@@ -19,6 +19,23 @@ impl Glyf {
     /// Empty intervals remain explicit, while non-empty descriptions are classified and fully
     /// decoded as simple or composite outlines.
     ///
+    /// ```
+    /// use glyphweave_outline::{Glyf, Loca};
+    /// use glyphweave_sfnt::{ByteSpan, GlyphId, LocaFormat};
+    ///
+    /// let bytes = [0; 4];
+    /// let loca = Loca::decode(
+    ///     &bytes,
+    ///     ByteSpan::sized(0, 4).unwrap(),
+    ///     ByteSpan::empty_at(4),
+    ///     1,
+    ///     LocaFormat::Short,
+    /// )?;
+    /// let glyf = Glyf::decode(&bytes, &loca)?;
+    /// assert!(glyf.outline(GlyphId::NOTDEF).unwrap().is_empty());
+    /// # Ok::<(), glyphweave_sfnt::Diagnostic>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Returns the first span-aware Diagnostic produced by an out-of-bounds table or malformed
