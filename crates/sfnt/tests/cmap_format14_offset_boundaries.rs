@@ -24,3 +24,22 @@ fn default_offset_cannot_target_selector_record_bytes() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(13, 4));
 }
+
+#[test]
+fn non_default_offset_must_locate_a_complete_count() {
+    let mut bytes = encode_selector(0xfe0f, &[], &[]);
+    bytes[17..21].copy_from_slice(&26_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("count crosses declared end");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14Offset {
+            selector: 0xfe0f,
+            kind: Cmap14TableKind::NonDefault,
+            offset: 26,
+            records_end: 21,
+            declared_length: 29,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(17, 4));
+}
