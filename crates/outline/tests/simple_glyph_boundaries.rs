@@ -87,3 +87,23 @@ fn flag_repeat_cannot_expand_past_the_point_count() {
         })
     );
 }
+
+#[test]
+fn reserved_simple_flag_bit_is_rejected_before_coordinates() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.push(0xb1);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic =
+        SimpleGlyph::decode(&bytes, span).expect_err("bit seven is reserved by OpenType");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(14, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::ReservedSimpleGlyphFlag {
+            point_index: 0,
+            flag: 0xb1,
+        })
+    );
+}
