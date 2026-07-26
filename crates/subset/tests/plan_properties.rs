@@ -1,5 +1,6 @@
 //! Deterministic properties for canonical Subset Plans.
 
+use glyphweave_outline::GlyphSet;
 use glyphweave_sfnt::{CharacterMap, FaceIndex, GlyphId, Tag};
 use glyphweave_subset::{CodepointSet, Retention, SubsetPlan};
 use proptest::{
@@ -74,5 +75,25 @@ proptest! {
             .unwrap_or_default();
         prop_assert_eq!(forward.retention(Tag::from_u32(query_tag)), expected_retention);
         prop_assert!(forward.retentions().all(|(_, action)| action.is_retained()));
+    }
+
+
+    #[test]
+    fn final_plans_derive_remaps_from_exact_retained_sets(
+        face in any::<u32>(),
+        requested in collection::btree_set(any::<char>(), 0..257),
+        retained in collection::btree_set(any::<u16>(), 0..1025),
+    ) {
+        let codepoints: CodepointSet = requested.iter().copied().collect();
+        let glyphs: GlyphSet = retained.iter().copied().map(GlyphId::new).collect();
+        let plan = SubsetPlan::new(FaceIndex::new(face), codepoints, glyphs.clone(), []);
+
+        prop_assert_eq!(plan.glyphs(), &glyphs);
+        prop_assert_eq!(plan.remap().len(), glyphs.len());
+        for glyph in &glyphs {
+            let new_glyph = plan.remap().new_glyph_id(glyph).unwrap();
+            prop_assert_eq!(plan.remap().glyph_id(new_glyph), Some(glyph));
+        }
+        prop_assert_eq!(plan.codepoints().iter().collect::<Vec<_>>(), requested.into_iter().collect::<Vec<_>>());
     }
 }
