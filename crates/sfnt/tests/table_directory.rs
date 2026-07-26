@@ -275,3 +275,33 @@ fn head_checksum_treats_adjustment_field_as_zero() {
         glyphweave_sfnt::Checksum::new(3)
     );
 }
+
+#[test]
+fn reports_truncated_directory_header_without_advancing() {
+    let diagnostic = TableDirectory::decode(&[0x00, 0x01, 0x00], 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 4,
+            available: 3,
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "0..3");
+}
+
+#[test]
+fn reports_truncated_table_record_field() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'c', b'm', b'a', b'p', 0, 0, // partial checksum
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 4,
+            available: 2,
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "16..18");
+}
