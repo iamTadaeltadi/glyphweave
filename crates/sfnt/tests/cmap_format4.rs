@@ -149,3 +149,19 @@ fn segment_count_encoding_must_be_positive_and_even() {
         assert_eq!(diagnostic.span(), ByteSpan::sized(6, 2));
     }
 }
+
+#[test]
+fn search_parameters_must_match_the_segment_count() {
+    let mut words = minimal_words();
+    words[4..7].copy_from_slice(&[4, 1, 2]);
+
+    let diagnostic = decode_words(&words).expect_err("search parameters are not derived");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapSearchParameters {
+            expected: [2, 0, 0],
+            actual: [4, 1, 2],
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(8, 6));
+}
