@@ -339,3 +339,17 @@ fn accepts_one_zero_composite_alignment_byte() {
 
     assert_eq!(glyph.component_count(), 1);
 }
+
+#[test]
+fn accepts_every_negative_composite_marker_boundary() {
+    for marker in [-2_i16, i16::MIN] {
+        let mut bytes = header().to_vec();
+        bytes[..2].copy_from_slice(&marker.to_be_bytes());
+        bytes.extend([0x00, 0x02, 0x00, 0x12, 0x00, 0x00]);
+        let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+        let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+        assert_eq!(glyph.components()[0].glyph_id().raw(), 18);
+    }
+}
