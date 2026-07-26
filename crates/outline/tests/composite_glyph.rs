@@ -328,3 +328,14 @@ fn preserves_the_maximal_composite_instruction_program() {
     assert_eq!(glyph.instructions().len(), usize::from(u16::MAX));
     assert!(glyph.instructions().iter().all(|&byte| byte == 0x2a));
 }
+
+#[test]
+fn accepts_one_zero_composite_alignment_byte() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x02, 0x00, 0x11, 0x00, 0x00, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.component_count(), 1);
+}
