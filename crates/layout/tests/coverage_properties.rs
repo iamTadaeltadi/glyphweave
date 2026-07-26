@@ -51,4 +51,23 @@ proptest! {
             prop_assert_eq!(coverage.glyph_at(index), Some(glyph));
         }
     }
+
+    #[test]
+    fn encoder_always_chooses_the_shortest_legal_format(
+        raw_glyphs in collection::vec(any::<u16>(), 0..257),
+    ) {
+        let coverage = Coverage::from_glyphs(raw_glyphs.into_iter().map(GlyphId::new));
+        let runs = coverage.glyphs().iter().copied().fold(
+            (0usize, None::<GlyphId>),
+            |(runs, previous), glyph| {
+                let continues = previous.and_then(|prior| prior.raw().checked_add(1))
+                    == Some(glyph.raw());
+                (runs + usize::from(!continues), Some(glyph))
+            },
+        ).0;
+        let format_2_size = 4 + 6 * runs;
+        let expected = u16::try_from(coverage.len())
+            .map_or(format_2_size, |_| format_2_size.min(4 + 2 * coverage.len()));
+        prop_assert_eq!(coverage.encode().len(), expected);
+    }
 }
