@@ -1,7 +1,7 @@
 //! Malformed-input boundaries for semantic GSUB decoding.
 
 use glyphweave_layout::SingleSubstitution;
-use glyphweave_sfnt::ByteSpan;
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTarget};
 
 #[test]
 fn every_strict_single_delta_prefix_is_rejected() {
@@ -27,4 +27,21 @@ fn every_strict_single_explicit_prefix_is_rejected() {
         let span = ByteSpan::between(0, end).unwrap();
         assert!(SingleSubstitution::decode(&valid[..end], span).is_err());
     }
+}
+
+#[test]
+fn single_coverage_cannot_target_its_header() {
+    let bytes = [0x00, 0x01, 0x00, 0x04, 0x00, 0x01];
+    let diagnostic =
+        SingleSubstitution::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::SubstitutionCoverage,
+            offset: 4,
+            minimum: 6,
+            container_length: 6,
+        })
+    );
 }
