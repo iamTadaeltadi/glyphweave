@@ -103,3 +103,13 @@ fn declared_length_must_hold_the_minimum_sentinel_arrays() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
 }
+
+#[test]
+fn declared_length_must_be_even() {
+    let mut words = minimal_words();
+    words[1] = 25;
+
+    let diagnostic = decode_words(&words).expect_err("format-4 words require even length");
+    assert_eq!(diagnostic.cause(), Cause::OddCmapLength { declared: 25 });
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
+}
