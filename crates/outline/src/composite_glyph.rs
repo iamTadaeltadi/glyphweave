@@ -26,4 +26,16 @@ impl CompositeGlyph {
     pub const fn bounds(&self) -> GlyphBounds {
         self.bounds
     }
+
+    /// Returns child components in source order.
+    #[must_use]
+    pub fn components(&self) -> &[Component] {
+        &self.components
+    }
+
+    /// Returns the number of direct child components.
+    #[must_use]
+    pub fn component_count(&self) -> usize {
+        self.components.len()
+    }
 }
