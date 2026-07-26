@@ -207,3 +207,23 @@ fn rejects_duplicate_face_directory_offsets() {
         }
     );
 }
+
+#[test]
+fn rejects_face_directory_inside_collection_header() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 4);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(12, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::FaceDirectoryOverlapsCollectionHeader {
+            index: FaceIndex::FIRST,
+            directory: ByteSpan::sized(4, 12).unwrap(),
+            header: ByteSpan::sized(0, 16).unwrap()
+        }
+    );
+}
