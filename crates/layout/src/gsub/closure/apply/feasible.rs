@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 
 use glyphweave_sfnt::GlyphId;
 
-use super::direct::{coverage_matches, coverages_match};
+use super::direct::coverages_match;
 use crate::{ClassDefinition, ContextRule, Coverage};
 
 pub(super) fn exact(rule: &ContextRule<GlyphId>, glyphs: &BTreeSet<GlyphId>) -> bool {
@@ -66,10 +66,6 @@ fn first_class_matches(
         .any(|&glyph| glyphs.contains(&glyph) && classes.class_of(glyph) == class)
 }
 
-fn class_matches(
-    classes: &ClassDefinition,
-    class: u16,
-    glyphs: &BTreeSet<GlyphId>,
-) -> bool {
+fn class_matches(classes: &ClassDefinition, class: u16, glyphs: &BTreeSet<GlyphId>) -> bool {
     glyphs.iter().any(|&glyph| classes.class_of(glyph) == class)
 }

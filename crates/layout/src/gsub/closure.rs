@@ -4,6 +4,9 @@ use std::collections::BTreeSet;
 
 use glyphweave_sfnt::GlyphId;
 
+mod apply;
+mod compute;
+
 /// The monotone fixed point reached from selected glyphs and root GSUB Lookups.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GsubClosure {
@@ -20,17 +23,19 @@ impl GsubClosure {
     }
 
     /// Iterates closed glyphs in ascending input Glyph ID order.
+    #[must_use]
     pub fn glyphs(&self) -> impl ExactSizeIterator<Item = GlyphId> + DoubleEndedIterator + '_ {
         self.glyphs.iter().copied()
     }
 
-    /// Returns whether an original LookupList index became reachable.
+    /// Returns whether an original `LookupList` index became reachable.
     #[must_use]
     pub fn contains_lookup(&self, index: u16) -> bool {
         self.lookups.contains(&index)
     }
 
-    /// Iterates reachable original LookupList indices in ascending order.
+    /// Iterates reachable original `LookupList` indices in ascending order.
+    #[must_use]
     pub fn lookup_indices(&self) -> impl ExactSizeIterator<Item = u16> + DoubleEndedIterator + '_ {
         self.lookups.iter().copied()
     }
