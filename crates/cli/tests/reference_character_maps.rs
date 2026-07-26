@@ -4,7 +4,7 @@ mod support;
 
 use glyphweave_sfnt::GlyphId;
 
-use support::reference_map::format4;
+use support::reference_map::{format4, format12};
 
 #[test]
 fn format_four_matches_the_fonttools_bmp_map() {
@@ -16,4 +16,24 @@ fn format_four_matches_the_fonttools_bmp_map() {
 
     assert_eq!(mappings, [(0x20, 1), (0x41, 2), (0x00c1, 4), (0x0301, 3)]);
     assert_eq!(format4().character_map().glyph_id('B'), GlyphId::NOTDEF);
+}
+
+#[test]
+fn format_twelve_matches_the_fonttools_full_repertoire_map() {
+    let mappings: Vec<_> = format12()
+        .character_map()
+        .iter()
+        .map(|(codepoint, glyph)| (u32::from(codepoint), glyph.raw()))
+        .collect();
+
+    assert_eq!(
+        mappings,
+        [
+            (0x20, 1),
+            (0x41, 2),
+            (0x00c1, 4),
+            (0x0301, 3),
+            (0x01f600, 5),
+        ]
+    );
 }
