@@ -55,6 +55,20 @@ fn decodes_mixed_outlines_in_glyph_id_order() {
 }
 
 #[test]
+fn glyf_iteration_pairs_ids_with_ordered_outlines() {
+    let (bytes, loca) = mixed_fixture();
+    let glyf = Glyf::decode(&bytes, &loca).unwrap();
+
+    let mut outlines = glyf.iter();
+
+    assert_eq!(outlines.len(), 3);
+    assert_eq!(outlines.next().unwrap().0, GlyphId::NOTDEF);
+    assert_eq!(outlines.next().unwrap().0, GlyphId::new(1));
+    assert_eq!(outlines.next().unwrap().0, GlyphId::new(2));
+    assert_eq!(outlines.next(), None);
+}
+
+#[test]
 fn eager_decode_rejects_a_malformed_later_glyph() {
     let mut bytes = vec![0, 0, 0, 5, 0, 6];
     bytes.extend([0; 10]);
