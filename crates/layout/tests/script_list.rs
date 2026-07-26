@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType Script Lists.
 
 use glyphweave_layout::ScriptList;
-use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, Tag};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, LayoutTarget, Tag};
 
 const ARAB: Tag = Tag::new(*b"arab");
 const LATN: Tag = Tag::new(*b"latn");
@@ -87,4 +87,34 @@ fn rejects_duplicate_script_tags() {
             tag: LATN,
         })
     );
+}
+
+#[test]
+fn rejects_script_target_inside_records() {
+    let bytes = [0x00, 0x01, b'l', b'a', b't', b'n', 0x00, 0x02];
+    let diagnostic =
+        ScriptList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(6, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::Script,
+            offset: 2,
+            minimum: 8,
+            container_length: 8,
+        })
+    );
+}
+
+#[test]
+fn accepts_exact_script_target_aliasing() {
+    let bytes = [
+        0x00, 0x02, b'a', b'r', b'a', b'b', 0x00, 0x0e, b'l', b'a', b't', b'n', 0x00, 0x0e, 0x00,
+        0x00, 0x00, 0x00,
+    ];
+    let list = ScriptList::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap();
+
+    assert_eq!(list.script(ARAB), list.script(LATN));
+    assert!(list.script(LATN).unwrap().is_empty());
 }
