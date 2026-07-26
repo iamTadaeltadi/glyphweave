@@ -97,3 +97,23 @@ fn closure_follows_transitive_component_edges() {
     );
     assert_eq!(closure.maximum_component_depth(), 2);
 }
+
+#[test]
+fn shared_subgraphs_are_memoized_without_losing_depth() {
+    let glyf = decode_graph(&[
+        Node::Empty,
+        Node::Simple,
+        Node::Composite(vec![1]),
+        Node::Composite(vec![1]),
+        Node::Composite(vec![2, 3]),
+    ]);
+    let initial: GlyphSet = [GlyphId::new(4)].into_iter().collect();
+
+    let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
+
+    assert_eq!(
+        closure.iter().map(GlyphId::raw).collect::<Vec<_>>(),
+        [0, 1, 2, 3, 4]
+    );
+    assert_eq!(closure.maximum_component_depth(), 2);
+}
