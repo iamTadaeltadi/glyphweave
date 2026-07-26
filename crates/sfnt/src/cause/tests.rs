@@ -51,6 +51,18 @@ fn signature_descriptor_failure_preserves_raw_fields() {
 }
 
 #[test]
+fn signature_position_failure_names_the_file_end() {
+    let cause = Cause::CollectionSignatureNotAtEnd {
+        signature: crate::ByteSpan::sized(40, 12).unwrap(),
+        font_length: 60,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "collection signature at 40..52 must end at file length 60"
+    );
+}
+
+#[test]
 fn unsupported_version_preserves_all_four_bytes() {
     let cause = Cause::UnsupportedSfntVersion { raw: 0x7472_7565 };
     assert_eq!(cause.to_string(), "unsupported SFNT version 0x74727565");
