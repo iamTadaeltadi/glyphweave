@@ -106,3 +106,24 @@ fn decodes_full_width_signed_coordinate_extremes() {
         GlyphBounds::new(i16::MIN, i16::MAX, i16::MIN, i16::MAX).unwrap()
     );
 }
+
+#[test]
+fn expands_the_maximal_point_count_without_narrowing() {
+    let mut bytes = Vec::new();
+    for value in [1i16, 0, 0, 0, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&u16::MAX.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    for _ in 0..256 {
+        bytes.extend_from_slice(&[0x39, u8::MAX]);
+    }
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.contour_ends(), [65_536]);
+    assert_eq!(glyph.points().len(), 65_536);
+    assert_eq!(glyph.points().first(), Some(&Point::new(0, 0, true)));
+    assert_eq!(glyph.points().last(), Some(&Point::new(0, 0, true)));
+}
