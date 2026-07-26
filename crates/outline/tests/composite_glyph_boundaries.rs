@@ -83,3 +83,18 @@ fn scaled_and_unscaled_offset_modes_conflict() {
         })
     );
 }
+
+#[test]
+fn first_component_must_use_an_offset() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("point alignment requires points from an earlier child");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(10, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::FirstCompositeComponentUsesPoints)
+    );
+}
