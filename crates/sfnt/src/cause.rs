@@ -46,6 +46,15 @@ pub enum Cause {
         /// The complete collection byte length.
         font_length: usize,
     },
+    /// Two Face Indices point to the same Table Directory.
+    DuplicateFaceDirectoryOffset {
+        /// The first Face Index using the offset.
+        first: crate::FaceIndex,
+        /// The later Face Index reusing the offset.
+        second: crate::FaceIndex,
+        /// The duplicated absolute byte offset.
+        offset: usize,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -169,6 +178,14 @@ impl fmt::Display for Cause {
             } => write!(
                 f,
                 "collection signature at {signature} must end at file length {font_length}"
+            ),
+            Self::DuplicateFaceDirectoryOffset {
+                first,
+                second,
+                offset,
+            } => write!(
+                f,
+                "face indices {first} and {second} share directory offset {offset}"
             ),
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
