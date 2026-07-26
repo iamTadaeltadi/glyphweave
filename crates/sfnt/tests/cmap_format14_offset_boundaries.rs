@@ -3,8 +3,10 @@
 #[path = "support/cmap_format14.rs"]
 pub mod support;
 
-use glyphweave_sfnt::{ByteSpan, Cause, Cmap14TableKind, CmapCause, CmapFormat14};
-use support::encode_selector;
+use glyphweave_sfnt::{
+    ByteSpan, Cause, Cmap14TableKind, CmapCause, CmapFormat14, VariationMapping, VariationSelector,
+};
+use support::{DefaultRange, NonDefaultMapping, encode_selector};
 
 #[test]
 fn default_offset_cannot_target_selector_record_bytes() {
@@ -78,4 +80,32 @@ fn non_default_mapping_count_cannot_exceed_target_capacity() {
         })
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
+}
+
+#[test]
+fn unreferenced_gap_before_target_tables_is_permitted() {
+    let mut bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x2764,
+            additional: 0,
+        }],
+        &[NonDefaultMapping {
+            base: 0x82a6,
+            glyph: 19,
+        }],
+    );
+    bytes.splice(21..21, [0xaa; 3]);
+    bytes[2..6].copy_from_slice(&41_u32.to_be_bytes());
+    bytes[13..17].copy_from_slice(&24_u32.to_be_bytes());
+    bytes[17..21].copy_from_slice(&32_u32.to_be_bytes());
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("offset layout can contain gaps");
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{2764}', selector),
+        Some(VariationMapping::Default)
+    );
 }
