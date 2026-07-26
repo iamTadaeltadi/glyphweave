@@ -76,3 +76,26 @@ fn glyf_span_must_be_in_bounds_before_offsets_are_resolved() {
         Cause::SpanOutOfBounds { end: 4, length: 3 }
     );
 }
+
+#[test]
+fn every_strict_prefix_of_a_valid_location_array_is_rejected() {
+    let bytes = [0, 0, 0, 2, 0xaa, 0xaa, 0xaa, 0xaa];
+    let glyf_span = ByteSpan::sized(4, 4).unwrap();
+
+    for length in 0..4 {
+        let table_span = ByteSpan::sized(0, length).unwrap();
+        let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 1, LocaFormat::Short)
+            .expect_err("a strict entry prefix cannot decode");
+
+        assert_eq!(diagnostic.span(), Some(table_span));
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::Outline(OutlineCause::InvalidLocaLength {
+                format: LocaFormat::Short,
+                glyph_count: 1,
+                expected: 4,
+                actual: length,
+            })
+        );
+    }
+}
