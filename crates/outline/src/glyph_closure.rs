@@ -10,6 +10,12 @@ pub struct GlyphClosure {
 }
 
 impl GlyphClosure {
+    /// Returns the number of retained Glyph IDs.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.glyphs.len()
+    }
+
     /// Borrows the complete retained Glyph Set.
     #[must_use]
     pub const fn glyphs(&self) -> &GlyphSet {
