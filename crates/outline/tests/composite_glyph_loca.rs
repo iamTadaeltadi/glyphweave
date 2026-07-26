@@ -1,7 +1,7 @@
 //! Cross-table integration from `loca` entries into composite decoding.
 
 use glyphweave_outline::{CompositeGlyph, Loca};
-use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LocaFormat};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LocaFormat, OutlineCause};
 
 #[test]
 fn decoded_loca_span_feeds_the_composite_decoder_without_rebasing() {
@@ -41,5 +41,22 @@ fn component_records_cannot_cross_a_loca_boundary() {
             needed: 2,
             available: 0,
         }
+    );
+}
+
+#[test]
+fn repeated_loca_offsets_have_no_composite_description() {
+    let bytes = [0; 4];
+    let loca_span = ByteSpan::sized(0, 4).unwrap();
+    let glyf_span = ByteSpan::empty_at(4);
+    let loca = Loca::decode(&bytes, loca_span, glyf_span, 1, LocaFormat::Short).unwrap();
+
+    let glyph_span = loca.glyph_span(GlyphId::NOTDEF).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, glyph_span)
+        .expect_err("an empty loca interval cannot hold components");
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::EmptyGlyphDescription)
     );
 }
