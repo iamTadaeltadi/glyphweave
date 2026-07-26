@@ -55,3 +55,6 @@ impl ComponentTransform {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
