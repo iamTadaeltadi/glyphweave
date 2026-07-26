@@ -7,6 +7,11 @@ use glyphweave_sfnt::{ByteSpan, Decoded};
 use crate::{GlyphBounds, Point};
 
 /// A decoded simple glyph with absolute points and exclusive contour ends.
+///
+/// Packed flag runs and coordinate deltas are fully expanded during decoding. Points remain in
+/// source contour order, each value in [`SimpleGlyph::contour_ends`] is the exclusive end of one
+/// non-empty contour, and [`SimpleGlyph::contours`] partitions the point array without copying it.
+/// The original instruction program is preserved as opaque TrueType bytecode.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SimpleGlyph {
     pub(crate) span: ByteSpan,
