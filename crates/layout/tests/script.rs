@@ -1,7 +1,7 @@
 //! Semantic decoding tests for OpenType Script tables.
 
 use glyphweave_layout::Script;
-use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, Tag};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutListKind, LayoutTarget, Tag};
 
 const DEU: Tag = Tag::new(*b"DEU ");
 const FRA: Tag = Tag::new(*b"FRA ");
@@ -84,6 +84,61 @@ fn rejects_duplicate_language_tags() {
         Cause::Layout(LayoutCause::DuplicateLayoutTag {
             list: LayoutListKind::Language,
             tag: DEU,
+        })
+    );
+}
+
+#[test]
+fn rejects_default_target_inside_language_records() {
+    let bytes = [
+        0x00, 0x04, 0x00, 0x01, b'D', b'E', b'U', b' ', 0x00, 0x0a, 0x00, 0x00,
+    ];
+    let diagnostic =
+        Script::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(0, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::DefaultLanguageSystem,
+            offset: 4,
+            minimum: 10,
+            container_length: 12,
+        })
+    );
+}
+
+#[test]
+fn rejects_null_named_language_target() {
+    let bytes = [0x00, 0x00, 0x00, 0x01, b'D', b'E', b'U', b' ', 0x00, 0x00];
+    let diagnostic =
+        Script::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(8, 10));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::LanguageSystem,
+            offset: 0,
+            minimum: 10,
+            container_length: 10,
+        })
+    );
+}
+
+#[test]
+fn rejects_named_target_at_container_end() {
+    let bytes = [0x00, 0x00, 0x00, 0x01, b'D', b'E', b'U', b' ', 0x00, 0x0a];
+    let diagnostic =
+        Script::decode(&bytes, ByteSpan::between(0, bytes.len()).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::LanguageSystem,
+            offset: 10,
+            minimum: 10,
+            container_length: 10,
         })
     );
 }
