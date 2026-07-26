@@ -32,3 +32,13 @@ fn sparse_inputs_receive_dense_sorted_outputs() {
         Some(NewGlyphId::new(3))
     );
 }
+
+#[test]
+fn discarded_and_out_of_range_ids_are_undefined() {
+    let glyphs: GlyphSet = [7, 400].into_iter().map(GlyphId::new).collect();
+    let remap = Remap::new(&glyphs);
+    assert_eq!(remap.new_glyph_id(GlyphId::new(1)), None);
+    assert_eq!(remap.new_glyph_id(GlyphId::new(401)), None);
+    assert_eq!(remap.glyph_id(NewGlyphId::new(3)), None);
+    assert_eq!(remap.glyph_id(NewGlyphId::new(u16::MAX)), None);
+}
