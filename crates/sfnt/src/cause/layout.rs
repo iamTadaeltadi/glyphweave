@@ -112,7 +112,7 @@ pub enum LayoutCause {
         /// The kind of structure being targeted.
         target: LayoutTarget,
         /// The stored relative Offset16.
-        offset: u16,
+        offset: u32,
         /// The first legal relative target byte.
         minimum: usize,
         /// The containing structure's byte length.
