@@ -1,7 +1,7 @@
 //! Integration coverage for family-aware semantic GSUB Lookup decoding.
 
 use glyphweave_layout::{GsubLookup, GsubSubtable, Lookup, LookupFlags};
-use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LayoutCause, LayoutTableKind};
 
 #[test]
 fn decodes_same_typed_subtables_in_lookup_order() {
@@ -32,4 +32,24 @@ fn decodes_same_typed_subtables_in_lookup_order() {
     };
     assert_eq!(first.replacement(GlyphId::new(3)), Some(GlyphId::new(4)));
     assert_eq!(second.replacement(GlyphId::new(7)), Some(GlyphId::new(9)));
+}
+
+#[test]
+fn rejects_positioning_lookup_before_subtable_dispatch() {
+    let lookup = Lookup::new(
+        LayoutTableKind::Positioning,
+        1,
+        LookupFlags::default(),
+        [ByteSpan::between(0, 2).unwrap()],
+    );
+    let diagnostic = GsubLookup::decode(&[0, 0], &lookup).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(0, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnexpectedLayoutTableKind {
+            expected: LayoutTableKind::Substitution,
+            actual: LayoutTableKind::Positioning,
+        })
+    );
 }
