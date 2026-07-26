@@ -1,6 +1,8 @@
 //! Deterministic generated OpenType Font Collections.
 
-use glyphweave_sfnt::{ByteSpan, CollectionVersion, Face, FaceIndex, FontCollection, SfntVersion};
+use glyphweave_sfnt::{
+    ByteSpan, Cause, CollectionVersion, Face, FaceIndex, FontCollection, SfntVersion,
+};
 use proptest::{
     collection,
     prelude::*,
@@ -113,5 +115,20 @@ proptest! {
     ) {
         let prefix_length = selector % generated.bytes.len();
         prop_assert!(FontCollection::decode(&generated.bytes[..prefix_length]).is_err());
+    }
+
+    #[test]
+    fn generated_collections_reject_missing_face_indices(
+        generated in generated_collection(),
+        extra in any::<u16>(),
+    ) {
+        let collection = FontCollection::decode(&generated.bytes).unwrap();
+        let missing = FaceIndex::new(u32::try_from(collection.len()).unwrap() + 1 + u32::from(extra));
+        let expected = Cause::FaceIndexOutOfBounds {
+            index: missing,
+            face_count: collection.len(),
+        };
+        prop_assert_eq!(collection.select(missing).unwrap_err().cause(), expected);
+        prop_assert_eq!(Face::select(&generated.bytes, missing).unwrap_err().cause(), expected);
     }
 }
