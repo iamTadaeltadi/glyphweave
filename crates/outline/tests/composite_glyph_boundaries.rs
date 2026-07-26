@@ -147,3 +147,21 @@ fn uniform_transform_coefficient_must_be_complete() {
         }
     );
 }
+
+#[test]
+fn both_axis_scale_coefficients_must_be_complete() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x42, 0x00, 0x01, 0x00, 0x00, 0x40, 0x00, 0x20]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("the vertical scale cannot be a partial F2DOT14 value");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(18, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
