@@ -6,6 +6,7 @@ use crate::{ClassDefinition, ContextRule, Coverage, SubstitutionRecord, rewrite_
 
 mod direct;
 mod ligature;
+mod reverse;
 
 pub(super) fn glyph(
     input: GlyphId,
