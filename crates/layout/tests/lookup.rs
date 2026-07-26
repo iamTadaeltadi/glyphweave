@@ -226,3 +226,15 @@ fn flattens_gpos_extension_lookup() {
     assert_eq!(lookup.lookup_type(), 2);
     assert_eq!(lookup.subtables(), [ByteSpan::between(16, 17).unwrap()]);
 }
+
+#[test]
+fn every_strict_lookup_prefix_is_rejected() {
+    let complete = [0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x08, 0xfe];
+    for end in 0..complete.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        assert!(
+            Lookup::decode(&complete, span, LayoutTableKind::Substitution).is_err(),
+            "strict prefix {end} decoded"
+        );
+    }
+}
