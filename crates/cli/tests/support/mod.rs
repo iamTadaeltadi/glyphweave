@@ -1,6 +1,8 @@
 #![allow(
     clippy::redundant_pub_crate,
-    reason = "integration fixtures are shared through a private support module"
+    dead_code,
+    reason = "each integration crate uses a different reference-fixture subset"
 )]
 
 pub(crate) mod reference_font;
+pub(crate) mod reference_map;
