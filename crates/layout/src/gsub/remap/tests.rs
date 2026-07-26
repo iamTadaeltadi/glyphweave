@@ -3,7 +3,8 @@ use glyphweave_sfnt::{GlyphId, NewGlyphId};
 use super::{chained, context, direct, ligature, reverse};
 use crate::{
     AlternateSubstitution, ChainedContextSubstitution, ClassDefinition, ContextRule,
-    ContextSubstitution, Coverage, LigatureRule, LigatureSubstitution, MultipleSubstitution,
+    ContextSubstitution, Coverage, GsubLookup, GsubLookupList, GsubSubtable, LigatureRule,
+    LigatureSubstitution, LookupFlags, MultipleSubstitution, RetainedGsub,
     ReverseChainSingleSubstitution, SingleSubstitution, SubstitutionRecord,
 };
 
@@ -188,4 +189,80 @@ fn every_chained_predicate_direction_uses_output_glyphs() {
     assert_eq!(rules[0].lookahead(), [3]);
     assert_eq!(coverages.backtrack()[0].glyphs(), [NewGlyphId::new(32)]);
     assert_eq!(coverages.lookahead()[0].glyphs(), [NewGlyphId::new(34)]);
+}
+
+#[test]
+fn retained_list_dispatches_every_supported_subtable() {
+    let subtables = vec![
+        GsubSubtable::Single(SingleSubstitution::from_mappings([(
+            GlyphId::new(1),
+            GlyphId::new(2),
+        )])),
+        GsubSubtable::Multiple(MultipleSubstitution::from_mappings([(
+            GlyphId::new(2),
+            vec![GlyphId::new(3)],
+        )])),
+        GsubSubtable::Alternate(AlternateSubstitution::from_alternates([(
+            GlyphId::new(3),
+            vec![GlyphId::new(4)],
+        )])),
+        GsubSubtable::Ligature(LigatureSubstitution::new([LigatureRule::new(
+            GlyphId::new(4),
+            GlyphId::new(5),
+            [],
+            GlyphId::new(6),
+        )])),
+        GsubSubtable::Context(ContextSubstitution::GlyphRules(vec![ContextRule::new(
+            GlyphId::new(7),
+            [],
+            [SubstitutionRecord::new(0, 0)],
+        )])),
+        GsubSubtable::ChainedContext(ChainedContextSubstitution::GlyphRules(vec![
+            ContextRule::new(GlyphId::new(8), [], [SubstitutionRecord::new(0, 0)]),
+        ])),
+        GsubSubtable::ReverseChainSingle(ReverseChainSingleSubstitution::new(
+            [],
+            SingleSubstitution::from_mappings([(GlyphId::new(9), GlyphId::new(10))]),
+            [],
+        )),
+    ];
+    let lookups = subtables
+        .into_iter()
+        .map(|subtable| {
+            GsubLookup::from_parts(
+                subtable.lookup_type(),
+                LookupFlags::default(),
+                vec![subtable],
+            )
+        })
+        .collect();
+    let retained = RetainedGsub {
+        lookups: GsubLookupList::from_lookups(lookups),
+    };
+
+    let remapped = retained
+        .remap(|glyph| Some(NewGlyphId::new(glyph.raw())))
+        .unwrap();
+    let types = remapped
+        .lookup_list()
+        .lookups()
+        .iter()
+        .map(|lookup| lookup.subtables()[0].lookup_type())
+        .collect::<Vec<_>>();
+
+    assert_eq!(types, [1, 2, 3, 4, 5, 6, 8]);
+    assert!(
+        remapped
+            .lookup_list()
+            .lookups()
+            .iter()
+            .all(|lookup| !lookup.is_empty())
+    );
+    assert!(
+        remapped
+            .lookup_list()
+            .lookups()
+            .iter()
+            .all(|lookup| !lookup.subtables()[0].is_empty())
+    );
 }
