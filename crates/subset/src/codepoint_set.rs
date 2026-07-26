@@ -49,6 +49,11 @@ impl CodepointSet {
         self.codepoints.remove(&codepoint)
     }
 
+    /// Retains only Unicode scalar values accepted by `predicate`.
+    pub fn retain(&mut self, predicate: impl FnMut(&char) -> bool) {
+        self.codepoints.retain(predicate);
+    }
+
     /// Visits requested Unicode scalar values in ascending numeric order.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = char> + DoubleEndedIterator + '_ {
