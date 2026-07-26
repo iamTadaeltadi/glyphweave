@@ -56,3 +56,16 @@ fn collection_canonicalizes_and_sorts_mappings() {
         [('A', GlyphId::new(3)), ('🦀', GlyphId::new(8))]
     );
 }
+
+#[test]
+fn retention_filters_by_scalar_and_glyph() {
+    let mut map: CharacterMap = [
+        ('A', GlyphId::new(1)),
+        ('B', GlyphId::new(2)),
+        ('β', GlyphId::new(3)),
+    ]
+    .into_iter()
+    .collect();
+    map.retain(|codepoint, glyph| codepoint.is_ascii() && glyph.raw() % 2 == 0);
+    assert_eq!(map.iter().collect::<Vec<_>>(), [('B', GlyphId::new(2))]);
+}

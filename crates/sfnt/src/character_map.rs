@@ -57,6 +57,12 @@ impl CharacterMap {
         self.mappings.remove(&codepoint)
     }
 
+    /// Retains only explicit mappings accepted by `predicate`.
+    pub fn retain(&mut self, mut predicate: impl FnMut(char, GlyphId) -> bool) {
+        self.mappings
+            .retain(|&codepoint, glyph| predicate(codepoint, *glyph));
+    }
+
     /// Visits explicit mappings in ascending Unicode scalar order.
     #[must_use]
     pub fn iter(
