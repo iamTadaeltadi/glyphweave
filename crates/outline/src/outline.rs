@@ -19,6 +19,15 @@ pub enum Outline {
 }
 
 impl Outline {
+    /// Borrows the decoded composite glyph when this outline references children.
+    #[must_use]
+    pub const fn as_composite(&self) -> Option<&CompositeGlyph> {
+        match self {
+            Self::Composite(glyph) => Some(glyph),
+            Self::Empty { .. } | Self::Simple(_) => None,
+        }
+    }
+
     /// Borrows the decoded simple glyph when this outline is direct.
     #[must_use]
     pub const fn as_simple(&self) -> Option<&SimpleGlyph> {
