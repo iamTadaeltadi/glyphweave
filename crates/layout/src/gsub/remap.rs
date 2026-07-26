@@ -5,6 +5,7 @@ use glyphweave_sfnt::{Decoded, GlyphId, LayoutCause, LayoutTableKind, NewGlyphId
 use crate::{ClassDefinition, ContextRule, Coverage, SubstitutionRecord, rewrite_error};
 
 mod direct;
+mod ligature;
 
 pub(super) fn glyph(
     input: GlyphId,
