@@ -18,14 +18,14 @@ mod encode;
 /// assert_eq!(coverage.coverage_index(GlyphId::new(8)), Some(1));
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct Coverage {
-    glyphs: Vec<GlyphId>,
+pub struct Coverage<G = GlyphId> {
+    glyphs: Vec<G>,
 }
 
-impl Coverage {
+impl<G: Copy + Ord> Coverage<G> {
     /// Builds canonical Coverage from arbitrary input order, removing duplicates.
     #[must_use]
-    pub fn from_glyphs(glyphs: impl IntoIterator<Item = GlyphId>) -> Self {
+    pub fn from_glyphs(glyphs: impl IntoIterator<Item = G>) -> Self {
         let mut glyphs: Vec<_> = glyphs.into_iter().collect();
         glyphs.sort_unstable();
         glyphs.dedup();
@@ -34,7 +34,7 @@ impl Coverage {
 
     /// Returns the covered glyphs in ascending Glyph ID order.
     #[must_use]
-    pub fn glyphs(&self) -> &[GlyphId] {
+    pub fn glyphs(&self) -> &[G] {
         &self.glyphs
     }
 
@@ -52,7 +52,7 @@ impl Coverage {
 
     /// Resolves a Glyph ID to its sequential Coverage Index.
     #[must_use]
-    pub fn coverage_index(&self, glyph: GlyphId) -> Option<u16> {
+    pub fn coverage_index(&self, glyph: G) -> Option<u16> {
         self.glyphs
             .binary_search(&glyph)
             .ok()
@@ -61,13 +61,13 @@ impl Coverage {
 
     /// Resolves a Coverage Index to its Glyph ID.
     #[must_use]
-    pub fn glyph_at(&self, coverage_index: u16) -> Option<GlyphId> {
+    pub fn glyph_at(&self, coverage_index: u16) -> Option<G> {
         self.glyphs.get(usize::from(coverage_index)).copied()
     }
 }
 
-impl FromIterator<GlyphId> for Coverage {
-    fn from_iter<T: IntoIterator<Item = GlyphId>>(iter: T) -> Self {
+impl<G: Copy + Ord> FromIterator<G> for Coverage<G> {
+    fn from_iter<T: IntoIterator<Item = G>>(iter: T) -> Self {
         Self::from_glyphs(iter)
     }
 }
