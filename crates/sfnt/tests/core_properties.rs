@@ -62,4 +62,19 @@ proptest! {
         prop_assert_eq!(first.overlaps(second), expected_overlap);
         prop_assert_eq!(first.overlaps(second), second.overlaps(first));
     }
+
+    #[test]
+    fn sized_span_construction_matches_checked_addition(
+        start in any::<usize>(),
+        length in any::<usize>(),
+    ) {
+        match (start.checked_add(length), ByteSpan::sized(start, length)) {
+            (Some(end), Some(span)) => {
+                prop_assert_eq!((span.start(), span.end()), (start, end));
+                prop_assert_eq!(span.length(), length);
+            }
+            (None, None) => {}
+            pair => prop_assert!(false, "construction mismatch: {pair:?}"),
+        }
+    }
 }
