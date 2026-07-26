@@ -143,6 +143,31 @@ fn eager_decode_propagates_simple_body_failures() {
 }
 
 #[test]
+fn eager_decode_propagates_composite_body_failures() {
+    let mut bytes = vec![0, 0, 0, 5];
+    bytes.extend([0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0]);
+    let loca = Loca::decode(
+        &bytes,
+        ByteSpan::sized(0, 4).unwrap(),
+        ByteSpan::sized(4, 10).unwrap(),
+        1,
+        LocaFormat::Short,
+    )
+    .unwrap();
+
+    let diagnostic = Glyf::decode(&bytes, &loca).unwrap_err();
+
+    assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(14)));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 0,
+        }
+    );
+}
+
+#[test]
 fn eager_decode_reports_the_lowest_malformed_glyph_first() {
     let mut bytes = vec![0, 0, 0, 1, 0, 3];
     bytes.extend([0, 0]);
