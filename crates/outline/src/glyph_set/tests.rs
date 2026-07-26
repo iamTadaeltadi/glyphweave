@@ -18,3 +18,13 @@ fn borrowed_iteration_is_exact_and_double_ended() {
     assert_eq!(iter.next_back(), Some(GlyphId::NOTDEF));
     assert_eq!(iter.next(), None);
 }
+
+#[test]
+fn insertion_reports_new_membership() {
+    let mut glyphs = GlyphSet::new();
+    assert!(glyphs.insert(GlyphId::new(9)));
+    assert!(!glyphs.insert(GlyphId::new(9)));
+    assert!(!glyphs.insert(GlyphId::NOTDEF));
+    assert!(glyphs.contains(GlyphId::new(9)));
+    assert_eq!(glyphs.len(), 2);
+}
