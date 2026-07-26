@@ -114,3 +114,18 @@ fn overlap_marker_is_valid_only_on_the_first_component() {
         Cause::Outline(OutlineCause::MisplacedCompositeOverlapFlag { component_index: 1 })
     );
 }
+
+#[test]
+fn every_strict_prefix_of_a_complete_composite_is_rejected() {
+    let mut complete = header(-1);
+    complete.extend([0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0xff, 0xff]);
+
+    for length in 1..complete.len() {
+        let span = ByteSpan::sized(0, length).unwrap();
+        let diagnostic = CompositeGlyph::decode(&complete[..length], span)
+            .expect_err("every encoded composite field must fit inside the glyph span");
+
+        assert!(matches!(diagnostic.cause(), Cause::UnexpectedEnd { .. }));
+        assert_eq!(diagnostic.span().unwrap().end(), length);
+    }
+}
