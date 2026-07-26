@@ -4,6 +4,8 @@ use glyphweave_sfnt::Tag;
 
 use crate::LanguageSystem;
 
+mod decode;
+
 /// One Script table's default and tag-keyed language systems.
 ///
 /// Language systems are held in sorted, unique Tag order because the OpenType Script table
