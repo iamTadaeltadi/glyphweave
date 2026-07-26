@@ -142,3 +142,27 @@ fn preserves_the_maximal_instruction_program() {
     assert!(glyph.instructions().iter().all(|byte| *byte == 0xa5));
     assert!(glyph.points().is_empty());
 }
+
+#[test]
+fn decodes_the_maximal_simple_contour_count() {
+    let mut bytes = Vec::new();
+    for value in [i16::MAX, 0, 0, 0, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    for end_point in 0..u16::try_from(i16::MAX).unwrap() {
+        bytes.extend_from_slice(&end_point.to_be_bytes());
+    }
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    for _ in 0..127 {
+        bytes.extend_from_slice(&[0x39, u8::MAX]);
+    }
+    bytes.extend_from_slice(&[0x39, 254]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(glyph.contour_count(), usize::try_from(i16::MAX).unwrap());
+    assert_eq!(glyph.contour_ends().first(), Some(&1));
+    assert_eq!(glyph.contour_ends().last(), Some(&32_767));
+    assert_eq!(glyph.points().len(), 32_767);
+}
