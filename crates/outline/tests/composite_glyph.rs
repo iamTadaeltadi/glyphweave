@@ -40,3 +40,24 @@ fn decodes_an_identity_component_at_an_absolute_span() {
     assert!(glyph.instructions().is_empty());
     assert!(!glyph.has_overlapping_components());
 }
+
+#[test]
+fn preserves_full_width_signed_component_offsets() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x03, 0xff, 0xff]);
+    bytes.extend(i16::MIN.to_be_bytes());
+    bytes.extend(i16::MAX.to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.components()[0].placement(),
+        ComponentPlacement::Offset {
+            x: i16::MIN,
+            y: i16::MAX,
+            round_to_grid: false,
+            mode: ComponentOffsetMode::Default,
+        }
+    );
+}
