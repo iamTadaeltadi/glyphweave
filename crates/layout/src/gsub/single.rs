@@ -4,6 +4,7 @@ use std::collections::BTreeMap;
 
 use glyphweave_sfnt::GlyphId;
 
+mod decode;
 /// An input-ordered map replacing one glyph with one glyph.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SingleSubstitution {
