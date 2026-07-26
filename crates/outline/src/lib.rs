@@ -6,6 +6,7 @@
 #![forbid(unsafe_code)]
 
 mod glyph_bounds;
+mod glyph_header;
 mod glyph_set;
 mod loca;
 mod point;
@@ -13,6 +14,7 @@ mod remap;
 mod simple_glyph;
 
 pub use glyph_bounds::GlyphBounds;
+pub use glyph_header::GlyphHeader;
 pub use glyph_set::GlyphSet;
 pub use loca::Loca;
 pub use point::Point;
