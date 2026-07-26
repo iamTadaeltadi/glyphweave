@@ -86,6 +86,13 @@ pub enum OutlineCause {
         /// The signed contour count read from the Glyph Header.
         number_of_contours: i16,
     },
+    /// A composite component flag word sets a reserved bit.
+    ReservedCompositeGlyphFlags {
+        /// The zero-based component index.
+        component_index: u32,
+        /// The complete offending flag word.
+        flags: u16,
+    },
     /// The Glyph Header records an inverted bounding axis.
     InvalidGlyphBounds {
         /// The recorded minimum horizontal coordinate.
@@ -217,6 +224,13 @@ impl OutlineCause {
             Self::SimpleGlyphForCompositeDecoder { number_of_contours } => write!(
                 f,
                 "composite glyph decoder received simple contour count {number_of_contours}"
+            ),
+            Self::ReservedCompositeGlyphFlags {
+                component_index,
+                flags,
+            } => write!(
+                f,
+                "composite component {component_index} sets reserved flags in {flags:#06x}"
             ),
             Self::InvalidGlyphBounds {
                 minimum_x,
