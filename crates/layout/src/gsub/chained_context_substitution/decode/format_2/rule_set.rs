@@ -1,4 +1,4 @@
-//! Decoding for one class-indexed ChainSubClassSet.
+//! Decoding for one class-indexed `ChainSubClassSet`.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutCause, LayoutTarget, Reader};
 

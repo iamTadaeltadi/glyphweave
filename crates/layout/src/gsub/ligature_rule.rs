@@ -32,7 +32,7 @@ impl LigatureRule {
         &self.components
     }
 
-    /// Returns the first component used to select the source LigatureSet.
+    /// Returns the first component used to select the source `LigatureSet`.
     #[must_use]
     pub fn first(&self) -> GlyphId {
         self.components[0]

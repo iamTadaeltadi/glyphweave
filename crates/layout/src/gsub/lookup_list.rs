@@ -4,7 +4,7 @@ use glyphweave_sfnt::{Decoded, LayoutCause, LayoutTableKind};
 
 use crate::{GsubLookup, LookupList, layout_error};
 
-/// Semantic GSUB Lookups in stable LookupList index order.
+/// Semantic GSUB Lookups in stable `LookupList` index order.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct GsubLookupList {
     lookups: Vec<GsubLookup>,
@@ -32,7 +32,7 @@ impl GsubLookupList {
         Ok(Self { lookups })
     }
 
-    /// Returns a Lookup by its original zero-based LookupList index.
+    /// Returns a Lookup by its original zero-based `LookupList` index.
     #[must_use]
     pub fn lookup(&self, index: u16) -> Option<&GsubLookup> {
         self.lookups.get(usize::from(index))

@@ -6,7 +6,7 @@ use crate::{ClassDefinition, ContextRule, Coverage};
 
 mod decode;
 
-/// A ContextSubst subtable represented in its exact-glyph, class, or Coverage predicate domain.
+/// A `ContextSubst` subtable represented in its exact-glyph, class, or Coverage predicate domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ContextSubstitution {
     /// Format 1 rules expanded with their Coverage-selected first glyph.
@@ -17,7 +17,7 @@ pub enum ContextSubstitution {
         coverage: Coverage,
         /// Class assignments used by every input predicate.
         classes: ClassDefinition,
-        /// Class rules in ClassSet and encoded preference order.
+        /// Class rules in `ClassSet` and encoded preference order.
         rules: Vec<ContextRule<u16>>,
     },
     /// One format 3 rule with an independent Coverage for each input position.

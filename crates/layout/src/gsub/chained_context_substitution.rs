@@ -6,7 +6,7 @@ use crate::{ClassDefinition, ContextRule, Coverage};
 
 mod decode;
 
-/// A ChainContextSubst subtable in its exact-glyph, class, or Coverage predicate domain.
+/// A `ChainContextSubst` subtable in its exact-glyph, class, or Coverage predicate domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ChainedContextSubstitution {
     /// Format 1 rules expanded with their Coverage-selected first input glyph.
@@ -21,7 +21,7 @@ pub enum ChainedContextSubstitution {
         input_classes: ClassDefinition,
         /// Class assignments for lookahead predicates.
         lookahead_classes: ClassDefinition,
-        /// Class rules in ChainSubClassSet and encoded preference order.
+        /// Class rules in `ChainSubClassSet` and encoded preference order.
         rules: Vec<ContextRule<u16>>,
     },
     /// One format 3 rule with independent Coverage predicates at every position.

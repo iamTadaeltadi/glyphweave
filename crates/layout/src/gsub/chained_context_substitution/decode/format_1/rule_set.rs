@@ -1,4 +1,4 @@
-//! Decoding for one Coverage-indexed ChainSubRuleSet.
+//! Decoding for one Coverage-indexed `ChainSubRuleSet`.
 
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTarget, Reader};
 
