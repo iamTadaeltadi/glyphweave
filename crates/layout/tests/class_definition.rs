@@ -138,3 +138,34 @@ fn rejects_overlapping_class_ranges() {
         })
     );
 }
+
+#[test]
+fn encodes_sparse_classes_as_a_dense_array() {
+    let classes = ClassDefinition::from_assignments([(GlyphId::new(2), 1), (GlyphId::new(4), 7)]);
+    assert_eq!(
+        classes.encode(),
+        [
+            0x00, 0x01, // format
+            0x00, 0x02, // startGlyphID
+            0x00, 0x03, // glyphCount
+            0x00, 0x01, 0x00, 0x00, 0x00, 0x07,
+        ]
+    );
+}
+
+#[test]
+fn class_format_ties_prefer_format_1() {
+    let classes = ClassDefinition::from_assignments([(GlyphId::new(5), 3), (GlyphId::new(6), 3)]);
+    assert_eq!(
+        classes.encode(),
+        [0x00, 0x01, 0x00, 0x05, 0x00, 0x02, 0x00, 0x03, 0x00, 0x03]
+    );
+}
+
+#[test]
+fn empty_class_definition_encodes_as_format_2() {
+    assert_eq!(
+        ClassDefinition::default().encode(),
+        [0x00, 0x02, 0x00, 0x00]
+    );
+}
