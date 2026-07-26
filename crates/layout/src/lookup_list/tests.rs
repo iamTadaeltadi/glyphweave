@@ -19,6 +19,7 @@ fn preserves_lookup_index_order() {
     assert_eq!(list.lookup(1).unwrap().lookup_type(), 1);
     assert_eq!(list.lookup(2), None);
     assert_eq!(list.table(), LayoutTableKind::Substitution);
+    assert_eq!(list.lookups().len(), 2);
 }
 
 #[test]
