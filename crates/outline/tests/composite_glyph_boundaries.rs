@@ -239,3 +239,18 @@ fn more_components_requires_another_complete_flag_word() {
         }
     );
 }
+
+#[test]
+fn optional_composite_alignment_byte_must_be_zero() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x7f]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic =
+        CompositeGlyph::decode(&bytes, span).expect_err("nonzero data is not an alignment byte");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::InvalidCompositeGlyphPadding { value: 0x7f })
+    );
+}
