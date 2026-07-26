@@ -515,3 +515,24 @@ fn rejects_missing_collection_face_index() {
         }
     );
 }
+
+#[test]
+fn rejects_malformed_unselected_face() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 32);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+    push_empty_directory(&mut bytes, u32::from_be_bytes(*b"BAD!"));
+
+    let diagnostic = Face::select(&bytes, FaceIndex::FIRST).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(32, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnsupportedSfntVersion {
+            raw: u32::from_be_bytes(*b"BAD!")
+        }
+    );
+}
