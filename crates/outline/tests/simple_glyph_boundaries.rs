@@ -46,3 +46,23 @@ fn contour_end_points_must_increase_strictly() {
         })
     );
 }
+
+#[test]
+fn instruction_program_cannot_cross_the_glyph_span() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&2u16.to_be_bytes());
+    bytes.push(0xb0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("the declared two-byte instruction program is truncated");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(14, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1
+        }
+    );
+}
