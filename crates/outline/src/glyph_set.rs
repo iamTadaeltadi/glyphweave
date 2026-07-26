@@ -69,6 +69,20 @@ impl Default for GlyphSet {
     }
 }
 
+impl Extend<GlyphId> for GlyphSet {
+    fn extend<T: IntoIterator<Item = GlyphId>>(&mut self, glyphs: T) {
+        self.glyphs.extend(glyphs);
+    }
+}
+
+impl FromIterator<GlyphId> for GlyphSet {
+    fn from_iter<T: IntoIterator<Item = GlyphId>>(glyphs: T) -> Self {
+        let mut set = Self::new();
+        set.extend(glyphs);
+        set
+    }
+}
+
 impl<'a> IntoIterator for &'a GlyphSet {
     type Item = GlyphId;
     type IntoIter = std::iter::Copied<std::collections::btree_set::Iter<'a, GlyphId>>;
