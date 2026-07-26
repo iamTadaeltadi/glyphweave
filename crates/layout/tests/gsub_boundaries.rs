@@ -332,3 +332,26 @@ fn ligature_set_count_must_match_coverage() {
         })
     );
 }
+
+#[test]
+fn ligature_set_cannot_target_lookup_header() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x06,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+    ];
+    let diagnostic = LigatureSubstitution::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLayoutOffset {
+            target: LayoutTarget::LigatureSet,
+            offset: 6,
+            minimum: 8,
+            container_length: 14,
+        })
+    );
+}
