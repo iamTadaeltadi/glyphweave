@@ -123,3 +123,14 @@ fn reserved_padding_word_must_be_zero() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 2));
 }
+
+#[test]
+fn every_strict_prefix_of_a_valid_subtable_is_rejected() {
+    let bytes = encode_words(&minimal_words());
+    for length in 0..bytes.len() {
+        assert!(
+            CmapFormat4::decode(&bytes[..length], 0).is_err(),
+            "prefix of {length} bytes unexpectedly decoded"
+        );
+    }
+}
