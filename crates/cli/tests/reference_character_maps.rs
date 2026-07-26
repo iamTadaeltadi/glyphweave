@@ -33,7 +33,7 @@ fn format_twelve_matches_the_fonttools_full_repertoire_map() {
             (0x41, 2),
             (0x00c1, 4),
             (0x0301, 3),
-            (0x01f600, 5),
+            (0x0001_f600, 5),
         ]
     );
 }
