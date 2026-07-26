@@ -5,13 +5,19 @@ use crate::cause::Cause;
 use crate::search::{MAX_TABLES, SearchParameters};
 use crate::{ByteSpan, Checksum, Decoded, Diagnostic, Reader, SfntVersion, Stage};
 
+fn field_span(base: usize, relative: usize, length: usize) -> ByteSpan {
+    base.checked_add(relative)
+        .and_then(|start| ByteSpan::sized(start, length))
+        .unwrap_or_else(|| ByteSpan::empty_at(base))
+}
+
 pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
     let mut reader = Reader::at(bytes, offset)?;
     let raw_version = reader.u32()?;
     let version = SfntVersion::from_raw(raw_version).ok_or_else(|| {
         Diagnostic::at(
             Stage::Decode,
-            ByteSpan::sized(offset, 4).unwrap_or_else(|| ByteSpan::empty_at(offset)),
+            field_span(offset, 0, 4),
             Cause::UnsupportedSfntVersion { raw: raw_version },
         )
     })?;
@@ -20,7 +26,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
     let expected = SearchParameters::derive(table_count).ok_or_else(|| {
         Diagnostic::at(
             Stage::Decode,
-            ByteSpan::sized(offset + 4, 2).unwrap_or_else(|| ByteSpan::empty_at(offset + 4)),
+            field_span(offset, 4, 2),
             Cause::UnrepresentableTableCount {
                 count: table_count,
                 maximum: MAX_TABLES,
@@ -35,7 +41,7 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
     if actual != expected {
         return Err(Diagnostic::at(
             Stage::Decode,
-            ByteSpan::sized(offset + 6, 6).unwrap_or_else(|| ByteSpan::empty_at(offset + 6)),
+            field_span(offset, 6, 6),
             Cause::InvalidSearchParameters {
                 expected: expected.into_array(),
                 actual: actual.into_array(),
@@ -153,8 +159,7 @@ fn decode_record(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<TableRecord> 
     if offset % 4 != 0 {
         return Err(Diagnostic::at(
             Stage::Decode,
-            ByteSpan::sized(record_start + 8, 4)
-                .unwrap_or_else(|| ByteSpan::empty_at(record_start + 8)),
+            field_span(record_start, 8, 4),
             Cause::MisalignedTable { tag, offset },
         ));
     }
@@ -182,4 +187,16 @@ fn decode_record(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<TableRecord> 
         directory_span: ByteSpan::sized(record_start, 16)
             .unwrap_or_else(|| ByteSpan::empty_at(record_start)),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::field_span;
+
+    #[test]
+    fn field_span_never_wraps_address_space() {
+        let span = field_span(usize::MAX, 1, 4);
+        assert!(span.is_empty());
+        assert_eq!(span.start(), usize::MAX);
+    }
 }
