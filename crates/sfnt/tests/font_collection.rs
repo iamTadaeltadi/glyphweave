@@ -391,3 +391,33 @@ fn rejects_partially_overlapping_tables_across_faces() {
         }
     );
 }
+
+#[test]
+fn permits_exact_table_sharing_across_faces() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 48);
+    for _ in 0..2 {
+        push_u32(&mut bytes, 0x0001_0000);
+        push_u16(&mut bytes, 1);
+        push_u16(&mut bytes, 16);
+        push_u16(&mut bytes, 0);
+        push_u16(&mut bytes, 0);
+        bytes.extend_from_slice(b"name");
+        push_u32(&mut bytes, 0);
+        push_u32(&mut bytes, 76);
+        push_u32(&mut bytes, 8);
+    }
+    bytes.extend_from_slice(&[0; 8]);
+
+    let collection = FontCollection::decode(&bytes).unwrap();
+    let first = collection.face(FaceIndex::new(0)).unwrap();
+    let second = collection.face(FaceIndex::new(1)).unwrap();
+    assert_eq!(
+        first.record(Tag::new(*b"name")).unwrap().table_span(),
+        second.record(Tag::new(*b"name")).unwrap().table_span()
+    );
+}
