@@ -2,6 +2,17 @@
 
 use glyphweave_sfnt::{Cause, SfntVersion, TableDirectory, Tag};
 
+fn directory_with_tags(first: [u8; 4], second: [u8; 4]) -> Vec<u8> {
+    let mut bytes = vec![0x00, 0x01, 0x00, 0x00, 0, 2, 0, 32, 0, 1, 0, 0];
+    for tag in [first, second] {
+        bytes.extend_from_slice(&tag);
+        bytes.extend_from_slice(&0_u32.to_be_bytes());
+        bytes.extend_from_slice(&44_u32.to_be_bytes());
+        bytes.extend_from_slice(&0_u32.to_be_bytes());
+    }
+    bytes
+}
+
 #[test]
 fn decodes_empty_truetype_directory() {
     let bytes = [
@@ -140,4 +151,31 @@ fn rejects_non_trailing_space_inside_table_tag() {
         }
     );
     assert_eq!(diagnostic.span().unwrap().to_string(), "12..16");
+}
+
+#[test]
+fn rejects_duplicate_table_tags() {
+    let bytes = directory_with_tags(*b"cmap", *b"cmap");
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::DuplicateTableTag {
+            tag: Tag::new(*b"cmap")
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "28..32");
+}
+
+#[test]
+fn rejects_descending_table_tags() {
+    let bytes = directory_with_tags(*b"head", *b"cmap");
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnsortedTableTags {
+            previous: Tag::new(*b"head"),
+            current: Tag::new(*b"cmap"),
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "28..32");
 }
