@@ -72,3 +72,9 @@ impl ClassDefinition {
         self.classes.values().copied().max().unwrap_or(0)
     }
 }
+
+impl FromIterator<(GlyphId, u16)> for ClassDefinition {
+    fn from_iter<T: IntoIterator<Item = (GlyphId, u16)>>(iter: T) -> Self {
+        Self::from_assignments(iter)
+    }
+}
