@@ -27,6 +27,10 @@ pub(crate) fn subset_unicode(tool: &str, codepoint: u32) -> Option<Vec<u8>> {
     subset_with(tool, format!("--unicodes=U+{codepoint:X}"))
 }
 
+pub(crate) fn subset_text(tool: &str, text: &str) -> Option<Vec<u8>> {
+    subset_with(tool, format!("--text={text}"))
+}
+
 fn subset_with(tool: &str, selection: String) -> Option<Vec<u8>> {
     let output_path = std::env::temp_dir().join(format!(
         "glyphweave-{tool}-{}-subset.ttf",
