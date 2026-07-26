@@ -1,9 +1,10 @@
 use glyphweave_sfnt::{GlyphId, NewGlyphId};
 
-use super::{direct, ligature, reverse};
+use super::{context, direct, ligature, reverse};
 use crate::{
-    AlternateSubstitution, Coverage, LigatureRule, LigatureSubstitution, MultipleSubstitution,
-    ReverseChainSingleSubstitution, SingleSubstitution,
+    AlternateSubstitution, ClassDefinition, ContextRule, ContextSubstitution, Coverage,
+    LigatureRule, LigatureSubstitution, MultipleSubstitution, ReverseChainSingleSubstitution,
+    SingleSubstitution, SubstitutionRecord,
 };
 
 #[test]
@@ -68,4 +69,56 @@ fn ligature_and_reverse_context_order_survive_remapping() {
         Some(NewGlyphId::new(17))
     );
     assert_eq!(reverse.lookahead()[0].glyphs(), [NewGlyphId::new(14)]);
+}
+
+#[test]
+fn every_contextual_predicate_domain_uses_output_glyphs() {
+    let glyphs = ContextSubstitution::GlyphRules(vec![ContextRule::new(
+        GlyphId::new(3),
+        [GlyphId::new(4)],
+        [SubstitutionRecord::new(1, 7)],
+    )]);
+    let classes = ContextSubstitution::ClassRules {
+        coverage: Coverage::from_glyphs([GlyphId::new(3)]),
+        classes: ClassDefinition::from_assignments([(GlyphId::new(3), 1), (GlyphId::new(4), 2)]),
+        rules: vec![ContextRule::new(1, [2], [SubstitutionRecord::new(0, 8)])],
+    };
+    let coverages = ContextSubstitution::CoverageRule(ContextRule::new(
+        Coverage::from_glyphs([GlyphId::new(3), GlyphId::new(5)]),
+        [Coverage::from_glyphs([GlyphId::new(4)])],
+        [SubstitutionRecord::new(0, 9)],
+    ));
+    let mut mapping = |glyph: GlyphId| Some(NewGlyphId::new(glyph.raw() + 20));
+
+    let ContextSubstitution::GlyphRules(glyphs) =
+        context::substitution(&glyphs, &mut mapping).unwrap()
+    else {
+        panic!("glyph rules must preserve their predicate domain");
+    };
+    let ContextSubstitution::ClassRules {
+        coverage,
+        classes,
+        rules,
+    } = context::substitution(&classes, &mut mapping).unwrap()
+    else {
+        panic!("class rules must preserve their predicate domain");
+    };
+    let ContextSubstitution::CoverageRule(coverages) =
+        context::substitution(&coverages, &mut mapping).unwrap()
+    else {
+        panic!("Coverage rules must preserve their predicate domain");
+    };
+
+    assert_eq!(
+        glyphs[0].input(),
+        [NewGlyphId::new(23), NewGlyphId::new(24)]
+    );
+    assert_eq!(coverage.glyphs(), [NewGlyphId::new(23)]);
+    assert_eq!(classes.class_of(NewGlyphId::new(24)), 2);
+    assert_eq!(rules[0].input(), [1, 2]);
+    assert_eq!(
+        coverages.input()[0].glyphs(),
+        [NewGlyphId::new(23), NewGlyphId::new(25)]
+    );
+    assert_eq!(coverages.records()[0], SubstitutionRecord::new(0, 9));
 }
