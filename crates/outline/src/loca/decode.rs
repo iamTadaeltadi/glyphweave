@@ -89,6 +89,19 @@ pub(super) fn decode(
             ));
         }
     }
+    let sentinel_index = entry_count - 1;
+    let sentinel = offsets.last().copied().unwrap_or(0);
+    if usize::try_from(sentinel).ok() != Some(glyf_span.length()) {
+        return Err(Diagnostic::at(
+            Stage::Decode,
+            entry_span(table_span, sentinel_index, width),
+            Cause::Outline(OutlineCause::LocaEndMismatch {
+                index: u32::try_from(sentinel_index).unwrap_or(u32::MAX),
+                offset: sentinel,
+                glyf_length: glyf_span.length(),
+            }),
+        ));
+    }
     Ok(Loca {
         table_span,
         glyf_span,

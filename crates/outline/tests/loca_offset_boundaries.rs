@@ -92,3 +92,27 @@ fn intermediate_offset_cannot_escape_glyf_and_return() {
         })
     );
 }
+
+#[test]
+fn final_sentinel_must_cover_the_complete_unpadded_glyf_table() {
+    let mut bytes = Vec::new();
+    for offset in [0_u32, 4] {
+        bytes.extend_from_slice(&offset.to_be_bytes());
+    }
+    bytes.extend_from_slice(&[0xaa; 6]);
+    let table_span = ByteSpan::sized(0, 8).unwrap();
+    let glyf_span = ByteSpan::sized(8, 6).unwrap();
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 1, LocaFormat::Long)
+        .expect_err("the sentinel must consume all unpadded glyf bytes");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::LocaEndMismatch {
+            index: 1,
+            offset: 4,
+            glyf_length: 6,
+        })
+    );
+}
