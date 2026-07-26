@@ -6,7 +6,11 @@ use std::collections::BTreeMap;
 
 use glyphweave_outline::{CompositeGlyph, F2Dot14, SimpleGlyph};
 
-use support::{reference_font::glyf, reference_map::format4, reference_tool::ttx_xml};
+use support::{
+    reference_font::glyf,
+    reference_map::{format4, format12},
+    reference_tool::ttx_xml,
+};
 
 const GLYPH_NAMES: [&str; 6] = [".notdef", "space", "triangle", "acute", "Aacute", "nested"];
 
@@ -125,6 +129,32 @@ fn ttx_matches_the_glyphweave_format_four_map() {
         "</cmap_format_4>",
     );
     let mappings = format4();
+
+    for (codepoint, glyph) in mappings.character_map().iter() {
+        let name = GLYPH_NAMES.get(usize::from(glyph.raw())).unwrap();
+        let expected = format!(
+            "<map code=\"0x{:x}\" name=\"{name}\"/>",
+            u32::from(codepoint)
+        );
+        assert!(section.contains(&expected), "ttx omitted {expected}");
+    }
+    assert_eq!(
+        section.matches("<map ").count(),
+        mappings.character_map().len()
+    );
+}
+
+#[test]
+fn ttx_matches_the_glyphweave_format_twelve_map() {
+    let Some(xml) = ttx_xml(&["cmap"]) else {
+        return;
+    };
+    let section = xml_section(
+        &xml,
+        "<cmap_format_12 platformID=\"3\" platEncID=\"10\"",
+        "</cmap_format_12>",
+    );
+    let mappings = format12();
 
     for (codepoint, glyph) in mappings.character_map().iter() {
         let name = GLYPH_NAMES.get(usize::from(glyph.raw())).unwrap();
