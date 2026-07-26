@@ -21,6 +21,18 @@ pub(super) fn decode_coverage(
     Coverage::decode(&bytes[..owner.end()], target.start())
 }
 
+pub(super) fn decode_coverages(
+    bytes: &[u8],
+    owner: ByteSpan,
+    offsets: impl IntoIterator<Item = (usize, u16)>,
+    minimum_position: usize,
+) -> Decoded<Vec<Coverage>> {
+    offsets
+        .into_iter()
+        .map(|(position, offset)| decode_coverage(bytes, owner, position, offset, minimum_position))
+        .collect()
+}
+
 pub(super) fn decode_sequence_map(
     bytes: &[u8],
     span: ByteSpan,
