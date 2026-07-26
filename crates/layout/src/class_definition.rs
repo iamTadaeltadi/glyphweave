@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use glyphweave_sfnt::GlyphId;
 
 mod decode;
+mod encode;
 
 /// An ordered glyph-to-class mapping with implicit class zero.
 ///
