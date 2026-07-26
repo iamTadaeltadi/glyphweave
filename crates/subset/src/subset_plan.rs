@@ -51,4 +51,25 @@ impl SubsetPlan {
     pub const fn face_index(&self) -> FaceIndex {
         self.face_index
     }
+
+    /// Returns the requested Unicode scalar values.
+    #[must_use]
+    pub const fn codepoints(&self) -> &CodepointSet {
+        &self.codepoints
+    }
+
+    /// Returns the final retained input Glyph Set.
+    #[must_use]
+    pub const fn glyphs(&self) -> &GlyphSet {
+        &self.glyphs
+    }
+
+    /// Returns the canonical Remap derived from the retained Glyph Set.
+    #[must_use]
+    pub const fn remap(&self) -> &Remap {
+        &self.remap
+    }
 }
+
+#[cfg(test)]
+mod tests;
