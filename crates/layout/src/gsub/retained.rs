@@ -54,6 +54,13 @@ impl GsubLookupList {
 }
 
 /// A retained GSUB `LookupList` whose surviving glyph references belong to one closure.
+///
+/// ```
+/// use glyphweave_layout::RetainedGsub;
+///
+/// let substitutions = RetainedGsub::default();
+/// assert!(substitutions.is_empty());
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct RetainedGsub {
     pub(super) lookups: GsubLookupList,
