@@ -1,4 +1,4 @@
-use super::{Cause, CmapCause};
+use super::{Cause, Cmap14TableKind, CmapCause};
 
 #[test]
 fn cmap_format_failure_names_expected_and_found_formats() {
@@ -197,5 +197,131 @@ fn cmap_surrogate_failure_names_codepoint_and_glyph() {
     assert_eq!(
         cause.to_string(),
         "cmap format 4 surrogate 0xd800 resolves to glyph 5"
+    );
+}
+
+#[test]
+fn cmap_fourteen_length_failure_names_all_bounds() {
+    let cause = CmapCause::InvalidCmap14Length {
+        declared: 9,
+        minimum: 10,
+        available: 12,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 length 9 needs at least 10 byte(s) with 12 available"
+    );
+}
+
+#[test]
+fn cmap_fourteen_selector_count_failure_names_capacity() {
+    let cause = CmapCause::Cmap14SelectorCountOutOfBounds {
+        count: 3,
+        maximum: 2,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 selector count 3 exceeds declared record capacity 2"
+    );
+}
+
+#[test]
+fn cmap_fourteen_selector_failure_names_order() {
+    let cause = CmapCause::InvalidCmap14VariationSelector {
+        index: 2,
+        selector: 0xfe0f,
+        previous: Some(0xe0100),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 selector record 2 value 0x00fe0f is invalid after Some(917760)"
+    );
+}
+
+#[test]
+fn cmap_fourteen_offset_failure_names_layout_bounds() {
+    let cause = CmapCause::InvalidCmap14Offset {
+        selector: 0xfe0f,
+        kind: Cmap14TableKind::Default,
+        offset: 12,
+        records_end: 21,
+        declared_length: 40,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 selector 0x00fe0f default UVS offset 12 does not locate a count after byte 21 within length 40"
+    );
+}
+
+#[test]
+fn cmap_fourteen_entry_count_failure_names_table_kind() {
+    let cause = CmapCause::Cmap14EntryCountOutOfBounds {
+        selector: 0xe0100,
+        kind: Cmap14TableKind::NonDefault,
+        count: 9,
+        maximum: 4,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 selector 0x0e0100 non-default UVS count 9 exceeds target capacity 4"
+    );
+}
+
+#[test]
+fn cmap_fourteen_default_range_failure_names_predecessor() {
+    let cause = CmapCause::InvalidCmap14DefaultRange {
+        selector: 0xfe0f,
+        index: 1,
+        start: 0x4e00,
+        end: 0x4eff,
+        previous_end: Some(0x4e20),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 selector 0x00fe0f default range 1 0x004e00..=0x004eff is invalid after Some(20000)"
+    );
+}
+
+#[test]
+fn cmap_fourteen_non_default_failure_names_base_order() {
+    let cause = CmapCause::InvalidCmap14NonDefaultMapping {
+        selector: 0xe0100,
+        index: 3,
+        codepoint: 0x82a6,
+        previous: Some(0x82a6),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 selector 0x0e0100 non-default mapping 3 base 0x0082a6 is invalid after Some(33446)"
+    );
+}
+
+#[test]
+fn cmap_fourteen_conflict_names_complete_sequence() {
+    let cause = CmapCause::ConflictingCmap14Mapping {
+        selector: 0xe0101,
+        codepoint: 0x82a6,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 sequence 0x0082a6 0x0e0101 is both default and non-default"
+    );
+}
+
+#[test]
+fn cmap_fourteen_overlap_names_both_target_tables() {
+    let cause = CmapCause::OverlappingCmap14Tables {
+        first: (
+            Cmap14TableKind::Default,
+            crate::ByteSpan::sized(40, 12).unwrap(),
+        ),
+        second: (
+            Cmap14TableKind::NonDefault,
+            crate::ByteSpan::sized(48, 14).unwrap(),
+        ),
+    };
+    assert_eq!(
+        cause.to_string(),
+        "cmap format 14 default UVS table 40..52 conflicts with non-default UVS table 48..62"
     );
 }

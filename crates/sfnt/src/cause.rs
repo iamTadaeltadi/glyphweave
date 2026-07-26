@@ -3,7 +3,7 @@
 mod cmap;
 mod display;
 
-pub use cmap::CmapCause;
+pub use cmap::{Cmap14TableKind, CmapCause};
 
 /// The domain-specific cause of a Diagnostic.
 ///
