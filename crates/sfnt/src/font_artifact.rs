@@ -50,3 +50,6 @@ impl fmt::Debug for FontArtifact {
             .finish_non_exhaustive()
     }
 }
+
+#[cfg(test)]
+mod tests;
