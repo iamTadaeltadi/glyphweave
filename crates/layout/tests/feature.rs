@@ -61,3 +61,20 @@ fn rejects_parameters_target_at_container_end() {
         })
     );
 }
+
+#[test]
+fn every_strict_feature_prefix_is_rejected() {
+    let complete = [
+        0x00, 0x00, 0x00, 0x02, // null parameters, lookupIndexCount
+        0x00, 0x01, 0x00, 0x03,
+    ];
+    for end in 0..complete.len() {
+        let span = ByteSpan::between(0, end).unwrap();
+        let diagnostic = Feature::decode(&complete, span).unwrap_err();
+        assert!(
+            matches!(diagnostic.cause(), Cause::UnexpectedEnd { .. }),
+            "prefix {end} produced {}",
+            diagnostic.cause()
+        );
+    }
+}
