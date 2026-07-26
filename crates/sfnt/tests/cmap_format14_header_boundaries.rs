@@ -38,3 +38,20 @@ fn declared_length_must_hold_the_complete_header() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 4));
 }
+
+#[test]
+fn declared_length_cannot_exceed_available_bytes() {
+    let mut bytes = encode_empty();
+    bytes.pop();
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("header is truncated");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14Length {
+            declared: 10,
+            minimum: 10,
+            available: 9,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 4));
+}
