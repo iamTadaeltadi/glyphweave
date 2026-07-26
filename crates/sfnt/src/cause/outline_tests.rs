@@ -174,3 +174,31 @@ fn overlap_failure_names_the_late_logical_point() {
         "simple overlap flag appears after the first physical flag at point 8"
     );
 }
+
+#[test]
+fn coordinate_overflow_failure_names_axis_point_and_sum() {
+    let cause = Cause::Outline(OutlineCause::SimpleCoordinateOverflow {
+        axis: CoordinateAxis::Vertical,
+        point_index: 12,
+        previous: 32_000,
+        delta: 1_000,
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple point 12 y coordinate 32000 plus delta 1000 exceeds signed design units"
+    );
+}
+
+#[test]
+fn glyph_bounds_mismatch_failure_names_recorded_and_calculated_rectangles() {
+    let cause = Cause::Outline(OutlineCause::SimpleGlyphBoundsMismatch {
+        recorded: [-4, -3, 8, 9],
+        calculated: [-2, -1, 6, 7],
+    });
+
+    assert_eq!(
+        cause.to_string(),
+        "simple glyph bounds (-4, -3)..(8, 9) do not match points (-2, -1)..(6, 7)"
+    );
+}
