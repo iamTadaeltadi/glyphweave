@@ -245,3 +245,21 @@ fn ignores_grid_rounding_for_point_alignment() {
         }
     );
 }
+
+#[test]
+fn ignores_offset_modes_for_point_alignment() {
+    let mut bytes = header().to_vec();
+    bytes.extend([0x00, 0x22, 0x00, 0x0a, 0x00, 0x00]);
+    bytes.extend([0x08, 0x00, 0x00, 0x0b, 0x03, 0x04]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = CompositeGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.components()[1].placement(),
+        ComponentPlacement::MatchPoints {
+            parent: 3,
+            child: 4,
+        }
+    );
+}
