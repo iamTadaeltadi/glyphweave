@@ -12,18 +12,11 @@ pub(super) struct DecodedExtension {
 }
 
 pub(super) const fn is_extension_type(table: LayoutTableKind, lookup_type: u16) -> bool {
-    matches!(
-        (table, lookup_type),
-        (LayoutTableKind::Substitution, 7) | (LayoutTableKind::Positioning, 9)
-    )
+    lookup_type == table.extension_lookup_type()
 }
 
 pub(super) fn is_valid_type(table: LayoutTableKind, lookup_type: u16) -> bool {
-    match table {
-        LayoutTableKind::Substitution => (1..=8).contains(&lookup_type),
-        LayoutTableKind::Positioning => (1..=9).contains(&lookup_type),
-        _ => false,
-    }
+    (1..=table.maximum_lookup_type()).contains(&lookup_type)
 }
 
 pub(super) fn decode_extension(
