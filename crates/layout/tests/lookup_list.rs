@@ -18,7 +18,7 @@ fn decodes_lookup_index_and_processing_order() {
     )
     .unwrap();
 
-    assert_eq!(list.table(), Some(LayoutTableKind::Positioning));
+    assert_eq!(list.table(), LayoutTableKind::Positioning);
     assert_eq!(list.lookup(0).unwrap().lookup_type(), 1);
     assert_eq!(list.lookup(1).unwrap().lookup_type(), 3);
     assert_eq!(
@@ -41,7 +41,7 @@ fn decodes_empty_lookup_list() {
     )
     .unwrap();
     assert!(list.is_empty());
-    assert_eq!(list.table(), None);
+    assert_eq!(list.table(), LayoutTableKind::Substitution);
 }
 
 #[test]

@@ -7,16 +7,18 @@ use crate::Lookup;
 mod decode;
 
 /// Lookups in the exact processing and index order defined by GSUB or GPOS.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LookupList {
+    table: LayoutTableKind,
     lookups: Vec<Lookup>,
 }
 
 impl LookupList {
     /// Builds a list without changing the order or identity of its Lookups.
     #[must_use]
-    pub fn new(lookups: impl IntoIterator<Item = Lookup>) -> Self {
+    pub fn new(table: LayoutTableKind, lookups: impl IntoIterator<Item = Lookup>) -> Self {
         Self {
+            table,
             lookups: lookups.into_iter().collect(),
         }
     }
@@ -33,10 +35,10 @@ impl LookupList {
         &self.lookups
     }
 
-    /// Returns the common table family, or `None` for an empty list.
+    /// Returns the layout table family even when the list is empty.
     #[must_use]
-    pub fn table(&self) -> Option<LayoutTableKind> {
-        self.lookups.first().map(Lookup::table)
+    pub const fn table(&self) -> LayoutTableKind {
+        self.table
     }
 
     /// Returns the number of indexed Lookups.
