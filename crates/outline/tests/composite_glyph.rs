@@ -121,3 +121,10 @@ fn preserves_component_metric_inheritance() {
 
     assert!(glyph.components()[0].uses_child_metrics());
 }
+
+#[test]
+fn preserves_first_component_overlap_identity() {
+    let glyph = decode_byte_offset(0x0402);
+
+    assert!(glyph.has_overlapping_components());
+}
