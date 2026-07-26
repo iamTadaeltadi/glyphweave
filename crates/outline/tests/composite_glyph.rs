@@ -114,3 +114,10 @@ fn preserves_unscaled_component_offsets() {
         }
     );
 }
+
+#[test]
+fn preserves_component_metric_inheritance() {
+    let glyph = decode_byte_offset(0x0202);
+
+    assert!(glyph.components()[0].uses_child_metrics());
+}
