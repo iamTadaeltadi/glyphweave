@@ -111,6 +111,40 @@ fn unreferenced_gap_before_target_tables_is_permitted() {
 }
 
 #[test]
+fn target_tables_may_appear_in_reverse_record_field_order() {
+    let mut bytes = Vec::new();
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, 38);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0xfe0f);
+    push_u32(&mut bytes, 30);
+    push_u32(&mut bytes, 21);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0x82a6);
+    push_u16(&mut bytes, 19);
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0x2764);
+    bytes.push(0);
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("offsets define physical table order");
+    let selector = VariationSelector::new('\u{fe0f}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{2764}', selector),
+        Some(VariationMapping::Default)
+    );
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{82a6}', selector),
+        Some(VariationMapping::NonDefault(glyphweave_sfnt::GlyphId::new(
+            19
+        )))
+    );
+}
+
+#[test]
 fn selector_records_may_share_an_exact_default_table() {
     let mut bytes = Vec::new();
     push_u16(&mut bytes, 14);
