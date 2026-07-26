@@ -6,5 +6,7 @@
 #![forbid(unsafe_code)]
 
 mod codepoint_set;
+mod retention;
 
 pub use codepoint_set::CodepointSet;
+pub use retention::Retention;
