@@ -33,8 +33,8 @@ mod variation_selector_map;
 mod version;
 
 pub use cause::{
-    Cause, Cmap14TableKind, CmapCause, CoordinateAxis, LayoutCause, LayoutListKind, LayoutTarget,
-    OutlineCause,
+    Cause, Cmap14TableKind, CmapCause, CoordinateAxis, LayoutCause, LayoutListKind,
+    LayoutTableKind, LayoutTarget, OutlineCause,
 };
 pub use character_map::CharacterMap;
 pub use checksum::Checksum;
