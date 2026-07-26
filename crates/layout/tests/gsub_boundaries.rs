@@ -391,3 +391,15 @@ fn ligature_replacement_must_be_complete() {
 
     assert!(LigatureSubstitution::decode(&bytes, span).is_err());
 }
+
+#[test]
+fn ligature_component_vector_cannot_cross_subtable_end() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x07, 0x00, 0x03, 0x00, 0x04,
+    ];
+    let span = ByteSpan::between(0, bytes.len()).unwrap();
+
+    assert!(LigatureSubstitution::decode(&bytes, span).is_err());
+}
