@@ -81,6 +81,18 @@ impl SimpleGlyph {
         self.points.get(start..end)
     }
 
+    /// Iterates over contour point slices in source order.
+    #[must_use]
+    pub fn contours(&self) -> impl ExactSizeIterator<Item = &[Point]> {
+        let mut start = 0usize;
+        self.contour_ends.iter().map(move |&end| {
+            let end = usize::try_from(end).unwrap_or(self.points.len());
+            let contour = self.points.get(start..end).unwrap_or(&[]);
+            start = end;
+            contour
+        })
+    }
+
     /// Returns the uninterpreted TrueType instruction program.
     #[must_use]
     pub fn instructions(&self) -> &[u8] {
