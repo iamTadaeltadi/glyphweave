@@ -3,7 +3,10 @@
 use glyphweave_sfnt::{ByteSpan, Decoded, LayoutTarget, Reader};
 
 use super::ContextSubstitution;
-use crate::{ClassDefinition, gsub::decode::decode_coverage, relative_target_span};
+use crate::{
+    gsub::decode::{decode_classes, decode_coverage},
+    relative_target_span,
+};
 
 mod rule_set;
 
@@ -30,14 +33,7 @@ pub(super) fn decode(
         coverage_offset,
         minimum_position,
     )?;
-    let class_target = relative_target_span(
-        span,
-        class_position,
-        class_offset,
-        minimum_position - span.start(),
-        LayoutTarget::ContextClassDefinition,
-    )?;
-    let classes = ClassDefinition::decode(&bytes[..span.end()], class_target.start())?;
+    let classes = decode_classes(bytes, span, class_position, class_offset, minimum_position)?;
 
     let mut rules = Vec::new();
     for (first_class, (position, offset)) in (0_u16..set_count).zip(offsets) {

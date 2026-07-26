@@ -2,7 +2,7 @@
 
 use glyphweave_sfnt::{ByteSpan, Decoded, GlyphId, LayoutCause, LayoutTarget, Reader};
 
-use crate::{Coverage, SubstitutionRecord, layout_error, relative_target_span};
+use crate::{ClassDefinition, Coverage, SubstitutionRecord, layout_error, relative_target_span};
 
 pub(super) fn decode_coverage(
     bytes: &[u8],
@@ -57,6 +57,23 @@ pub(super) fn decode_records(
         records.push(SubstitutionRecord::new(sequence_index, lookup_index));
     }
     Ok(records)
+}
+
+pub(super) fn decode_classes(
+    bytes: &[u8],
+    owner: ByteSpan,
+    position: usize,
+    offset: u16,
+    minimum_position: usize,
+) -> Decoded<ClassDefinition> {
+    let target = relative_target_span(
+        owner,
+        position,
+        offset,
+        minimum_position - owner.start(),
+        LayoutTarget::ContextClassDefinition,
+    )?;
+    ClassDefinition::decode(&bytes[..owner.end()], target.start())
 }
 
 pub(super) fn decode_sequence_map(
