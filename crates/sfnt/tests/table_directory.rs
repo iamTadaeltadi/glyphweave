@@ -27,6 +27,19 @@ fn permits_distinct_empty_tables_at_same_offset() {
 }
 
 #[test]
+fn permits_adjacent_non_empty_tables() {
+    let mut bytes = directory_with_tags(*b"cmap", *b"head");
+    bytes[24..28].copy_from_slice(&4_u32.to_be_bytes());
+    bytes[36..40].copy_from_slice(&48_u32.to_be_bytes());
+    bytes[40..44].copy_from_slice(&4_u32.to_be_bytes());
+    bytes.resize(52, 0);
+
+    let directory = TableDirectory::decode(&bytes, 0).unwrap();
+    assert_eq!(directory.records()[0].table_span().to_string(), "44..48");
+    assert_eq!(directory.records()[1].table_span().to_string(), "48..52");
+}
+
+#[test]
 fn decodes_empty_truetype_directory() {
     let bytes = [
         0x00, 0x01, 0x00, 0x00, // TrueType
