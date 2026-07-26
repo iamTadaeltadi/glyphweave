@@ -23,3 +23,27 @@ fn short_entries_expand_half_offsets_into_absolute_glyf_spans() {
         ByteSpan::between(10, 16)
     );
 }
+
+#[test]
+fn long_entries_preserve_full_offsets_at_an_absolute_table_position() {
+    let mut bytes = vec![0xaa; 5];
+    for offset in [0_u32, 4, 10] {
+        bytes.extend_from_slice(&offset.to_be_bytes());
+    }
+    bytes.extend_from_slice(&[0xbb; 10]);
+    let table_span = ByteSpan::sized(5, 12).unwrap();
+    let glyf_span = ByteSpan::sized(17, 10).unwrap();
+
+    let decoded = Loca::decode(&bytes, table_span, glyf_span, 2, LocaFormat::Long)
+        .expect("valid long offsets");
+
+    assert_eq!(decoded.offsets(), [0, 4, 10]);
+    assert_eq!(
+        decoded.glyph_span(GlyphId::NOTDEF),
+        ByteSpan::between(17, 21)
+    );
+    assert_eq!(
+        decoded.glyph_span(GlyphId::new(1)),
+        ByteSpan::between(21, 27)
+    );
+}
