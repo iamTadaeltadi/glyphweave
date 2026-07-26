@@ -24,3 +24,23 @@ fn simple_headers_are_rejected_by_the_composite_decoder() {
         })
     );
 }
+
+#[test]
+fn every_reserved_component_flag_is_rejected() {
+    for flags in [0x0010_u16, 0x2000, 0x4000, 0x8000] {
+        let mut bytes = header(-1);
+        bytes.extend(flags.to_be_bytes());
+        let span = ByteSpan::sized(0, bytes.len()).unwrap();
+        let diagnostic = CompositeGlyph::decode(&bytes, span)
+            .expect_err("reserved component flags must remain zero");
+
+        assert_eq!(diagnostic.span(), ByteSpan::sized(10, 2));
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::Outline(OutlineCause::ReservedCompositeGlyphFlags {
+                component_index: 0,
+                flags,
+            })
+        );
+    }
+}
