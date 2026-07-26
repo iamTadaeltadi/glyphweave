@@ -1,15 +1,15 @@
 //! Canonical one-to-many glyph substitutions.
 
-use std::collections::BTreeMap;
-
 use glyphweave_sfnt::GlyphId;
+
+use super::sequence_map::SequenceMap;
 
 /// An input-ordered map replacing one glyph with an ordered glyph sequence.
 ///
 /// An empty output sequence is retained because GSUB uses it to delete the input glyph.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct MultipleSubstitution {
-    mappings: BTreeMap<GlyphId, Vec<GlyphId>>,
+    mappings: SequenceMap,
 }
 
 impl MultipleSubstitution {
@@ -17,21 +17,19 @@ impl MultipleSubstitution {
     #[must_use]
     pub fn from_mappings(mappings: impl IntoIterator<Item = (GlyphId, Vec<GlyphId>)>) -> Self {
         Self {
-            mappings: mappings.into_iter().collect(),
+            mappings: SequenceMap::new(mappings),
         }
     }
 
     /// Returns the ordered replacement sequence, including a present empty deletion sequence.
     #[must_use]
     pub fn replacement(&self, input: GlyphId) -> Option<&[GlyphId]> {
-        self.mappings.get(&input).map(Vec::as_slice)
+        self.mappings.get(input)
     }
 
     /// Iterates mappings in ascending input Glyph ID order.
     pub fn mappings(&self) -> impl ExactSizeIterator<Item = (GlyphId, &[GlyphId])> + '_ {
-        self.mappings
-            .iter()
-            .map(|(&input, output)| (input, output.as_slice()))
+        self.mappings.iter()
     }
 
     /// Returns the number of distinct input glyphs.
