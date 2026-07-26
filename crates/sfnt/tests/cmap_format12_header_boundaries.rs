@@ -34,3 +34,37 @@ fn reserved_word_must_be_zero() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
 }
+
+#[test]
+fn declared_length_must_hold_the_complete_header() {
+    let mut bytes = encode_groups(0, &[]);
+    bytes[4..8].copy_from_slice(&12_u32.to_be_bytes());
+
+    let diagnostic = CmapFormat12::decode(&bytes, 0).expect_err("header needs 16 bytes");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmap12Length {
+            declared: 12,
+            minimum: 16,
+            available: 16,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+}
+
+#[test]
+fn declared_length_cannot_exceed_available_bytes() {
+    let mut bytes = encode_groups(0, &[(0x41, 0x41, 1)]);
+    bytes.pop();
+
+    let diagnostic = CmapFormat12::decode(&bytes, 0).expect_err("group is truncated");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmap12Length {
+            declared: 28,
+            minimum: 16,
+            available: 27,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(4, 4));
+}
