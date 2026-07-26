@@ -126,6 +126,19 @@ fn collection_header_overlap_names_the_face() {
 }
 
 #[test]
+fn face_directory_bounds_failure_names_the_face() {
+    let cause = Cause::FaceDirectoryOutOfBounds {
+        index: crate::FaceIndex::new(2),
+        offset: 80,
+        font_length: 88,
+    };
+    assert_eq!(
+        cause.to_string(),
+        "face 2 directory at 80 exceeds font length 88"
+    );
+}
+
+#[test]
 fn overlapping_directory_failure_names_both_faces() {
     let cause = Cause::OverlappingFaceDirectories {
         first: (

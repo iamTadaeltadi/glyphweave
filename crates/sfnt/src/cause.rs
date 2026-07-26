@@ -87,6 +87,15 @@ pub enum Cause {
         /// The TTC Header range.
         header: crate::ByteSpan,
     },
+    /// A Face offset cannot locate a complete Table Directory header.
+    FaceDirectoryOutOfBounds {
+        /// The affected Face Index.
+        index: crate::FaceIndex,
+        /// The declared absolute directory offset.
+        offset: usize,
+        /// The complete font-file length.
+        font_length: usize,
+    },
     /// Two Face table directories occupy common bytes.
     OverlappingFaceDirectories {
         /// The first directory in absolute byte order.
