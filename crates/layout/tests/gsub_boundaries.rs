@@ -531,3 +531,14 @@ fn reverse_lookahead_coverage_cannot_target_header() {
         })
     ));
 }
+
+#[test]
+fn reverse_output_array_cannot_cross_subtable_end() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x02, 0x00, 0x04,
+    ];
+    let span = ByteSpan::between(0, bytes.len()).unwrap();
+
+    assert!(ReverseChainSingleSubstitution::decode(&bytes, span).is_err());
+}
