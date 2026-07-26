@@ -102,3 +102,39 @@ fn decodes_maximal_format_2_range() {
     assert_eq!(classes.len(), 65_536);
     assert_eq!(classes.class_of(GlyphId::new(u16::MAX)), 1);
 }
+
+#[test]
+fn rejects_reversed_class_range() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x01, // format, count
+        0x00, 0x08, 0x00, 0x07, 0x00, 0x01,
+    ];
+    let diagnostic = ClassDefinition::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(4, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidClassDefinitionRange {
+            start: GlyphId::new(8),
+            end: GlyphId::new(7),
+        })
+    );
+}
+
+#[test]
+fn rejects_overlapping_class_ranges() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x02, // format, count
+        0x00, 0x02, 0x00, 0x05, 0x00, 0x01, 0x00, 0x04, 0x00, 0x08, 0x00, 0x02,
+    ];
+    let diagnostic = ClassDefinition::decode(&bytes, 0).unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(10, 12));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::OverlappingClassDefinitionRange {
+            previous_end: GlyphId::new(5),
+            start: GlyphId::new(4),
+        })
+    );
+}
