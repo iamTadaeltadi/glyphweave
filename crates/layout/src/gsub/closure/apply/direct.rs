@@ -6,6 +6,9 @@ use glyphweave_sfnt::GlyphId;
 
 use crate::{Coverage, GsubSubtable};
 
+#[cfg(test)]
+mod tests;
+
 pub(super) fn apply(subtable: &GsubSubtable, glyphs: &mut BTreeSet<GlyphId>) {
     let outputs = match subtable {
         GsubSubtable::Single(value) => value
