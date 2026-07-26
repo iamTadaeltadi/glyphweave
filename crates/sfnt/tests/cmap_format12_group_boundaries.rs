@@ -90,3 +90,10 @@ fn nonzero_surrogate_mapping_is_rejected() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
 }
+
+#[test]
+fn notdef_surrogate_mapping_is_canonicalized_to_absence() {
+    let decoded =
+        decode_groups(0, &[(0xd800, 0xd800, 0)]).expect("zero surrogate mapping is absent");
+    assert!(decoded.character_map().is_empty());
+}
