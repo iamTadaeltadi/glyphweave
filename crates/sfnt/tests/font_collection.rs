@@ -159,3 +159,29 @@ fn rejects_incoherent_signature_descriptor_fields() {
         );
     }
 }
+
+#[test]
+fn rejects_signature_range_that_is_not_the_file_tail() {
+    for (offset, length) in [(40, 8), (48, 8)] {
+        let mut bytes = b"ttcf".to_vec();
+        push_u16(&mut bytes, 2);
+        push_u16(&mut bytes, 0);
+        push_u32(&mut bytes, 1);
+        push_u32(&mut bytes, 28);
+        push_u32(&mut bytes, u32::from_be_bytes(*b"DSIG"));
+        push_u32(&mut bytes, length);
+        push_u32(&mut bytes, offset);
+        bytes.resize(52, 0);
+
+        let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+        let signature = ByteSpan::sized(offset as usize, length as usize).unwrap();
+        assert_eq!(diagnostic.span(), Some(signature));
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::CollectionSignatureNotAtEnd {
+                signature,
+                font_length: 52
+            }
+        );
+    }
+}
