@@ -419,3 +419,6 @@ impl OutlineCause {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
