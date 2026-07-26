@@ -111,6 +111,25 @@ fn unreferenced_gap_before_target_tables_is_permitted() {
 }
 
 #[test]
+fn unreferenced_bytes_after_target_tables_remain_inside_declared_span() {
+    let mut bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x2764,
+            additional: 0,
+        }],
+        &[],
+    );
+    bytes.extend_from_slice(&[0xaa; 3]);
+    let declared_length = u32::try_from(bytes.len()).unwrap();
+    bytes[2..6].copy_from_slice(&declared_length.to_be_bytes());
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("trailing bytes may be unreferenced");
+
+    assert_eq!(decoded.span().length(), bytes.len());
+}
+
+#[test]
 fn target_tables_may_appear_in_reverse_record_field_order() {
     let mut bytes = Vec::new();
     push_u16(&mut bytes, 14);
