@@ -10,14 +10,14 @@ mod decode;
 ///
 /// An empty output sequence is retained because GSUB uses it to delete the input glyph.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct MultipleSubstitution {
-    mappings: SequenceMap,
+pub struct MultipleSubstitution<G = GlyphId> {
+    mappings: SequenceMap<G>,
 }
 
-impl MultipleSubstitution {
+impl<G: Copy + Ord> MultipleSubstitution<G> {
     /// Builds canonical mappings; a later duplicate input replaces an earlier sequence.
     #[must_use]
-    pub fn from_mappings(mappings: impl IntoIterator<Item = (GlyphId, Vec<GlyphId>)>) -> Self {
+    pub fn from_mappings(mappings: impl IntoIterator<Item = (G, Vec<G>)>) -> Self {
         Self {
             mappings: SequenceMap::new(mappings),
         }
@@ -25,13 +25,13 @@ impl MultipleSubstitution {
 
     /// Returns the ordered replacement sequence, including a present empty deletion sequence.
     #[must_use]
-    pub fn replacement(&self, input: GlyphId) -> Option<&[GlyphId]> {
+    pub fn replacement(&self, input: G) -> Option<&[G]> {
         self.mappings.get(input)
     }
 
     /// Iterates mappings in ascending input Glyph ID order.
     #[must_use]
-    pub fn mappings(&self) -> impl ExactSizeIterator<Item = (GlyphId, &[GlyphId])> + '_ {
+    pub fn mappings(&self) -> impl ExactSizeIterator<Item = (G, &[G])> + '_ {
         self.mappings.iter()
     }
 
@@ -68,6 +68,6 @@ mod tests {
         assert_eq!(substitutions.replacement(GlyphId::new(8)), None);
         assert_eq!(substitutions.len(), 2);
         assert!(!substitutions.is_empty());
-        assert!(MultipleSubstitution::default().is_empty());
+        assert!(MultipleSubstitution::<GlyphId>::default().is_empty());
     }
 }

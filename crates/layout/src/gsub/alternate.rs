@@ -8,14 +8,14 @@ mod decode;
 
 /// An input-ordered map from one glyph to its ordered alternate choices.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct AlternateSubstitution {
-    mappings: SequenceMap,
+pub struct AlternateSubstitution<G = GlyphId> {
+    mappings: SequenceMap<G>,
 }
 
-impl AlternateSubstitution {
+impl<G: Copy + Ord> AlternateSubstitution<G> {
     /// Builds canonical alternate sets; a later duplicate input replaces an earlier set.
     #[must_use]
-    pub fn from_alternates(alternates: impl IntoIterator<Item = (GlyphId, Vec<GlyphId>)>) -> Self {
+    pub fn from_alternates(alternates: impl IntoIterator<Item = (G, Vec<G>)>) -> Self {
         Self {
             mappings: SequenceMap::new(alternates),
         }
@@ -23,13 +23,13 @@ impl AlternateSubstitution {
 
     /// Returns one input glyph's ordered alternate choices.
     #[must_use]
-    pub fn alternates(&self, input: GlyphId) -> Option<&[GlyphId]> {
+    pub fn alternates(&self, input: G) -> Option<&[G]> {
         self.mappings.get(input)
     }
 
     /// Iterates alternate sets in ascending input Glyph ID order.
     #[must_use]
-    pub fn mappings(&self) -> impl ExactSizeIterator<Item = (GlyphId, &[GlyphId])> + '_ {
+    pub fn mappings(&self) -> impl ExactSizeIterator<Item = (G, &[G])> + '_ {
         self.mappings.iter()
     }
 
@@ -72,6 +72,6 @@ mod tests {
         );
         assert_eq!(substitutions.len(), 2);
         assert!(!substitutions.is_empty());
-        assert!(AlternateSubstitution::default().is_empty());
+        assert!(AlternateSubstitution::<GlyphId>::default().is_empty());
     }
 }
