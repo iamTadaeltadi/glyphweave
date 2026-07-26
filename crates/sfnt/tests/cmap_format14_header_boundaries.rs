@@ -4,7 +4,7 @@
 pub mod support;
 
 use glyphweave_sfnt::{ByteSpan, Cause, CmapCause, CmapFormat14};
-use support::encode_empty;
+use support::{DefaultRange, NonDefaultMapping, encode_empty, encode_selector};
 
 #[test]
 fn format_other_than_fourteen_is_rejected_at_the_format_word() {
@@ -70,4 +70,25 @@ fn selector_count_must_fit_the_declared_record_array() {
         })
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(6, 4));
+}
+
+#[test]
+fn every_strict_prefix_of_a_valid_subtable_is_rejected() {
+    let bytes = encode_selector(
+        0xfe0f,
+        &[DefaultRange {
+            start: 0x2764,
+            additional: 0,
+        }],
+        &[NonDefaultMapping {
+            base: 0x82a6,
+            glyph: 19,
+        }],
+    );
+    for length in 0..bytes.len() {
+        assert!(
+            CmapFormat14::decode(&bytes[..length], 0).is_err(),
+            "prefix of {length} bytes unexpectedly decoded"
+        );
+    }
 }
