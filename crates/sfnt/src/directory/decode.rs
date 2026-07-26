@@ -81,11 +81,40 @@ pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
             ));
         }
     }
+    validate_table_spans(&records)?;
     Ok(TableDirectory {
         version,
         span,
         records,
     })
+}
+
+fn validate_table_spans(records: &[TableRecord]) -> Decoded<()> {
+    let mut by_offset: Vec<_> = records
+        .iter()
+        .filter(|record| !record.table_span.is_empty())
+        .collect();
+    by_offset.sort_unstable_by_key(|record| {
+        (
+            record.table_span.start(),
+            record.table_span.end(),
+            record.tag,
+        )
+    });
+    for pair in by_offset.windows(2) {
+        let [first, second] = pair else { continue };
+        if first.table_span.overlaps(second.table_span) {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                first.table_span.join(second.table_span),
+                Cause::OverlappingTables {
+                    first: (first.tag, first.table_span),
+                    second: (second.tag, second.table_span),
+                },
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn decode_record(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<TableRecord> {
