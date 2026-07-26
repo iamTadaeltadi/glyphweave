@@ -129,3 +129,21 @@ fn every_strict_prefix_of_a_complete_composite_is_rejected() {
         assert_eq!(diagnostic.span().unwrap().end(), length);
     }
 }
+
+#[test]
+fn uniform_transform_coefficient_must_be_complete() {
+    let mut bytes = header(-1);
+    bytes.extend([0x00, 0x0a, 0x00, 0x01, 0x00, 0x00, 0x40]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("a uniform F2DOT14 coefficient occupies two bytes");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
