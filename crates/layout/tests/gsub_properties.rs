@@ -1,6 +1,6 @@
 //! Fixed-seed properties for GSUB closure, retention, and remapping.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use glyphweave_layout::{Coverage, GsubClosure, GsubLookupList, Lookup, LookupFlags, LookupList};
 use glyphweave_sfnt::{ByteSpan, GlyphId, LayoutTableKind};
@@ -42,6 +42,44 @@ proptest! {
 
         prop_assert!(smaller.glyphs().all(|glyph| larger.contains(glyph)));
         prop_assert!(smaller.lookup_indices().all(|index| larger.contains_lookup(index)));
+    }
+
+    #[test]
+    fn closure_equals_reference_graph_reachability(
+        mappings in collection::btree_map(any::<u16>(), any::<u16>(), 0..65),
+        initial in collection::vec(any::<u16>(), 0..65),
+    ) {
+        let semantic = single_lookup(&mappings);
+        let closure = GsubClosure::compute(
+            &semantic,
+            initial.iter().copied().map(GlyphId::new),
+            [0],
+        ).unwrap();
+        let expected = reference_closure(&mappings, initial);
+
+        prop_assert_eq!(
+            closure.glyphs().map(GlyphId::raw).collect::<Vec<_>>(),
+            expected.into_iter().collect::<Vec<_>>(),
+        );
+    }
+}
+
+fn reference_closure(
+    mappings: &BTreeMap<u16, u16>,
+    initial: impl IntoIterator<Item = u16>,
+) -> BTreeSet<u16> {
+    let mut glyphs = initial.into_iter().collect::<BTreeSet<_>>();
+    loop {
+        let before = glyphs.len();
+        let additions = mappings
+            .iter()
+            .filter(|(input, _)| glyphs.contains(input))
+            .map(|(_, &output)| output)
+            .collect::<Vec<_>>();
+        glyphs.extend(additions);
+        if glyphs.len() == before {
+            return glyphs;
+        }
     }
 }
 
