@@ -1,6 +1,14 @@
 //! Enumerated SFNT versions used by a Table Directory.
 
 /// The outline flavor declared by an SFNT Table Directory.
+///
+/// ```
+/// use glyphweave_sfnt::SfntVersion;
+///
+/// let version = SfntVersion::from_raw(0x0001_0000).unwrap();
+/// assert_eq!(version, SfntVersion::TrueType);
+/// assert_eq!(version.raw(), 0x0001_0000);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SfntVersion {
     /// TrueType outlines, encoded as fixed version 1.0 (`0x0001_0000`).
