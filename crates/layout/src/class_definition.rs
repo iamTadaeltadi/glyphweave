@@ -65,4 +65,10 @@ impl ClassDefinition {
     pub fn is_empty(&self) -> bool {
         self.classes.is_empty()
     }
+
+    /// Returns the greatest assigned class, or zero when no assignment exists.
+    #[must_use]
+    pub fn highest_class(&self) -> u16 {
+        self.classes.values().copied().max().unwrap_or(0)
+    }
 }
