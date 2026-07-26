@@ -184,3 +184,21 @@ fn complete_matrix_requires_four_coefficients() {
         }
     );
 }
+
+#[test]
+fn composite_instruction_length_must_be_complete() {
+    let mut bytes = header(-1);
+    bytes.extend([0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00]);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = CompositeGlyph::decode(&bytes, span)
+        .expect_err("an instruction flag requires a complete length word");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 1));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
