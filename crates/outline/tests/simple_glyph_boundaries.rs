@@ -300,3 +300,27 @@ fn long_y_vector_must_be_complete_inside_the_glyph_span() {
         }
     );
 }
+
+#[test]
+fn accumulated_y_coordinates_must_remain_signed_design_units() {
+    let mut bytes = header(1, [0; 4]);
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x11, 0x11]);
+    bytes.extend_from_slice(&i16::MAX.to_be_bytes());
+    bytes.extend_from_slice(&1i16.to_be_bytes());
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+    let diagnostic = SimpleGlyph::decode(&bytes, span)
+        .expect_err("the second y delta exceeds the absolute coordinate domain");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(18, 2));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::SimpleCoordinateOverflow {
+            axis: CoordinateAxis::Vertical,
+            point_index: 1,
+            previous: i16::MAX,
+            delta: 1,
+        })
+    );
+}
