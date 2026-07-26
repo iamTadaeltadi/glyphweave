@@ -50,7 +50,10 @@ fn decode_header(bytes: &[u8], offset: usize) -> Decoded<Header> {
     if format != FORMAT {
         return Err(failure(
             field_span(offset, 0, 2),
-            Cause::UnsupportedCmapFormat { found: format },
+            Cause::UnsupportedCmapFormat {
+                expected: FORMAT,
+                found: format,
+            },
         ));
     }
 

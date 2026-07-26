@@ -145,8 +145,10 @@ pub enum Cause {
         /// The next intersecting table.
         second: (crate::FaceIndex, crate::Tag, crate::ByteSpan),
     },
-    /// A `cmap` subtable used a format other than the expected format 4.
+    /// A `cmap` subtable used a format other than the decoder expected.
     UnsupportedCmapFormat {
+        /// The format required by the selected decoder.
+        expected: u16,
         /// The encoded subtable format.
         found: u16,
     },

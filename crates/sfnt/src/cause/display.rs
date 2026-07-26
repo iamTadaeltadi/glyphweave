@@ -7,8 +7,11 @@ use super::Cause;
 impl Cause {
     fn fmt_cmap(self, f: &mut fmt::Formatter<'_>) -> Option<fmt::Result> {
         let rendered = match self {
-            Self::UnsupportedCmapFormat { found } => {
-                write!(f, "expected cmap format 4 but found format {found}")
+            Self::UnsupportedCmapFormat { expected, found } => {
+                write!(
+                    f,
+                    "expected cmap format {expected} but found format {found}"
+                )
             }
             Self::InvalidCmapLength {
                 declared,
