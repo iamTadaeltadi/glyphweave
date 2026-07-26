@@ -4,7 +4,7 @@
 pub mod support;
 
 use glyphweave_sfnt::{ByteSpan, CmapFormat4, GlyphId};
-use support::{append_words, decode_words, direct_delta_words, range_offset_words};
+use support::{append_words, decode_words, direct_delta_words, minimal_words, range_offset_words};
 
 #[test]
 fn direct_delta_segments_resolve_at_an_absolute_offset() {
@@ -46,4 +46,11 @@ fn direct_delta_addition_wraps_modulo_sixteen_bits() {
         decoded.character_map().glyph_id('\u{fffe}'),
         GlyphId::new(1)
     );
+}
+
+#[test]
+fn sentinel_only_subtable_resolves_to_an_empty_character_map() {
+    let decoded = decode_words(&minimal_words()).expect("minimal format-4 subtable is valid");
+    assert_eq!(decoded.segment_count(), 1);
+    assert!(decoded.character_map().is_empty());
 }
