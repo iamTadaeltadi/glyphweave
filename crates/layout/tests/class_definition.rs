@@ -67,3 +67,38 @@ fn rejects_format_1_range_beyond_maximum_glyph() {
         })
     );
 }
+
+#[test]
+fn decodes_format_2_ranges_and_discards_class_zero() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x03, // format, classRangeCount
+        0x00, 0x02, 0x00, 0x04, 0x00, 0x03, // 2..=4 => class 3
+        0x00, 0x05, 0x00, 0x06, 0x00, 0x00, // adjacent class zero
+        0x00, 0x09, 0x00, 0x09, 0x00, 0x07, // 9 => class 7
+    ];
+    let classes = ClassDefinition::decode(&bytes, 0).unwrap();
+
+    assert_eq!(classes.class_of(GlyphId::new(2)), 3);
+    assert_eq!(classes.class_of(GlyphId::new(4)), 3);
+    assert_eq!(classes.class_of(GlyphId::new(5)), 0);
+    assert_eq!(classes.class_of(GlyphId::new(9)), 7);
+    assert_eq!(classes.len(), 4);
+}
+
+#[test]
+fn decodes_empty_format_2() {
+    let classes = ClassDefinition::decode(&[0x00, 0x02, 0x00, 0x00], 0).unwrap();
+    assert!(classes.is_empty());
+}
+
+#[test]
+fn decodes_maximal_format_2_range() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x01, // format, classRangeCount
+        0x00, 0x00, 0xff, 0xff, 0x00, 0x01,
+    ];
+    let classes = ClassDefinition::decode(&bytes, 0).unwrap();
+
+    assert_eq!(classes.len(), 65_536);
+    assert_eq!(classes.class_of(GlyphId::new(u16::MAX)), 1);
+}
