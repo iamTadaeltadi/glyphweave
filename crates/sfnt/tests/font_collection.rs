@@ -128,3 +128,34 @@ fn rejects_face_count_larger_than_available_header() {
         }
     );
 }
+
+#[test]
+fn rejects_incoherent_signature_descriptor_fields() {
+    let cases = [
+        (0, 0, 40),
+        (u32::from_be_bytes(*b"BAD!"), 8, 40),
+        (u32::from_be_bytes(*b"DSIG"), 0, 40),
+        (u32::from_be_bytes(*b"DSIG"), 8, 41),
+    ];
+    for (tag, length, offset) in cases {
+        let mut bytes = b"ttcf".to_vec();
+        push_u16(&mut bytes, 2);
+        push_u16(&mut bytes, 0);
+        push_u32(&mut bytes, 1);
+        push_u32(&mut bytes, 28);
+        push_u32(&mut bytes, tag);
+        push_u32(&mut bytes, length);
+        push_u32(&mut bytes, offset);
+
+        let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+        assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
+        assert_eq!(
+            diagnostic.cause(),
+            Cause::InvalidCollectionSignatureDescriptor {
+                tag,
+                length,
+                offset
+            }
+        );
+    }
+}
