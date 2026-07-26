@@ -8,6 +8,19 @@ use crate::{
 mod decode;
 
 /// A decoded `ttcf` container whose advertised Faces are all validated.
+///
+/// ```
+/// use glyphweave_sfnt::{FaceIndex, FontCollection};
+///
+/// let bytes = [
+///     b't', b't', b'c', b'f', 0, 1, 0, 0,
+///     0, 0, 0, 1, 0, 0, 0, 16,
+///     0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+/// ];
+/// let collection = FontCollection::decode(&bytes).unwrap();
+/// assert_eq!(collection.len(), 1);
+/// assert_eq!(collection.select(FaceIndex::FIRST).unwrap().directory_offset(), 16);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FontCollection {
     pub(crate) version: CollectionVersion,
