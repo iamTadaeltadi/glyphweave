@@ -79,6 +79,51 @@ fn narrows_contextual_coverages_without_losing_nested_actions() {
     assert_eq!(rule.records()[0].lookup_index(), 1);
 }
 
+#[test]
+fn narrows_contextual_class_domains_to_closed_glyphs() {
+    let bytes = [
+        0x00, 0x02, 0x00, 0x2a, 0x00, 0x1e, 0x00, 0x03, // Context format 2
+        0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, // only class 1 has a set
+        0x00, 0x01, 0x00, 0x04, // one rule
+        0x00, 0x03, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, // input classes
+        0x00, 0x02, 0x00, 0x01, // input position 2 invokes Lookup 1
+        0x00, 0x01, 0x00, 0x03, 0x00, 0x03, // ClassDef format 1
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x00, // glyph classes 1,2,0
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x05, // Coverage {3,5}
+        0x00, 0x01, 0x00, 0x06, 0x00, 0x04, // Single delta +4
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03, // Coverage {3}
+    ];
+    let semantic = decode(
+        &bytes,
+        [
+            (5, ByteSpan::between(0, 50).unwrap()),
+            (1, ByteSpan::between(50, bytes.len()).unwrap()),
+        ],
+    );
+    let closure = GsubClosure::compute(
+        &semantic,
+        [GlyphId::new(3), GlyphId::new(4), GlyphId::new(6)],
+        [0],
+    )
+    .unwrap();
+    let retained = semantic.retain(&closure);
+
+    let GsubSubtable::Context(ContextSubstitution::ClassRules {
+        coverage,
+        classes,
+        rules,
+    }) = &retained.lookup(0).unwrap().subtables()[0]
+    else {
+        panic!("format 2 must retain class predicates");
+    };
+    assert_eq!(coverage.glyphs(), [GlyphId::new(3)]);
+    assert_eq!(
+        classes.assignments().collect::<Vec<_>>(),
+        [(GlyphId::new(3), 1), (GlyphId::new(4), 2)]
+    );
+    assert_eq!(rules[0].input(), [1, 2, 0]);
+}
+
 fn decode<const N: usize>(bytes: &[u8], entries: [(u16, ByteSpan); N]) -> GsubLookupList {
     let list = LookupList::new(
         LayoutTableKind::Substitution,
