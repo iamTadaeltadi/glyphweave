@@ -222,6 +222,15 @@ pub enum LayoutCause {
         /// The unrecognized format selector.
         format: u16,
     },
+    /// A parallel GSUB record array did not match its input Coverage length.
+    MismatchedGsubMappingCount {
+        /// The effective GSUB lookup type.
+        lookup_type: u16,
+        /// The number of covered input glyphs.
+        inputs: usize,
+        /// The number of output or rule-set records.
+        records: usize,
+    },
     /// A Coverage table used an unknown format selector.
     UnsupportedCoverageFormat {
         /// The unrecognized selector.
@@ -341,6 +350,14 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "unsupported GSUB lookup type {lookup_type} format {format}"
+            ),
+            Self::MismatchedGsubMappingCount {
+                lookup_type,
+                inputs,
+                records,
+            } => write!(
+                f,
+                "GSUB lookup type {lookup_type} has {inputs} input glyph(s) but {records} mapping record(s)"
             ),
             Self::UnsupportedCoverageFormat { format } => {
                 write!(f, "unsupported Coverage format {format}")
