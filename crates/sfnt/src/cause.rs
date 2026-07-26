@@ -2,9 +2,11 @@
 
 mod cmap;
 mod display;
+mod layout;
 mod outline;
 
 pub use cmap::{Cmap14TableKind, CmapCause};
+pub use layout::LayoutCause;
 pub use outline::{CoordinateAxis, OutlineCause};
 
 /// The domain-specific cause of a Diagnostic.
@@ -154,6 +156,8 @@ pub enum Cause {
     Cmap(CmapCause),
     /// A TrueType outline table violated an outline-specific invariant.
     Outline(OutlineCause),
+    /// An OpenType layout table violated a shared-structure invariant.
+    Layout(LayoutCause),
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
