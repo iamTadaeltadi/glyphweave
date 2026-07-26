@@ -1,6 +1,6 @@
 //! Public Table Directory decoding scenarios.
 
-use glyphweave_sfnt::{SfntVersion, TableDirectory, Tag};
+use glyphweave_sfnt::{Cause, SfntVersion, TableDirectory, Tag};
 
 #[test]
 fn decodes_empty_truetype_directory() {
@@ -56,4 +56,37 @@ fn decodes_table_record_fields_and_spans() {
         ),
         (12, 28)
     );
+}
+
+#[test]
+fn rejects_unknown_sfnt_version_at_version_span() {
+    let bytes = *b"true\0\0\0\0\0\0\0\0";
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnsupportedSfntVersion {
+            raw: u32::from_be_bytes(*b"true")
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "0..4");
+}
+
+#[test]
+fn rejects_search_fields_not_derived_from_count() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, // TrueType
+        0x00, 0x03, // numTables
+        0x00, 0x10, // wrong searchRange
+        0x00, 0x00, // wrong entrySelector
+        0x00, 0x20, // rangeShift
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidSearchParameters {
+            expected: [32, 1, 16],
+            actual: [16, 0, 32],
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "6..12");
 }
