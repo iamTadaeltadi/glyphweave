@@ -4,7 +4,7 @@
 pub mod support;
 
 use glyphweave_sfnt::{ByteSpan, CmapFormat4, GlyphId};
-use support::{append_words, direct_delta_words, range_offset_words};
+use support::{append_words, decode_words, direct_delta_words, range_offset_words};
 
 #[test]
 fn direct_delta_segments_resolve_at_an_absolute_offset() {
@@ -32,4 +32,18 @@ fn range_offset_segments_apply_delta_only_to_nonzero_glyph_words() {
     assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(12));
     assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::NOTDEF);
     assert_eq!(decoded.character_map().glyph_id('C'), GlyphId::new(14));
+}
+
+#[test]
+fn direct_delta_addition_wraps_modulo_sixteen_bits() {
+    let mut words = direct_delta_words();
+    words[7] = 0xfffe;
+    words[10] = 0xfffe;
+    words[12] = 3;
+
+    let decoded = decode_words(&words).expect("wrapping delta subtable is valid");
+    assert_eq!(
+        decoded.character_map().glyph_id('\u{fffe}'),
+        GlyphId::new(1)
+    );
 }
