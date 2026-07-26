@@ -90,3 +90,37 @@ fn rejects_search_fields_not_derived_from_count() {
     );
     assert_eq!(diagnostic.span().unwrap().to_string(), "6..12");
 }
+
+#[test]
+fn rejects_count_that_cannot_encode_search_fields() {
+    let bytes = [0x00, 0x01, 0x00, 0x00, 0x10, 0x00];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnrepresentableTableCount {
+            count: 4_096,
+            maximum: 4_095,
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "4..6");
+}
+
+#[test]
+fn rejects_record_whose_table_exceeds_font() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'g', b'l', b'y', b'f', 0, 0, 0, 0, // tag and checksum
+        0, 0, 0, 28, 0, 0, 0, 5, // offset and length
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::TableOutOfBounds {
+            tag: Tag::new(*b"glyf"),
+            offset: 28,
+            length: 5,
+            font_length: 28,
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "12..28");
+}
