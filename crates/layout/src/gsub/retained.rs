@@ -1,6 +1,22 @@
 //! GSUB semantics proven reachable and glyph-closed before remapping.
 
-use crate::{GsubLookup, GsubLookupList};
+use crate::gsub::closure::apply::feasible;
+use crate::{GsubClosure, GsubLookup, GsubLookupList, GsubSubtable};
+
+mod chained;
+mod context;
+mod direct;
+mod predicate;
+
+fn retain_subtable(subtable: &GsubSubtable, closure: &GsubClosure) -> Option<GsubSubtable> {
+    match subtable {
+        GsubSubtable::Context(value) => context::retain(value, closure).map(GsubSubtable::Context),
+        GsubSubtable::ChainedContext(value) => {
+            chained::retain(value, closure).map(GsubSubtable::ChainedContext)
+        }
+        _ => direct::retain(subtable, closure),
+    }
+}
 
 /// A retained GSUB `LookupList` whose surviving glyph references belong to one closure.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
