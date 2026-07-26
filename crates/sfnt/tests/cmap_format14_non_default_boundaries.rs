@@ -59,3 +59,27 @@ fn non_default_base_cannot_be_a_surrogate() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(29, 5));
 }
+
+#[test]
+fn non_default_base_cannot_exceed_unicode_maximum() {
+    let bytes = encode_selector(
+        0xe0100,
+        &[],
+        &[NonDefaultMapping {
+            base: 0x11_0000,
+            glyph: 7,
+        }],
+    );
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("base exceeds Unicode");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::InvalidCmap14NonDefaultMapping {
+            selector: 0xe0100,
+            index: 0,
+            codepoint: 0x11_0000,
+            previous: None,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(29, 5));
+}
