@@ -24,7 +24,7 @@ fn notdef_leaf_forms_the_minimal_closure() {
 #[test]
 fn direct_components_join_the_initial_set() {
     let glyf = decode_graph(&[Node::Empty, Node::Simple, Node::Composite(vec![1])]);
-    let initial: GlyphSet = [GlyphId::new(2)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(2)).collect();
 
     let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
 
@@ -38,7 +38,7 @@ fn direct_components_join_the_initial_set() {
 #[test]
 fn borrowed_closure_iteration_is_sorted_and_exact() {
     let glyf = decode_graph(&[Node::Empty, Node::Simple, Node::Composite(vec![1])]);
-    let initial: GlyphSet = [GlyphId::new(2)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(2)).collect();
     let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
 
     let mut glyphs = (&closure).into_iter();
@@ -58,7 +58,7 @@ fn closure_follows_transitive_component_edges() {
         Node::Composite(vec![1]),
         Node::Composite(vec![2]),
     ]);
-    let initial: GlyphSet = [GlyphId::new(3)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(3)).collect();
 
     let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
 
@@ -78,7 +78,7 @@ fn shared_subgraphs_are_memoized_without_losing_depth() {
         Node::Composite(vec![1]),
         Node::Composite(vec![2, 3]),
     ]);
-    let initial: GlyphSet = [GlyphId::new(4)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(4)).collect();
 
     let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
 
@@ -99,7 +99,7 @@ fn maximum_depth_follows_the_longest_branch() {
         Node::Simple,
         Node::Composite(vec![4, 3]),
     ]);
-    let initial: GlyphSet = [GlyphId::new(5)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(5)).collect();
 
     let closure = GlyphClosure::compute(&initial, &glyf).unwrap();
 
@@ -113,7 +113,7 @@ fn maximum_depth_follows_the_longest_branch() {
 #[test]
 fn rejects_an_initial_root_outside_glyf() {
     let glyf = decode_graph(&[Node::Simple]);
-    let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(1)).collect();
 
     let diagnostic = GlyphClosure::compute(&initial, &glyf).unwrap_err();
 
@@ -146,7 +146,7 @@ fn rejects_glyf_without_mandatory_notdef() {
 #[test]
 fn rejects_a_reachable_dangling_component() {
     let glyf = decode_graph(&[Node::Empty, Node::Composite(vec![2])]);
-    let initial: GlyphSet = [GlyphId::new(1)].into_iter().collect();
+    let initial: GlyphSet = std::iter::once(GlyphId::new(1)).collect();
 
     let diagnostic = GlyphClosure::compute(&initial, &glyf).unwrap_err();
 
