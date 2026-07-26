@@ -22,6 +22,15 @@ pub enum OutlineCause {
         /// The first relative `glyf` offset.
         offset: u32,
     },
+    /// A `loca` entry moves backward in `glyf`.
+    DecreasingLocaOffset {
+        /// The zero-based location-entry index.
+        index: u32,
+        /// The decreasing relative offset.
+        offset: u32,
+        /// The immediately preceding relative offset.
+        previous: u32,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -39,6 +48,14 @@ impl fmt::Display for OutlineCause {
             Self::NonzeroLocaStart { offset } => {
                 write!(f, "loca first offset {offset} does not start glyf at zero")
             }
+            Self::DecreasingLocaOffset {
+                index,
+                offset,
+                previous,
+            } => write!(
+                f,
+                "loca offset {index} value {offset} precedes previous offset {previous}"
+            ),
         }
     }
 }
