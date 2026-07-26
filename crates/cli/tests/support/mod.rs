@@ -6,3 +6,4 @@
 
 pub(crate) mod reference_font;
 pub(crate) mod reference_map;
+pub(crate) mod reference_tool;
