@@ -47,4 +47,32 @@ proptest! {
         let decoded = ClassDefinition::decode(&encoded, 0).unwrap();
         prop_assert_eq!(decoded, classes);
     }
+
+    #[test]
+    fn encoder_always_chooses_the_shortest_legal_format(
+        assignments in collection::vec((any::<u16>(), any::<u16>()), 0..257),
+    ) {
+        let classes = ClassDefinition::from_assignments(
+            assignments
+                .into_iter()
+                .map(|(glyph, class)| (GlyphId::new(glyph), class)),
+        );
+        let ordered: Vec<_> = classes.assignments().collect();
+        let mut runs = 0usize;
+        let mut previous: Option<(GlyphId, u16)> = None;
+        for &(glyph, class) in &ordered {
+            if !matches!(previous, Some((prior, value))
+                if prior.raw().checked_add(1) == Some(glyph.raw()) && value == class)
+            {
+                runs += 1;
+            }
+            previous = Some((glyph, class));
+        }
+        let format_2_size = 4 + 6 * runs;
+        let expected = ordered.first().zip(ordered.last()).map_or(format_2_size, |(first, last)| {
+            let span = usize::from(last.0.raw()) - usize::from(first.0.raw()) + 1;
+            u16::try_from(span).map_or(format_2_size, |_| format_2_size.min(6 + 2 * span))
+        });
+        prop_assert_eq!(classes.encode().len(), expected);
+    }
 }
