@@ -18,7 +18,7 @@ mod version;
 
 pub use cause::Cause;
 pub use diagnostic::{Decoded, Diagnostic, Severity, Stage};
-pub use directory::TableRecord;
+pub use directory::{TableDirectory, TableRecord};
 pub use reader::Reader;
 pub use span::ByteSpan;
 pub use tag::Tag;
