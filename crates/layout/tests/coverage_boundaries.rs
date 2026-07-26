@@ -38,3 +38,24 @@ fn a_truncated_glyph_reports_the_remaining_byte() {
     );
     assert_eq!(diagnostic.span().unwrap().start(), 4);
 }
+
+#[test]
+fn every_strict_format_2_prefix_is_rejected() {
+    let complete = [
+        0x00, 0x02, // format
+        0x00, 0x02, // rangeCount
+        0x00, 0x01, 0x00, 0x02, 0x00, 0x00, // first range
+        0x00, 0x04, 0x00, 0x05, 0x00, 0x02, // second range
+    ];
+
+    for end in 0..complete.len() {
+        let diagnostic = Coverage::decode(&complete[..end], 0).unwrap_err();
+        assert!(
+            matches!(diagnostic.cause(), Cause::UnexpectedEnd { .. }),
+            "prefix {end} produced {}",
+            diagnostic.cause()
+        );
+    }
+
+    assert_eq!(Coverage::decode(&complete, 0).unwrap().len(), 4);
+}
