@@ -98,12 +98,33 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
         });
     }
     validate_directory_spans(&faces)?;
+    validate_tables_outside_header(&faces, header_span)?;
     Ok(FontCollection {
         version,
         header_span,
         faces,
         signature,
     })
+}
+
+fn validate_tables_outside_header(faces: &[Face], header: ByteSpan) -> Decoded<()> {
+    for face in faces {
+        for record in face.directory.records() {
+            if record.table_span().overlaps(header) {
+                return Err(Diagnostic::at(
+                    Stage::Decode,
+                    record.table_span(),
+                    Cause::TableOverlapsCollectionHeader {
+                        face: face.index,
+                        tag: record.tag(),
+                        table: record.table_span(),
+                        header,
+                    },
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn validate_directory_spans(faces: &[Face]) -> Decoded<()> {
