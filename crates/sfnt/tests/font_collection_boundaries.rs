@@ -75,6 +75,27 @@ fn rejects_face_count_larger_than_available_header() {
 }
 
 #[test]
+fn rejects_face_offset_without_complete_directory_header() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 1);
+    push_u32(&mut bytes, 20);
+    bytes.resize(24, 0);
+
+    let diagnostic = FontCollection::decode(&bytes).unwrap_err();
+    assert_eq!(diagnostic.span(), ByteSpan::sized(12, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::FaceDirectoryOutOfBounds {
+            index: FaceIndex::FIRST,
+            offset: 20,
+            font_length: 24
+        }
+    );
+}
+
+#[test]
 fn rejects_malformed_unselected_face() {
     let mut bytes = b"ttcf".to_vec();
     push_u16(&mut bytes, 1);

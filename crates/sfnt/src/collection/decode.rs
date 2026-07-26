@@ -61,42 +61,7 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
     let header_span =
         ByteSpan::between(0, reader.offset()).unwrap_or_else(|| ByteSpan::empty_at(0));
     validate_unique_offsets(&offsets)?;
-    let mut faces = Vec::with_capacity(offsets.len());
-    for (raw_index, raw_offset) in offsets.into_iter().enumerate() {
-        let directory_offset = usize::try_from(raw_offset).map_err(|_| {
-            Diagnostic::at(
-                Stage::Decode,
-                header_span,
-                Cause::SpanOutOfBounds {
-                    end: usize::MAX,
-                    length: bytes.len(),
-                },
-            )
-        })?;
-        if directory_offset < header_span.end() {
-            let index = FaceIndex::new(u32::try_from(raw_index).unwrap_or(u32::MAX));
-            let directory = ByteSpan::sized(directory_offset, 12)
-                .unwrap_or_else(|| ByteSpan::empty_at(directory_offset));
-            let field_start = 12usize.saturating_add(raw_index.saturating_mul(4));
-            let field =
-                ByteSpan::sized(field_start, 4).unwrap_or_else(|| ByteSpan::empty_at(field_start));
-            return Err(Diagnostic::at(
-                Stage::Decode,
-                field,
-                Cause::FaceDirectoryOverlapsCollectionHeader {
-                    index,
-                    directory,
-                    header: header_span,
-                },
-            ));
-        }
-        let directory = TableDirectory::decode(bytes, directory_offset)?;
-        faces.push(Face {
-            index: FaceIndex::new(u32::try_from(raw_index).unwrap_or(u32::MAX)),
-            directory_offset,
-            directory,
-        });
-    }
+    let faces = decode_faces(bytes, offsets, header_span)?;
     validate_directory_spans(&faces)?;
     validate_signature_metadata(header_span, &faces, signature)?;
     validate_tables_outside_header(&faces, header_span)?;
@@ -109,6 +74,60 @@ pub(super) fn decode(bytes: &[u8]) -> Decoded<FontCollection> {
         faces,
         signature,
     })
+}
+
+fn decode_faces(bytes: &[u8], offsets: Vec<u32>, header_span: ByteSpan) -> Decoded<Vec<Face>> {
+    let mut faces = Vec::with_capacity(offsets.len());
+    for (raw_index, raw_offset) in offsets.into_iter().enumerate() {
+        let directory_offset = usize::try_from(raw_offset).map_err(|_| {
+            Diagnostic::at(
+                Stage::Decode,
+                header_span,
+                Cause::SpanOutOfBounds {
+                    end: usize::MAX,
+                    length: bytes.len(),
+                },
+            )
+        })?;
+        let index = FaceIndex::new(u32::try_from(raw_index).unwrap_or(u32::MAX));
+        let field_start = 12usize.saturating_add(raw_index.saturating_mul(4));
+        let field =
+            ByteSpan::sized(field_start, 4).unwrap_or_else(|| ByteSpan::empty_at(field_start));
+        if directory_offset < header_span.end() {
+            let directory = ByteSpan::sized(directory_offset, 12)
+                .unwrap_or_else(|| ByteSpan::empty_at(directory_offset));
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                field,
+                Cause::FaceDirectoryOverlapsCollectionHeader {
+                    index,
+                    directory,
+                    header: header_span,
+                },
+            ));
+        }
+        if directory_offset
+            .checked_add(12)
+            .is_none_or(|end| end > bytes.len())
+        {
+            return Err(Diagnostic::at(
+                Stage::Decode,
+                field,
+                Cause::FaceDirectoryOutOfBounds {
+                    index,
+                    offset: directory_offset,
+                    font_length: bytes.len(),
+                },
+            ));
+        }
+        let directory = TableDirectory::decode(bytes, directory_offset)?;
+        faces.push(Face {
+            index,
+            directory_offset,
+            directory,
+        });
+    }
+    Ok(faces)
 }
 
 fn validate_signature_metadata(
