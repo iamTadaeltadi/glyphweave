@@ -39,6 +39,11 @@ pub enum Cause {
         /// The available font length.
         font_length: usize,
     },
+    /// A Table Record tag violates the OpenType Tag byte grammar.
+    InvalidTableTag {
+        /// The four offending bytes.
+        tag: crate::Tag,
+    },
     /// A bounded read needed more bytes than remained in the input.
     UnexpectedEnd {
         /// The number of bytes the read required.
@@ -80,6 +85,7 @@ impl fmt::Display for Cause {
                 f,
                 "table {tag} at {offset}+{length} exceeds font length {font_length}"
             ),
+            Self::InvalidTableTag { tag } => write!(f, "invalid table tag {tag:?}"),
             Self::UnexpectedEnd { needed, available } => {
                 write!(f, "needed {needed} byte(s) but only {available} remained")
             }
@@ -139,5 +145,13 @@ mod tests {
             cause.to_string(),
             "table glyf at 64+40 exceeds font length 96"
         );
+    }
+
+    #[test]
+    fn invalid_tag_failure_uses_unambiguous_debug_form() {
+        let cause = Cause::InvalidTableTag {
+            tag: crate::Tag::new(*b"a b "),
+        };
+        assert_eq!(cause.to_string(), "invalid table tag Tag(a b )");
     }
 }
