@@ -14,6 +14,13 @@ pub enum Cause {
         /// The four bytes found at the beginning of the input.
         found: crate::Tag,
     },
+    /// The TTC Header declared a version Glyphweave cannot interpret.
+    UnsupportedCollectionVersion {
+        /// The header's major version.
+        major: u16,
+        /// The header's minor version.
+        minor: u16,
+    },
     /// The Table Directory declared a version outside the OpenType enumeration.
     UnsupportedSfntVersion {
         /// The unrecognized four-byte value.
@@ -114,6 +121,9 @@ impl fmt::Display for Cause {
         match *self {
             Self::InvalidCollectionTag { found } => {
                 write!(f, "expected collection tag ttcf but found {found:?}")
+            }
+            Self::UnsupportedCollectionVersion { major, minor } => {
+                write!(f, "unsupported collection version {major}.{minor}")
             }
             Self::UnsupportedSfntVersion { raw } => {
                 write!(f, "unsupported SFNT version 0x{raw:08x}")
