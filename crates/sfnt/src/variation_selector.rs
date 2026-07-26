@@ -66,4 +66,11 @@ mod tests {
         let ideographic = VariationSelector::new('\u{e0100}').unwrap();
         assert!(standardized < ideographic);
     }
+
+    #[test]
+    fn converts_back_into_its_unicode_scalar() {
+        let selector = VariationSelector::new('\u{e0100}').unwrap();
+
+        assert_eq!(char::from(selector), '\u{e0100}');
+    }
 }
