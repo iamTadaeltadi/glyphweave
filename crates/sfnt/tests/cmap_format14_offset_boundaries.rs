@@ -174,6 +174,40 @@ fn selector_records_may_share_an_exact_default_table() {
 }
 
 #[test]
+fn selector_records_may_share_an_exact_non_default_table() {
+    let mut bytes = Vec::new();
+    push_u16(&mut bytes, 14);
+    push_u32(&mut bytes, 41);
+    push_u32(&mut bytes, 2);
+    for selector in [0xfe0f, 0xe0100] {
+        push_u24(&mut bytes, selector);
+        push_u32(&mut bytes, 0);
+        push_u32(&mut bytes, 32);
+    }
+    push_u32(&mut bytes, 1);
+    push_u24(&mut bytes, 0x82a6);
+    push_u16(&mut bytes, 19);
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("exact target sharing is valid");
+    for raw_selector in ['\u{fe0f}', '\u{e0100}'] {
+        let selector = VariationSelector::new(raw_selector).unwrap();
+        assert_eq!(
+            decoded
+                .variation_selector_map()
+                .mapping('\u{82a6}', selector),
+            Some(VariationMapping::NonDefault(glyphweave_sfnt::GlyphId::new(
+                19
+            )))
+        );
+    }
+
+    assert_eq!(
+        decoded.variation_selector_map().non_default_mapping_count(),
+        2
+    );
+}
+
+#[test]
 fn nested_tables_cannot_partially_overlap() {
     let mut bytes = encode_selector(
         0xfe0f,
