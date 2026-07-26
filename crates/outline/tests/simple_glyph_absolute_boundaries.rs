@@ -52,3 +52,26 @@ fn coordinate_overflow_is_located_inside_an_absolute_glyph_span() {
         })
     );
 }
+
+#[test]
+fn bounds_mismatch_is_located_inside_an_absolute_glyph_span() {
+    let mut bytes = vec![0xaa, 0xbb, 0xcc];
+    for value in [1i16, 0, 0, 0, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x33, 1]);
+    let span = ByteSpan::sized(3, 16).unwrap();
+    let diagnostic =
+        SimpleGlyph::decode(&bytes, span).expect_err("point one is outside zero bounds");
+
+    assert_eq!(diagnostic.span(), ByteSpan::sized(5, 8));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Outline(OutlineCause::SimpleGlyphBoundsMismatch {
+            recorded: [0, 0, 0, 0],
+            calculated: [1, 0, 1, 0],
+        })
+    );
+}
