@@ -1,4 +1,4 @@
-//! Semantic decoding tests for OpenType LookupList tables.
+//! Semantic decoding tests for OpenType `LookupList` tables.
 
 use glyphweave_layout::LookupList;
 use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind, LayoutTarget};
