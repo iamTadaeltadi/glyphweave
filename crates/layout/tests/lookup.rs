@@ -1,7 +1,7 @@
 //! Semantic decoding tests for shared OpenType Lookup tables.
 
 use glyphweave_layout::{Lookup, MarkFilter};
-use glyphweave_sfnt::{ByteSpan, LayoutTableKind};
+use glyphweave_sfnt::{ByteSpan, Cause, LayoutCause, LayoutTableKind};
 
 #[test]
 fn decodes_flags_mark_set_and_ordered_subtables() {
@@ -63,5 +63,62 @@ fn decodes_mark_attachment_class_without_filtering_set() {
     assert_eq!(
         lookup.flags().mark_filter(),
         MarkFilter::AttachmentClass(11)
+    );
+}
+
+#[test]
+fn rejects_lookup_type_outside_table_enumeration() {
+    let bytes = [0xaa, 0xbb, 0x00, 0x09];
+    let diagnostic = Lookup::decode(
+        &bytes,
+        ByteSpan::between(2, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(2, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::InvalidLookupType {
+            table: LayoutTableKind::Substitution,
+            lookup_type: 9,
+        })
+    );
+}
+
+#[test]
+fn rejects_reserved_lookup_flag_bits() {
+    let bytes = [0x00, 0x01, 0x00, 0x20];
+    let diagnostic = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(2, 4));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::ReservedLookupFlags { flags: 0x0020 })
+    );
+}
+
+#[test]
+fn rejects_lookup_without_subtables() {
+    let bytes = [0x00, 0x01, 0x00, 0x00, 0x00, 0x00];
+    let diagnostic = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Positioning,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(4, 6));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::EmptyLookupSubtables {
+            table: LayoutTableKind::Positioning,
+            lookup_type: 1,
+        })
     );
 }
