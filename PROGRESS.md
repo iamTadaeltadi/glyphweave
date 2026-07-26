@@ -25,8 +25,8 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 - [x] 2.1 Decode and resolve `cmap` format 4 — 530 source / 702 test lines, 35 unit + integration + 3 fixed-seed property + 1 doc tests, 98.46% line / 88.75% region cov in decoder (SFNT crate 97.71% line / 93.64% region cov)
 - [x] 2.2 Decode and resolve `cmap` format 12 — 362 source / 492 test lines, 26 unit + integration + 2 fixed-seed property + 1 doc tests, 98.58% line / 92.39% region cov in decoder (SFNT crate 97.84% line / 93.69% region cov)
 - [x] 2.3 Decode Variation Selector mappings in `cmap` format 14 — 1,270 source / 1,591 test lines, 64 unit + integration + 2 fixed-seed property + 4 doc tests, 98.96% line / 92.21% region cov in decoder (SFNT crate 97.89% line / 93.53% region cov)
-- [ ] 2.4 Decode Loca offsets in short and long forms <-- NEXT
-- [ ] 2.5 Decode Simple Glyph contours, flags, and coordinate deltas
+- [x] 2.4 Decode Loca offsets in short and long forms — 386 source / 658 test lines, 32 unit + integration + 2 fixed-seed property + 2 doc tests, 99.07% line / 92.16% region cov in decoder (outline crate 99.56% line / 90.65% region cov)
+- [ ] 2.5 Decode Simple Glyph contours, flags, and coordinate deltas <-- NEXT
 - [ ] 2.6 Decode Composite Glyph components and transforms
 - [ ] 2.7 Compute cycle-safe composite Glyph Closure
 - [ ] 2.8 Differentially test character maps and outlines against reference tools
