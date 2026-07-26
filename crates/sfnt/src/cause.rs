@@ -60,6 +60,15 @@ pub enum Cause {
         /// The TTC Header range.
         header: crate::ByteSpan,
     },
+    /// A file-level DSIG range occupies a Face's Table Directory bytes.
+    CollectionSignatureOverlapsFaceDirectory {
+        /// The declared signature range.
+        signature: crate::ByteSpan,
+        /// The affected Face Index.
+        face: crate::FaceIndex,
+        /// The covered directory range.
+        directory: crate::ByteSpan,
+    },
     /// Two Face Indices point to the same Table Directory.
     DuplicateFaceDirectoryOffset {
         /// The first Face Index using the offset.
@@ -259,6 +268,14 @@ impl Cause {
                 f,
                 "collection signature at {signature} overlaps collection header {header}"
             ),
+            Self::CollectionSignatureOverlapsFaceDirectory {
+                signature,
+                face,
+                directory,
+            } => write!(
+                f,
+                "collection signature at {signature} overlaps face {face} directory {directory}"
+            ),
             Self::DuplicateFaceDirectoryOffset {
                 first,
                 second,
@@ -333,6 +350,7 @@ impl fmt::Display for Cause {
             | Self::InvalidCollectionSignatureDescriptor { .. }
             | Self::CollectionSignatureNotAtEnd { .. }
             | Self::CollectionSignatureOverlapsHeader { .. }
+            | Self::CollectionSignatureOverlapsFaceDirectory { .. }
             | Self::DuplicateFaceDirectoryOffset { .. }
             | Self::FaceDirectoryOverlapsCollectionHeader { .. }
             | Self::OverlappingFaceDirectories { .. }
