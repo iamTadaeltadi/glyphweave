@@ -75,3 +75,18 @@ fn sequential_glyph_range_can_end_at_the_glyph_id_maximum() {
     assert_eq!(decoded.character_map().glyph_id('A'), GlyphId::new(65_534));
     assert_eq!(decoded.character_map().glyph_id('B'), GlyphId::new(65_535));
 }
+
+#[test]
+fn nonzero_surrogate_mapping_is_rejected() {
+    let diagnostic =
+        decode_groups(0, &[(0xd800, 0xd800, 7)]).expect_err("surrogate is not a Unicode scalar");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::CmapNonScalarMapping {
+            format: 12,
+            codepoint: 0xd800,
+            glyph: GlyphId::new(7),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(16, 12));
+}
