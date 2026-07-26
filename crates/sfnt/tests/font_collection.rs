@@ -478,3 +478,20 @@ fn rejects_nonzero_face_index_for_standalone_font() {
         }
     );
 }
+
+#[test]
+fn selects_requested_face_from_collection() {
+    let mut bytes = b"ttcf".to_vec();
+    push_u16(&mut bytes, 1);
+    push_u16(&mut bytes, 0);
+    push_u32(&mut bytes, 2);
+    push_u32(&mut bytes, 20);
+    push_u32(&mut bytes, 32);
+    push_empty_directory(&mut bytes, 0x0001_0000);
+    push_empty_directory(&mut bytes, u32::from_be_bytes(*b"OTTO"));
+
+    let face = Face::select(&bytes, FaceIndex::new(1)).unwrap();
+    assert_eq!(face.index(), FaceIndex::new(1));
+    assert_eq!(face.directory_offset(), 32);
+    assert_eq!(face.directory().version(), SfntVersion::OpenTypeCff);
+}
