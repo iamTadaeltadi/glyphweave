@@ -1,5 +1,7 @@
 //! Cycle-safe transitive retention of composite components.
 
+use glyphweave_sfnt::GlyphId;
+
 use crate::GlyphSet;
 
 /// A closed Glyph Set and its deepest reachable composite-component path.
@@ -10,6 +12,12 @@ pub struct GlyphClosure {
 }
 
 impl GlyphClosure {
+    /// Returns whether a Glyph ID belongs to the transitive closure.
+    #[must_use]
+    pub fn contains(&self, glyph: GlyphId) -> bool {
+        self.glyphs.contains(glyph)
+    }
+
     /// Returns the number of retained Glyph IDs.
     #[must_use]
     pub fn len(&self) -> usize {
