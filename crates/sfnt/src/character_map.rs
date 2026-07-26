@@ -50,3 +50,6 @@ impl CharacterMap {
             .map(|(&codepoint, &glyph)| (codepoint, glyph))
     }
 }
+
+#[cfg(test)]
+mod tests;
