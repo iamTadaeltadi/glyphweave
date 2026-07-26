@@ -607,3 +607,15 @@ fn contextual_substitution_rejects_unknown_format() {
         })
     );
 }
+
+#[test]
+fn context_format_three_rejects_empty_input() {
+    let bytes = [0x00, 0x03, 0x00, 0x00];
+    let diagnostic =
+        ContextSubstitution::decode(&bytes, ByteSpan::between(0, 4).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::EmptyContextInput { lookup_type: 5 })
+    );
+}
