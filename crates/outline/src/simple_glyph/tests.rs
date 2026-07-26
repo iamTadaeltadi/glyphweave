@@ -38,3 +38,16 @@ fn contour_lookup_partitions_points_at_exclusive_ends() {
     assert_eq!(glyph.contour(1), Some(&glyph.points()[2..3]));
     assert_eq!(glyph.contour(2), None);
 }
+
+#[test]
+fn contour_iteration_is_exact_and_source_ordered() {
+    let glyph = fixture();
+    let mut contours = glyph.contours();
+
+    assert_eq!(contours.len(), 2);
+    assert_eq!(contours.next(), Some(&glyph.points()[0..2]));
+    assert_eq!(contours.len(), 1);
+    assert_eq!(contours.next(), Some(&glyph.points()[2..3]));
+    assert_eq!(contours.next(), None);
+    assert_eq!(contours.len(), 0);
+}
