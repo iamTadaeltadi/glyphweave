@@ -92,3 +92,13 @@ fn every_strict_prefix_of_a_valid_subtable_is_rejected() {
         );
     }
 }
+
+#[test]
+fn declared_span_excludes_neighboring_bytes() {
+    let mut bytes = encode_empty();
+    bytes.extend_from_slice(&[0xaa; 8]);
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("neighbor bytes are not declared");
+    assert_eq!(decoded.span(), ByteSpan::sized(0, 10).unwrap());
+    assert!(decoded.variation_selector_map().is_empty());
+}
