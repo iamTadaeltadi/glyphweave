@@ -1,8 +1,8 @@
 use glyphweave_outline::GlyphSet;
-use glyphweave_sfnt::{FaceIndex, GlyphId};
+use glyphweave_sfnt::{FaceIndex, GlyphId, Tag};
 
 use super::SubsetPlan;
-use crate::CodepointSet;
+use crate::{CodepointSet, Retention};
 
 #[test]
 fn plan_owns_selections_and_derives_their_remap() {
@@ -17,4 +17,29 @@ fn plan_owns_selections_and_derives_their_remap() {
         let new_glyph = plan.remap().new_glyph_id(glyph).unwrap();
         assert_eq!(plan.remap().glyph_id(new_glyph), Some(glyph));
     }
+}
+
+#[test]
+fn table_decisions_are_canonical_sorted_and_default_drop() {
+    let cmap = Tag::new(*b"cmap");
+    let glyf = Tag::new(*b"glyf");
+    let head = Tag::new(*b"head");
+    let plan = SubsetPlan::new(
+        FaceIndex::FIRST,
+        CodepointSet::new(),
+        GlyphSet::new(),
+        [
+            (head, Retention::Keep),
+            (glyf, Retention::Rewrite),
+            (head, Retention::Drop),
+        ],
+    );
+
+    assert_eq!(plan.retention(cmap), Retention::Drop);
+    assert_eq!(plan.retention(head), Retention::Drop);
+    assert_eq!(plan.retention(glyf), Retention::Rewrite);
+    assert_eq!(
+        plan.retentions().collect::<Vec<_>>(),
+        [(glyf, Retention::Rewrite)]
+    );
 }
