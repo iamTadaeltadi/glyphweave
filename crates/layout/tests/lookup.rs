@@ -253,3 +253,22 @@ fn every_strict_extension_lookup_prefix_is_rejected() {
         );
     }
 }
+
+#[test]
+fn accepts_exact_extension_payload_aliasing() {
+    let bytes = [
+        0x00, 0x07, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0a, 0x00, 0x12, // Lookup
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x10, // target 26
+        0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, // target 26
+        0xde, 0xad,
+    ];
+    let lookup = Lookup::decode(
+        &bytes,
+        ByteSpan::between(0, bytes.len()).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap();
+
+    assert_eq!(lookup.subtables()[0], lookup.subtables()[1]);
+    assert_eq!(lookup.subtables()[0], ByteSpan::between(26, 28).unwrap());
+}
