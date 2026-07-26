@@ -196,3 +196,21 @@ fn reserved_padding_word_must_be_zero() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 2));
 }
+
+#[test]
+fn segment_start_cannot_exceed_its_end() {
+    let mut words = direct_delta_words();
+    words[10] = 0x0044;
+
+    let diagnostic = decode_words(&words).expect_err("first segment is inverted");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapSegment {
+            index: 0,
+            start: 0x0044,
+            end: 0x0043,
+            previous_end: None,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(14, 8));
+}
