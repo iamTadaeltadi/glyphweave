@@ -6,7 +6,7 @@ pub mod support;
 use glyphweave_sfnt::{
     ByteSpan, Cause, CmapCause, CmapFormat14, GlyphId, VariationMapping, VariationSelector,
 };
-use support::{NonDefaultMapping, encode_selector};
+use support::{DefaultRange, NonDefaultMapping, encode_selector};
 
 #[test]
 fn non_default_base_values_must_be_strictly_ordered() {
@@ -127,4 +127,29 @@ fn maximal_scalar_and_glyph_are_valid_non_default_values() {
             .mapping('\u{10ffff}', selector),
         Some(VariationMapping::NonDefault(GlyphId::new(u16::MAX)))
     );
+}
+
+#[test]
+fn one_sequence_cannot_be_both_default_and_non_default() {
+    let bytes = encode_selector(
+        0xe0100,
+        &[DefaultRange {
+            start: 0x82a5,
+            additional: 2,
+        }],
+        &[NonDefaultMapping {
+            base: 0x82a6,
+            glyph: 19,
+        }],
+    );
+
+    let diagnostic = CmapFormat14::decode(&bytes, 0).expect_err("mapping categories conflict");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Cmap(CmapCause::ConflictingCmap14Mapping {
+            selector: 0xe0100,
+            codepoint: 0x82a6,
+        })
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(29, 9));
 }
