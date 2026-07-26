@@ -19,10 +19,14 @@ fn minimal_words() -> Vec<u16> {
     ]
 }
 
-fn decode_words(words: &[u16]) -> glyphweave_sfnt::Decoded<CmapFormat4> {
+fn encode_words(words: &[u16]) -> Vec<u8> {
     let mut bytes = Vec::with_capacity(words.len() * 2);
     append_words(&mut bytes, words);
-    CmapFormat4::decode(&bytes, 0)
+    bytes
+}
+
+fn decode_words(words: &[u16]) -> glyphweave_sfnt::Decoded<CmapFormat4> {
+    CmapFormat4::decode(&encode_words(words), 0)
 }
 
 #[test]
@@ -111,5 +115,22 @@ fn declared_length_must_be_even() {
 
     let diagnostic = decode_words(&words).expect_err("format-4 words require even length");
     assert_eq!(diagnostic.cause(), Cause::OddCmapLength { declared: 25 });
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
+}
+
+#[test]
+fn declared_length_cannot_exceed_available_bytes() {
+    let mut bytes = encode_words(&minimal_words());
+    bytes.pop();
+
+    let diagnostic = CmapFormat4::decode(&bytes, 0).expect_err("last byte is truncated");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapLength {
+            declared: 24,
+            minimum: 24,
+            available: 23,
+        }
+    );
     assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
 }
