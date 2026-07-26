@@ -165,3 +165,20 @@ fn search_parameters_must_match_the_segment_count() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(8, 6));
 }
+
+#[test]
+fn declared_length_must_hold_every_segment_array() {
+    let mut words = minimal_words();
+    words[3..7].copy_from_slice(&[4, 4, 1, 0]);
+
+    let diagnostic = decode_words(&words).expect_err("second segment does not fit");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapLength {
+            declared: 24,
+            minimum: 32,
+            available: 24,
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(2, 2));
+}
