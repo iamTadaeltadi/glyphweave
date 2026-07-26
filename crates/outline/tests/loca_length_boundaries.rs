@@ -44,3 +44,19 @@ fn long_table_cannot_advertise_surplus_location_entries() {
         })
     );
 }
+
+#[test]
+fn loca_span_must_be_in_bounds_before_entries_are_observed() {
+    let bytes = [0_u8; 5];
+    let table_span = ByteSpan::sized(0, 6).unwrap();
+    let glyf_span = ByteSpan::empty_at(5);
+
+    let diagnostic = Loca::decode(&bytes, table_span, glyf_span, 2, LocaFormat::Short)
+        .expect_err("the declared loca span exceeds available bytes");
+
+    assert_eq!(diagnostic.span(), Some(table_span));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::SpanOutOfBounds { end: 6, length: 5 }
+    );
+}
