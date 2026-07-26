@@ -22,6 +22,24 @@ fn unicode_scalars() -> impl Strategy<Value = Vec<char>> {
     collection::vec(any::<char>(), 0..1025)
 }
 
+#[derive(Clone, Copy, Debug)]
+enum CodepointOperation {
+    Insert(char),
+    Remove(char),
+    RetainThrough(char),
+}
+
+fn codepoint_operations() -> impl Strategy<Value = Vec<CodepointOperation>> {
+    collection::vec(
+        prop_oneof![
+            any::<char>().prop_map(CodepointOperation::Insert),
+            any::<char>().prop_map(CodepointOperation::Remove),
+            any::<char>().prop_map(CodepointOperation::RetainThrough),
+        ],
+        0..257,
+    )
+}
+
 proptest! {
     #![proptest_config(fixed_config())]
 
@@ -36,5 +54,30 @@ proptest! {
             codepoints.iter().collect::<Vec<_>>(),
             expected.into_iter().collect::<Vec<_>>(),
         );
+    }
+
+
+    #[test]
+    fn codepoint_mutations_match_the_ordered_set_model(operations in codepoint_operations()) {
+        let mut codepoints = CodepointSet::new();
+        let mut expected = BTreeSet::new();
+        for operation in operations {
+            match operation {
+                CodepointOperation::Insert(codepoint) => {
+                    prop_assert_eq!(codepoints.insert(codepoint), expected.insert(codepoint));
+                }
+                CodepointOperation::Remove(codepoint) => {
+                    prop_assert_eq!(codepoints.remove(codepoint), expected.remove(&codepoint));
+                }
+                CodepointOperation::RetainThrough(last) => {
+                    codepoints.retain(|codepoint| codepoint <= last);
+                    expected.retain(|codepoint| *codepoint <= last);
+                }
+            }
+            prop_assert_eq!(
+                codepoints.iter().collect::<Vec<_>>(),
+                expected.iter().copied().collect::<Vec<_>>(),
+            );
+        }
     }
 }
