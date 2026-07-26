@@ -94,6 +94,23 @@ fn preserves_full_width_invalid_extension_offset() {
 }
 
 #[test]
+fn rejects_extension_span_beyond_input() {
+    let bytes = [0; 8];
+    let diagnostic = decode_extension(
+        &bytes,
+        ByteSpan::between(0, 9).unwrap(),
+        LayoutTableKind::Substitution,
+    )
+    .unwrap_err();
+
+    assert_eq!(diagnostic.span(), ByteSpan::between(0, 9));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::SpanOutOfBounds { end: 9, length: 8 }
+    );
+}
+
+#[test]
 fn flattens_same_typed_wrappers_in_order() {
     let bytes = [
         0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x10, // wrapper one
