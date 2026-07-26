@@ -62,6 +62,33 @@ fn class_rule_retention_prunes_domains_and_infeasible_rules() {
     assert_eq!(rules[0].records(), [SubstitutionRecord::new(0, 7)]);
 }
 
+#[test]
+fn exact_rule_retention_keeps_only_fully_closed_sequences() {
+    let input = ChainedContextSubstitution::GlyphRules(vec![
+        ContextRule::chained(
+            [GlyphId::new(1)],
+            GlyphId::new(3),
+            [],
+            [GlyphId::new(4)],
+            [SubstitutionRecord::new(0, 7)],
+        ),
+        ContextRule::chained(
+            [GlyphId::new(2)],
+            GlyphId::new(3),
+            [],
+            [GlyphId::new(9)],
+            [SubstitutionRecord::new(0, 8)],
+        ),
+    ]);
+
+    let Some(ChainedContextSubstitution::GlyphRules(rules)) = retain(&input, &closed([1, 3, 4]))
+    else {
+        panic!("one closed exact chained rule must remain");
+    };
+    assert_eq!(rules.len(), 1);
+    assert_eq!(rules[0].records(), [SubstitutionRecord::new(0, 7)]);
+}
+
 fn closed(raw_glyphs: impl IntoIterator<Item = u16>) -> GsubClosure {
     GsubClosure {
         glyphs: raw_glyphs
