@@ -14,7 +14,7 @@ fn alternate_closure_adds_every_choice_for_a_reachable_input() {
         (GlyphId::new(3), vec![GlyphId::new(5), GlyphId::new(4)]),
         (GlyphId::new(8), vec![GlyphId::new(9)]),
     ]));
-    let mut glyphs = [GlyphId::new(3)].into_iter().collect::<BTreeSet<_>>();
+    let mut glyphs = BTreeSet::from([GlyphId::new(3)]);
 
     apply(&subtable, &mut glyphs);
 
