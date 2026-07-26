@@ -20,13 +20,21 @@ pub(crate) fn ttx_xml(tables: &[&str]) -> Option<String> {
 }
 
 pub(crate) fn subset(tool: &str, glyph: u16) -> Option<Vec<u8>> {
+    subset_with(tool, format!("--gids={glyph}"))
+}
+
+pub(crate) fn subset_unicode(tool: &str, codepoint: u32) -> Option<Vec<u8>> {
+    subset_with(tool, format!("--unicodes=U+{codepoint:X}"))
+}
+
+fn subset_with(tool: &str, selection: String) -> Option<Vec<u8>> {
     let output_path = std::env::temp_dir().join(format!(
         "glyphweave-{tool}-{}-subset.ttf",
         std::process::id()
     ));
     let mut command = Command::new(tool);
     command.arg(fixture_path()).args([
-        format!("--gids={glyph}"),
+        selection,
         "--retain-gids".to_owned(),
         format!("--output-file={}", output_path.display()),
     ]);
