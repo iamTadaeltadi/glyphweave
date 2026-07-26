@@ -25,6 +25,7 @@ mod reader;
 mod search;
 mod span;
 mod tag;
+mod variation_selector;
 mod version;
 
 pub use cause::{Cause, CmapCause};
@@ -44,4 +45,5 @@ pub use glyph_id::{GlyphId, NewGlyphId};
 pub use reader::Reader;
 pub use span::ByteSpan;
 pub use tag::Tag;
+pub use variation_selector::VariationSelector;
 pub use version::SfntVersion;
