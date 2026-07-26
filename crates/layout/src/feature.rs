@@ -1,5 +1,7 @@
 //! Canonical OpenType Feature lookup selection.
 
+mod decode;
+
 /// One Feature table's optional parameter target and selected `LookupList` indices.
 ///
 /// Lookup indices are a sorted set because lookup application follows `LookupList` order.

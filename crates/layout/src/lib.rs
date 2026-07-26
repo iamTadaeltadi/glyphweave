@@ -43,6 +43,31 @@ fn push_u16(bytes: &mut Vec<u8>, value: u16) {
     bytes.extend_from_slice(&value.to_be_bytes());
 }
 
+fn relative_target_span(
+    owner: glyphweave_sfnt::ByteSpan,
+    field_position: usize,
+    offset: u16,
+    minimum: usize,
+    target: glyphweave_sfnt::LayoutTarget,
+) -> glyphweave_sfnt::Decoded<glyphweave_sfnt::ByteSpan> {
+    let container_length = owner.length();
+    let relative = usize::from(offset);
+    if relative < minimum || relative >= container_length {
+        return Err(layout_error(
+            field_position,
+            glyphweave_sfnt::LayoutCause::InvalidLayoutOffset {
+                target,
+                offset,
+                minimum,
+                container_length,
+            },
+        ));
+    }
+    let position = owner.start() + relative;
+    Ok(glyphweave_sfnt::ByteSpan::between(position, owner.end())
+        .expect("validated relative target remains inside its owner"))
+}
+
 #[cfg(test)]
 mod tests {
     use glyphweave_sfnt::{ByteSpan, LayoutCause};
