@@ -179,3 +179,22 @@ fn rejects_descending_table_tags() {
     );
     assert_eq!(diagnostic.span().unwrap().to_string(), "28..32");
 }
+
+#[test]
+fn rejects_table_not_aligned_to_four_byte_boundary() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x00, 0, 1, 0, 16, 0, 0, 0, 0, // header
+        b'h', b'e', b'a', b'd', 0, 0, 0, 0, // tag and checksum
+        0, 0, 0, 29, 0, 0, 0, 0, // empty table at offset 29
+        0,
+    ];
+    let diagnostic = TableDirectory::decode(&bytes, 0).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::MisalignedTable {
+            tag: Tag::new(*b"head"),
+            offset: 29,
+        }
+    );
+    assert_eq!(diagnostic.span().unwrap().to_string(), "20..24");
+}
