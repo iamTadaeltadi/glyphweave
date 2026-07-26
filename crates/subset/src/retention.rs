@@ -31,3 +31,6 @@ impl Retention {
         matches!(self, Self::Keep)
     }
 }
+
+#[cfg(test)]
+mod tests;
