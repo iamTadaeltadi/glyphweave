@@ -4,6 +4,8 @@ use glyphweave_sfnt::GlyphId;
 
 use super::LigatureRule;
 
+mod decode;
+
 /// Ligature rules in their original Coverage-set and preference order.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct LigatureSubstitution {
