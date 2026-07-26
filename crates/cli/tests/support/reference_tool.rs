@@ -3,7 +3,10 @@ use std::{
     io::ErrorKind,
     path::PathBuf,
     process::{Command, Output},
+    sync::atomic::{AtomicUsize, Ordering},
 };
+
+static NEXT_ARTIFACT: AtomicUsize = AtomicUsize::new(0);
 
 pub(crate) fn fixture_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/reference.ttf")
@@ -32,9 +35,10 @@ pub(crate) fn subset_text(tool: &str, text: &str) -> Option<Vec<u8>> {
 }
 
 fn subset_with(tool: &str, selection: String) -> Option<Vec<u8>> {
+    let sequence = NEXT_ARTIFACT.fetch_add(1, Ordering::Relaxed);
     let output_path = std::env::temp_dir().join(format!(
-        "glyphweave-{tool}-{}-subset.ttf",
-        std::process::id()
+        "glyphweave-{tool}-{}-{sequence}-subset.ttf",
+        std::process::id(),
     ));
     let mut command = Command::new(tool);
     command.arg(fixture_path()).args([
