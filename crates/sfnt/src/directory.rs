@@ -1,6 +1,6 @@
 //! Typed SFNT Table Directory and Table Record values.
 
-use crate::{ByteSpan, SfntVersion, Tag};
+use crate::{ByteSpan, Checksum, SfntVersion, Tag};
 
 mod decode;
 
@@ -8,7 +8,7 @@ mod decode;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TableRecord {
     pub(crate) tag: Tag,
-    pub(crate) checksum: u32,
+    pub(crate) checksum: Checksum,
     pub(crate) table_span: ByteSpan,
     pub(crate) directory_span: ByteSpan,
 }
@@ -22,7 +22,7 @@ impl TableRecord {
 
     /// The checksum declared by the Table Directory.
     #[must_use]
-    pub const fn checksum(self) -> u32 {
+    pub const fn checksum(self) -> Checksum {
         self.checksum
     }
 
@@ -101,13 +101,13 @@ impl TableDirectory {
 #[cfg(test)]
 mod tests {
     use super::{TableDirectory, TableRecord};
-    use crate::{ByteSpan, SfntVersion, Tag};
+    use crate::{ByteSpan, Checksum, SfntVersion, Tag};
 
     #[test]
     fn directory_accessors_preserve_validated_records() {
         let record = TableRecord {
             tag: Tag::new(*b"cmap"),
-            checksum: 7,
+            checksum: Checksum::new(7),
             table_span: ByteSpan::sized(32, 4).unwrap(),
             directory_span: ByteSpan::sized(12, 16).unwrap(),
         };

@@ -3,7 +3,7 @@
 use super::{TableDirectory, TableRecord};
 use crate::cause::Cause;
 use crate::search::{MAX_TABLES, SearchParameters};
-use crate::{ByteSpan, Decoded, Diagnostic, Reader, SfntVersion, Stage};
+use crate::{ByteSpan, Checksum, Decoded, Diagnostic, Reader, SfntVersion, Stage};
 
 pub(super) fn decode(bytes: &[u8], offset: usize) -> Decoded<TableDirectory> {
     let mut reader = Reader::at(bytes, offset)?;
@@ -127,7 +127,7 @@ fn decode_record(bytes: &[u8], reader: &mut Reader<'_>) -> Decoded<TableRecord> 
             Cause::InvalidTableTag { tag },
         ));
     }
-    let checksum = reader.u32()?;
+    let checksum = Checksum::new(reader.u32()?);
     let offset = reader.u32()?;
     let length = reader.u32()?;
     if offset % 4 != 0 {
