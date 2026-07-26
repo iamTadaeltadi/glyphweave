@@ -147,3 +147,24 @@ fn default_range_end_cannot_overflow_twenty_four_bits() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(25, 4));
 }
+
+#[test]
+fn unicode_maximum_is_a_valid_default_range_boundary() {
+    let bytes = encode_selector(
+        0xe0100,
+        &[DefaultRange {
+            start: 0x10_ffff,
+            additional: 0,
+        }],
+        &[],
+    );
+
+    let decoded = CmapFormat14::decode(&bytes, 0).expect("Unicode maximum is scalar");
+    let selector = VariationSelector::new('\u{e0100}').unwrap();
+    assert_eq!(
+        decoded
+            .variation_selector_map()
+            .mapping('\u{10ffff}', selector),
+        Some(VariationMapping::Default)
+    );
+}
