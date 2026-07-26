@@ -592,3 +592,18 @@ fn every_strict_context_format_three_prefix_is_rejected() {
         assert!(ContextSubstitution::decode(&valid[..end], span).is_err());
     }
 }
+
+#[test]
+fn contextual_substitution_rejects_unknown_format() {
+    let bytes = [0x00, 0x04];
+    let diagnostic =
+        ContextSubstitution::decode(&bytes, ByteSpan::between(0, 2).unwrap()).unwrap_err();
+
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::Layout(LayoutCause::UnsupportedGsubFormat {
+            lookup_type: 5,
+            format: 4,
+        })
+    );
+}
