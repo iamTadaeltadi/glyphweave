@@ -73,3 +73,10 @@ fn complete_u16_universe_remains_representable() {
     );
     assert!(remap.iter().all(|(old, new)| old.raw() == new.raw()));
 }
+
+#[test]
+fn construction_is_independent_of_insertion_order() {
+    let ascending: GlyphSet = [2, 8, 13, 21].into_iter().map(GlyphId::new).collect();
+    let descending: GlyphSet = [21, 13, 8, 2].into_iter().map(GlyphId::new).collect();
+    assert_eq!(Remap::new(&ascending), Remap::new(&descending));
+}
