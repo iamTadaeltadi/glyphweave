@@ -225,3 +225,25 @@ fn accumulated_coordinates_may_reach_the_signed_maximum() {
         [Point::new(32_760, 0, true), Point::new(i16::MAX, 0, true)]
     );
 }
+
+#[test]
+fn accumulated_coordinates_may_reach_the_signed_minimum() {
+    let mut bytes = Vec::new();
+    for value in [1i16, i16::MIN, 0, -32_760, 0] {
+        bytes.extend_from_slice(&value.to_be_bytes());
+    }
+    bytes.extend_from_slice(&1u16.to_be_bytes());
+    bytes.extend_from_slice(&0u16.to_be_bytes());
+    bytes.extend_from_slice(&[0x21, 0x23]);
+    bytes.extend_from_slice(&(-32_760i16).to_be_bytes());
+    bytes.push(8);
+    bytes.push(0);
+    let span = ByteSpan::sized(0, bytes.len()).unwrap();
+
+    let glyph = SimpleGlyph::decode(&bytes, span).unwrap();
+
+    assert_eq!(
+        glyph.points(),
+        [Point::new(-32_760, 0, true), Point::new(i16::MIN, 0, true)]
+    );
+}
