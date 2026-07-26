@@ -34,8 +34,8 @@ Exactly one checklist item carries the next-work marker. Completed items are nev
 ## M3 — OpenType layout (budget: 4,300 lines)
 
 - [x] 3.1 Decode and encode Coverage and Class Definition structures — 654 source / 962 test lines, 63 unit + integration + 7 fixed-seed property + 2 doc tests, 100% line / 100% region cov across the canonical decoders and shortest-format encoders
-- [ ] 3.2 Decode Script List, language systems, and Feature List <-- NEXT
-- [ ] 3.3 Decode Lookup List flags, extensions, and mark filtering
+- [x] 3.2 Decode Script List, language systems, and Feature List — 776 source / 954 test lines, 25 unit + 35 integration + 5 fixed-seed property + 5 doc tests, 100% line / 100% region cov across the bounded canonical decoders
+- [ ] 3.3 Decode Lookup List flags, extensions, and mark filtering <-- NEXT
 - [ ] 3.4 Implement supported GSUB retention, closure, and remapping
 - [ ] 3.5 Implement supported GPOS retention and remapping
 - [ ] 3.6 Prune empty layout paths and repair all indices
