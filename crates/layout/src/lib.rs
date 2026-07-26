@@ -22,7 +22,9 @@ pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
-pub use gsub::{MultipleSubstitution, SingleSubstitution, SubstitutionRecord};
+pub use gsub::{
+    AlternateSubstitution, MultipleSubstitution, SingleSubstitution, SubstitutionRecord,
+};
 pub use language_system::LanguageSystem;
 pub use lookup::Lookup;
 pub use lookup_flags::LookupFlags;
