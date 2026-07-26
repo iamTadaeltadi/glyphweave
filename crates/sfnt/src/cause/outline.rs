@@ -38,6 +38,15 @@ pub enum OutlineCause {
         /// The odd relative offset.
         offset: u32,
     },
+    /// A `loca` entry points beyond the unpadded `glyf` table.
+    LocaOffsetOutOfBounds {
+        /// The zero-based location-entry index.
+        index: u32,
+        /// The relative offset outside `glyf`.
+        offset: u32,
+        /// The unpadded `glyf` table length.
+        glyf_length: usize,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -66,6 +75,14 @@ impl fmt::Display for OutlineCause {
             Self::MisalignedLocaOffset { index, offset } => {
                 write!(f, "loca offset {index} value {offset} is not word aligned")
             }
+            Self::LocaOffsetOutOfBounds {
+                index,
+                offset,
+                glyf_length,
+            } => write!(
+                f,
+                "loca offset {index} value {offset} exceeds glyf length {glyf_length}"
+            ),
         }
     }
 }
