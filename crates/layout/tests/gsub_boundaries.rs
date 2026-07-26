@@ -262,3 +262,15 @@ fn alternate_set_cannot_target_lookup_header() {
         })
     );
 }
+
+#[test]
+fn alternate_set_glyphs_cannot_cross_subtable_end() {
+    let bytes = [
+        0x00, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00, 0x0e,
+        0x00, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x02, 0x00, 0x04,
+    ];
+    let span = ByteSpan::between(0, bytes.len()).unwrap();
+
+    assert!(AlternateSubstitution::decode(&bytes, span).is_err());
+}
