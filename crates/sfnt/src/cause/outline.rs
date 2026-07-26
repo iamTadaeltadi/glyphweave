@@ -47,6 +47,15 @@ pub enum OutlineCause {
         /// The unpadded `glyf` table length.
         glyf_length: usize,
     },
+    /// The final `loca` sentinel leaves trailing bytes in `glyf`.
+    LocaEndMismatch {
+        /// The zero-based sentinel-entry index.
+        index: u32,
+        /// The final relative offset.
+        offset: u32,
+        /// The unpadded `glyf` table length.
+        glyf_length: usize,
+    },
 }
 
 impl fmt::Display for OutlineCause {
@@ -82,6 +91,14 @@ impl fmt::Display for OutlineCause {
             } => write!(
                 f,
                 "loca offset {index} value {offset} exceeds glyf length {glyf_length}"
+            ),
+            Self::LocaEndMismatch {
+                index,
+                offset,
+                glyf_length,
+            } => write!(
+                f,
+                "loca sentinel {index} value {offset} does not equal glyf length {glyf_length}"
             ),
         }
     }
