@@ -159,6 +159,11 @@ pub enum Cause {
         /// The bytes available from the subtable offset.
         available: usize,
     },
+    /// A format-4 subtable declared an odd byte length.
+    OddCmapLength {
+        /// The odd encoded byte length.
+        declared: u16,
+    },
     /// A format-4 `segCountX2` field is zero or odd.
     InvalidCmapSegmentCount {
         /// The invalid encoded value.

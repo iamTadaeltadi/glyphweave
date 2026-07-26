@@ -18,6 +18,9 @@ impl Cause {
                 f,
                 "cmap format 4 length {declared} needs at least {minimum} byte(s) with {available} available"
             ),
+            Self::OddCmapLength { declared } => {
+                write!(f, "cmap format 4 length {declared} is not even")
+            }
             Self::InvalidCmapSegmentCount { encoded } => {
                 write!(
                     f,
@@ -209,6 +212,7 @@ impl fmt::Display for Cause {
             | Self::OverlappingFaceTables { .. }
             | Self::UnsupportedCmapFormat { .. }
             | Self::InvalidCmapLength { .. }
+            | Self::OddCmapLength { .. }
             | Self::InvalidCmapSegmentCount { .. }
             | Self::InvalidCmapSearchParameters { .. }
             | Self::InvalidCmapReservedPad { .. }
