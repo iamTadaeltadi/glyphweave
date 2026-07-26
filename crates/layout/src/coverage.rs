@@ -2,6 +2,8 @@
 
 use glyphweave_sfnt::GlyphId;
 
+mod decode;
+
 /// The sorted unique glyphs affected by an OpenType layout operation.
 ///
 /// Coverage Indices are implicit positions in this sequence and therefore remain contiguous.
@@ -114,10 +116,7 @@ mod tests {
 
     #[test]
     fn iterator_collection_preserves_canonical_form() {
-        let coverage: Coverage = [3, 1, 3]
-            .into_iter()
-            .map(GlyphId::new)
-            .collect();
+        let coverage: Coverage = [3, 1, 3].into_iter().map(GlyphId::new).collect();
         assert_eq!(coverage.glyphs(), &[GlyphId::new(1), GlyphId::new(3)]);
     }
 }
