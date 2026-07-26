@@ -13,3 +13,22 @@ fn minimal_remap_pins_notdef_to_zero() {
     );
     assert_eq!(remap.glyph_id(NewGlyphId::NOTDEF), Some(GlyphId::NOTDEF));
 }
+
+#[test]
+fn sparse_inputs_receive_dense_sorted_outputs() {
+    let glyphs: GlyphSet = [400, 7, 19].into_iter().map(GlyphId::new).collect();
+    let remap = Remap::new(&glyphs);
+    assert_eq!(remap.len(), 4);
+    assert_eq!(
+        remap.new_glyph_id(GlyphId::new(7)),
+        Some(NewGlyphId::new(1))
+    );
+    assert_eq!(
+        remap.new_glyph_id(GlyphId::new(19)),
+        Some(NewGlyphId::new(2))
+    );
+    assert_eq!(
+        remap.new_glyph_id(GlyphId::new(400)),
+        Some(NewGlyphId::new(3))
+    );
+}
