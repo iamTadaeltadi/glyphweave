@@ -25,6 +25,32 @@ fn validates_both_lookup_type_domains() {
 }
 
 #[test]
+fn every_strict_extension_wrapper_prefix_is_rejected() {
+    let complete = [0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0xfe];
+    for end in 0..complete.len() {
+        assert!(
+            decode(&complete[..end], LayoutTableKind::Substitution).is_err(),
+            "strict wrapper prefix {end} decoded"
+        );
+    }
+}
+
+#[test]
+fn flattening_propagates_wrapper_truncation() {
+    let bytes = [0x00];
+    let wrappers = vec![ByteSpan::between(0, bytes.len()).unwrap()];
+    let diagnostic =
+        flatten_extensions(&bytes, wrappers, LayoutTableKind::Positioning).unwrap_err();
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 1,
+        }
+    );
+}
+
+#[test]
 fn resolves_absolute_extension_payload() {
     let bytes = [
         0xaa, 0xbb, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0xfe,
