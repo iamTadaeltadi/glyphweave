@@ -254,3 +254,20 @@ fn final_segment_must_be_the_single_code_unit_sentinel() {
     );
     assert_eq!(diagnostic.span(), ByteSpan::sized(16, 8));
 }
+
+#[test]
+fn sentinel_must_resolve_to_notdef() {
+    let mut words = direct_delta_words();
+    words[13] = 2;
+
+    let diagnostic = decode_words(&words).expect_err("sentinel maps to glyph one");
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::InvalidCmapSentinel {
+            start: 0xffff,
+            end: 0xffff,
+            glyph: GlyphId::new(1),
+        }
+    );
+    assert_eq!(diagnostic.span(), ByteSpan::sized(26, 2));
+}
