@@ -1,7 +1,7 @@
 //! Integration coverage for eager `glyf` decoding.
 
 use glyphweave_outline::{Glyf, Loca};
-use glyphweave_sfnt::{ByteSpan, GlyphId, LocaFormat};
+use glyphweave_sfnt::{ByteSpan, Cause, GlyphId, LocaFormat, Stage};
 
 fn mixed_fixture() -> (Vec<u8>, Loca) {
     let mut bytes = vec![0, 0, 0, 0, 0, 5, 0, 13];
@@ -51,5 +51,32 @@ fn decodes_mixed_outlines_in_glyph_id_order() {
     assert_eq!(
         composite.as_composite().unwrap().components()[0].glyph_id(),
         GlyphId::new(1)
+    );
+}
+
+#[test]
+fn eager_decode_rejects_a_malformed_later_glyph() {
+    let mut bytes = vec![0, 0, 0, 5, 0, 6];
+    bytes.extend([0; 10]);
+    bytes.extend([0, 0]);
+    let loca = Loca::decode(
+        &bytes,
+        ByteSpan::sized(0, 6).unwrap(),
+        ByteSpan::sized(6, 12).unwrap(),
+        2,
+        LocaFormat::Short,
+    )
+    .unwrap();
+
+    let diagnostic = Glyf::decode(&bytes, &loca).expect_err("glyph one has a truncated header");
+
+    assert_eq!(diagnostic.stage(), Stage::Decode);
+    assert_eq!(diagnostic.span(), Some(ByteSpan::empty_at(18)));
+    assert_eq!(
+        diagnostic.cause(),
+        Cause::UnexpectedEnd {
+            needed: 2,
+            available: 0,
+        }
     );
 }
