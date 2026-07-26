@@ -63,6 +63,12 @@ impl Coverage {
     }
 }
 
+impl FromIterator<GlyphId> for Coverage {
+    fn from_iter<T: IntoIterator<Item = GlyphId>>(iter: T) -> Self {
+        Self::from_glyphs(iter)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Coverage;
