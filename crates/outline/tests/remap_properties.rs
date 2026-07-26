@@ -51,4 +51,13 @@ proptest! {
             None,
         );
     }
+
+
+    #[test]
+    fn remapping_is_independent_of_insertion_order(raw_glyphs in collection::vec(any::<u16>(), 0..2049)) {
+        let forward: GlyphSet = raw_glyphs.iter().copied().map(GlyphId::new).collect();
+        let reverse: GlyphSet = raw_glyphs.into_iter().rev().map(GlyphId::new).collect();
+        prop_assert_eq!(&forward, &reverse);
+        prop_assert_eq!(Remap::new(&forward), Remap::new(&reverse));
+    }
 }
