@@ -11,6 +11,10 @@ pub struct GsubLookupList {
 }
 
 impl GsubLookupList {
+    pub(super) const fn from_lookups(lookups: Vec<GsubLookup>) -> Self {
+        Self { lookups }
+    }
+
     /// Decodes every Lookup while retaining its original zero-based index.
     /// # Errors
     /// For a non-GSUB list or any malformed semantic Lookup.
