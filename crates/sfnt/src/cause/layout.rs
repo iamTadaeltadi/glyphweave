@@ -107,6 +107,12 @@ pub enum LayoutTarget {
     FeatureParameters,
     /// The Coverage table selecting GPOS single-positioning inputs.
     SinglePositioningCoverage,
+    /// The Coverage table selecting the first glyph of a `PairPos` subtable.
+    PairPositioningCoverage,
+    /// A `PairPos` format 1 `PairSet` table.
+    PairSet,
+    /// A `PairPos` format 2 glyph Class Definition table.
+    PairPositioningClassDefinition,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -131,6 +137,9 @@ impl fmt::Display for LayoutTarget {
             Self::Feature => "Feature",
             Self::FeatureParameters => "Feature Parameters",
             Self::SinglePositioningCoverage => "single positioning Coverage",
+            Self::PairPositioningCoverage => "PairPos Coverage",
+            Self::PairSet => "PairSet",
+            Self::PairPositioningClassDefinition => "PairPos Class Definition",
         })
     }
 }
@@ -352,6 +361,25 @@ pub enum LayoutCause {
         /// The number of encoded value records.
         records: usize,
     },
+    /// A GPOS `PairPos` subtable used an unknown format selector.
+    UnsupportedGposPairFormat {
+        /// The unrecognized selector.
+        format: u16,
+    },
+    /// A GPOS `PairPos` value record used a value format that sets reserved bits.
+    ReservedGposPairValueFormat {
+        /// Which record of the pair carried the format: 1 or 2.
+        record: u8,
+        /// The complete raw value-format word.
+        format: u16,
+    },
+    /// A GPOS `PairPos` format 1 `PairSet` array did not match its Coverage length.
+    MismatchedGposPairSetCount {
+        /// The number of covered first glyphs.
+        inputs: usize,
+        /// The number of `PairSet` offsets.
+        sets: usize,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -443,6 +471,17 @@ impl fmt::Display for LayoutCause {
             Self::MismatchedGposSingleValueCount { inputs, records } => write!(
                 f,
                 "GPOS SinglePos covers {inputs} glyph(s) but declares {records} value record(s)"
+            ),
+            Self::UnsupportedGposPairFormat { format } => {
+                write!(f, "unsupported GPOS PairPos format {format}")
+            }
+            Self::ReservedGposPairValueFormat { record, format } => write!(
+                f,
+                "GPOS PairPos value record {record} format {format:#06x} sets reserved bits"
+            ),
+            Self::MismatchedGposPairSetCount { inputs, sets } => write!(
+                f,
+                "GPOS PairPos has {inputs} covered glyph(s) but {sets} pair set(s)"
             ),
         }
     }
