@@ -133,6 +133,20 @@ pub enum LayoutTarget {
     GposMarkToBaseMarkAnchor,
     /// A `MarkBasePos` base Anchor table within the `BaseArray`.
     GposMarkToBaseBaseAnchor,
+    /// The Coverage table selecting mark-to-ligature mark glyphs.
+    MarkLigatureMarkCoverage,
+    /// The Coverage table selecting mark-to-ligature ligature glyphs.
+    MarkLigatureLigatureCoverage,
+    /// A mark-to-ligature `MarkArray` table.
+    MarkLigatureMarkArray,
+    /// A mark-to-ligature mark Anchor table.
+    MarkLigatureMarkAnchor,
+    /// A mark-to-ligature `LigatureArray` table.
+    MarkLigatureLigatureArray,
+    /// A mark-to-ligature `LigatureAttach` table.
+    MarkLigatureLigatureAttach,
+    /// A mark-to-ligature component Anchor table.
+    MarkLigatureLigatureAnchor,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -170,6 +184,13 @@ impl fmt::Display for LayoutTarget {
             Self::GposMarkToBaseBaseArray => "mark-to-base BaseArray",
             Self::GposMarkToBaseMarkAnchor => "mark-to-base mark Anchor",
             Self::GposMarkToBaseBaseAnchor => "mark-to-base base Anchor",
+            Self::MarkLigatureMarkCoverage => "mark-to-ligature mark Coverage",
+            Self::MarkLigatureLigatureCoverage => "mark-to-ligature ligature Coverage",
+            Self::MarkLigatureMarkArray => "mark-to-ligature MarkArray",
+            Self::MarkLigatureMarkAnchor => "mark-to-ligature mark Anchor",
+            Self::MarkLigatureLigatureArray => "mark-to-ligature LigatureArray",
+            Self::MarkLigatureLigatureAttach => "mark-to-ligature LigatureAttach",
+            Self::MarkLigatureLigatureAnchor => "mark-to-ligature ligature Anchor",
         })
     }
 }
@@ -453,6 +474,32 @@ pub enum LayoutCause {
         /// The number of distinct mark classes the subtable defines.
         mark_class_count: u16,
     },
+    /// A GPOS `MarkLigPos` subtable used a format other than format 1.
+    UnsupportedGposMarkLigatureFormat {
+        /// The unrecognized `MarkLigPos` format selector.
+        format: u16,
+    },
+    /// A GPOS `MarkLigPos` `MarkArray` record named a mark class at or above `markClassCount`.
+    MarkLigatureMarkClassRange {
+        /// The out-of-range mark class stored in the record.
+        class: u16,
+        /// The number of declared mark classes.
+        class_count: u16,
+    },
+    /// A GPOS `MarkLigPos` `MarkArray` record count disagreed with its mark Coverage length.
+    MismatchedMarkLigatureMarkCount {
+        /// The number of covered mark glyphs.
+        coverage: usize,
+        /// The number of `MarkArray` records.
+        marks: usize,
+    },
+    /// A GPOS `MarkLigPos` `LigatureArray` count disagreed with its ligature Coverage length.
+    MismatchedMarkLigatureLigatureCount {
+        /// The number of covered ligature glyphs.
+        coverage: usize,
+        /// The number of `LigatureAttach` offsets.
+        ligatures: usize,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -585,6 +632,24 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "GPOS MarkBasePos mark class {class} is not below markClassCount {mark_class_count}"
+            ),
+            Self::UnsupportedGposMarkLigatureFormat { format } => {
+                write!(f, "unsupported GPOS MarkLigPos format {format}")
+            }
+            Self::MarkLigatureMarkClassRange { class, class_count } => write!(
+                f,
+                "GPOS MarkLigPos mark class {class} is not below the {class_count} declared class(es)"
+            ),
+            Self::MismatchedMarkLigatureMarkCount { coverage, marks } => write!(
+                f,
+                "GPOS MarkLigPos covers {coverage} mark glyph(s) but declares {marks} mark record(s)"
+            ),
+            Self::MismatchedMarkLigatureLigatureCount {
+                coverage,
+                ligatures,
+            } => write!(
+                f,
+                "GPOS MarkLigPos covers {coverage} ligature glyph(s) but declares {ligatures} attachment(s)"
             ),
         }
     }

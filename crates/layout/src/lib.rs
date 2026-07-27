@@ -24,7 +24,8 @@ pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use gpos::{
-    Anchor, AnchorKind, BaseRecord, CursivePositioning, EntryExit, MarkBaseAttachment, MarkRecord,
+    Anchor, AnchorKind, BaseRecord, CursivePositioning, EntryExit, LigatureAttachment,
+    MarkBaseAttachment, MarkLigaturePositioning, MarkLigatureRecord, MarkRecord,
     MarkToBasePositioning, PairAdjustment, PairPositioning, PairValue, SinglePositioning,
     ValueFormat, ValueRecord,
 };
