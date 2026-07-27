@@ -12,6 +12,7 @@ mod mark_to_mark_positioning;
 mod pair_positioning;
 mod remap;
 mod remapped;
+mod retained;
 mod single_positioning;
 mod subtable;
 mod value_format;
@@ -34,6 +35,7 @@ pub use mark_to_ligature_positioning::{
 pub use mark_to_mark_positioning::{Mark1Record, Mark2Record, MarkToMarkPositioning};
 pub use pair_positioning::{PairAdjustment, PairPositioning, PairValue};
 pub use remapped::{RemappedGpos, RemappedGposLookup};
+pub use retained::RetainedGpos;
 pub use single_positioning::SinglePositioning;
 pub use subtable::GposSubtable;
 pub use value_format::ValueFormat;

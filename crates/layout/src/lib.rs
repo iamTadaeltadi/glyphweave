@@ -29,7 +29,7 @@ pub use gpos::{
     GposLookupList, GposSubtable, LigatureAttachment, Mark1Record, Mark2Record, MarkBaseAttachment,
     MarkLigaturePositioning, MarkLigatureRecord, MarkRecord, MarkToBasePositioning,
     MarkToMarkPositioning, PairAdjustment, PairPositioning, PairValue, RemappedGpos,
-    RemappedGposLookup, SinglePositioning, ValueFormat, ValueRecord,
+    RemappedGposLookup, RetainedGpos, SinglePositioning, ValueFormat, ValueRecord,
 };
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,

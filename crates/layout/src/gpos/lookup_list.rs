@@ -57,6 +57,12 @@ impl<G> GposLookupList<G> {
         &self.lookups
     }
 
+    /// Assembles a `LookupList` from index-ordered Lookups, preserving their slots.
+    #[must_use]
+    pub(crate) const fn from_lookups(lookups: Vec<GposLookup<G>>) -> Self {
+        Self { lookups }
+    }
+
     /// Returns the number of indexed Lookups.
     #[must_use]
     pub fn len(&self) -> usize {

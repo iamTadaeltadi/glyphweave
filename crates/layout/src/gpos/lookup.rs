@@ -131,6 +131,20 @@ impl<G> GposLookup<G> {
     pub fn is_empty(&self) -> bool {
         self.subtables.is_empty()
     }
+
+    /// Assembles a Lookup from already-decoded parts, preserving its effective type and flags.
+    #[must_use]
+    pub(crate) const fn from_parts(
+        lookup_type: u16,
+        flags: LookupFlags,
+        subtables: Vec<GposSubtable<G>>,
+    ) -> Self {
+        Self {
+            lookup_type,
+            flags,
+            subtables,
+        }
+    }
 }
 
 #[cfg(test)]
