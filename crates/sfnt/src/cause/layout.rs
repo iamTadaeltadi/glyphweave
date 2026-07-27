@@ -147,6 +147,18 @@ pub enum LayoutTarget {
     MarkLigatureLigatureAttach,
     /// A mark-to-ligature component Anchor table.
     MarkLigatureLigatureAnchor,
+    /// The Coverage table selecting `MarkMarkPos` mark-1 (attaching) glyphs.
+    MarkToMarkMark1Coverage,
+    /// The Coverage table selecting `MarkMarkPos` mark-2 (base mark) glyphs.
+    MarkToMarkMark2Coverage,
+    /// A `MarkMarkPos` `MarkArray` table holding the mark-1 records.
+    MarkToMarkMark1Array,
+    /// A `MarkMarkPos` `Mark2Array` table holding the mark-2 anchor grid.
+    MarkToMarkMark2Array,
+    /// A `MarkMarkPos` mark-1 Anchor table.
+    MarkToMarkMark1Anchor,
+    /// A `MarkMarkPos` mark-2 Anchor table.
+    MarkToMarkMark2Anchor,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -191,6 +203,12 @@ impl fmt::Display for LayoutTarget {
             Self::MarkLigatureLigatureArray => "mark-to-ligature LigatureArray",
             Self::MarkLigatureLigatureAttach => "mark-to-ligature LigatureAttach",
             Self::MarkLigatureLigatureAnchor => "mark-to-ligature ligature Anchor",
+            Self::MarkToMarkMark1Coverage => "MarkMarkPos mark-1 Coverage",
+            Self::MarkToMarkMark2Coverage => "MarkMarkPos mark-2 Coverage",
+            Self::MarkToMarkMark1Array => "MarkMarkPos MarkArray",
+            Self::MarkToMarkMark2Array => "MarkMarkPos Mark2Array",
+            Self::MarkToMarkMark1Anchor => "MarkMarkPos mark-1 Anchor",
+            Self::MarkToMarkMark2Anchor => "MarkMarkPos mark-2 Anchor",
         })
     }
 }
@@ -500,6 +518,32 @@ pub enum LayoutCause {
         /// The number of `LigatureAttach` offsets.
         ligatures: usize,
     },
+    /// A GPOS `MarkMarkPos` subtable used a format other than format 1.
+    UnsupportedGposMarkToMarkFormat {
+        /// The unrecognized `MarkMarkPos` format selector.
+        format: u16,
+    },
+    /// A GPOS `MarkMarkPos` mark-1 record named a mark class outside the declared range.
+    InvalidGposMarkToMarkClass {
+        /// The out-of-range mark class value.
+        class: u16,
+        /// The declared number of mark classes.
+        mark_class_count: u16,
+    },
+    /// A GPOS `MarkMarkPos` mark-1 record array disagreed with its mark-1 Coverage length.
+    MismatchedGposMarkToMarkMark1Count {
+        /// The number of covered mark-1 glyphs.
+        inputs: usize,
+        /// The number of mark-1 records.
+        records: usize,
+    },
+    /// A GPOS `MarkMarkPos` mark-2 record array disagreed with its mark-2 Coverage length.
+    MismatchedGposMarkToMarkMark2Count {
+        /// The number of covered mark-2 glyphs.
+        inputs: usize,
+        /// The number of mark-2 records.
+        records: usize,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -650,6 +694,24 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "GPOS MarkLigPos covers {coverage} ligature glyph(s) but declares {ligatures} attachment(s)"
+            ),
+            Self::UnsupportedGposMarkToMarkFormat { format } => {
+                write!(f, "unsupported GPOS MarkMarkPos format {format}")
+            }
+            Self::InvalidGposMarkToMarkClass {
+                class,
+                mark_class_count,
+            } => write!(
+                f,
+                "GPOS MarkMarkPos mark class {class} is not below the declared {mark_class_count} class(es)"
+            ),
+            Self::MismatchedGposMarkToMarkMark1Count { inputs, records } => write!(
+                f,
+                "GPOS MarkMarkPos covers {inputs} mark-1 glyph(s) but declares {records} mark-1 record(s)"
+            ),
+            Self::MismatchedGposMarkToMarkMark2Count { inputs, records } => write!(
+                f,
+                "GPOS MarkMarkPos covers {inputs} mark-2 glyph(s) but declares {records} mark-2 record(s)"
             ),
         }
     }
