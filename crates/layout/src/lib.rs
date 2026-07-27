@@ -24,8 +24,9 @@ pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use gpos::{
-    Anchor, AnchorKind, CursivePositioning, EntryExit, PairAdjustment, PairPositioning, PairValue,
-    SinglePositioning, ValueFormat, ValueRecord,
+    Anchor, AnchorKind, BaseRecord, CursivePositioning, EntryExit, MarkBaseAttachment, MarkRecord,
+    MarkToBasePositioning, PairAdjustment, PairPositioning, PairValue, SinglePositioning,
+    ValueFormat, ValueRecord,
 };
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,

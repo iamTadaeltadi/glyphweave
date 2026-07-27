@@ -121,6 +121,18 @@ pub enum LayoutTarget {
     GposCursiveExitAnchor,
     /// A format 3 Anchor device or variation-index table.
     GposAnchorDevice,
+    /// The Coverage table selecting `MarkBasePos` mark glyphs.
+    GposMarkToBaseMarkCoverage,
+    /// The Coverage table selecting `MarkBasePos` base glyphs.
+    GposMarkToBaseBaseCoverage,
+    /// The `MarkBasePos` `MarkArray` table.
+    GposMarkToBaseMarkArray,
+    /// The `MarkBasePos` `BaseArray` table.
+    GposMarkToBaseBaseArray,
+    /// A `MarkBasePos` mark Anchor table within the `MarkArray`.
+    GposMarkToBaseMarkAnchor,
+    /// A `MarkBasePos` base Anchor table within the `BaseArray`.
+    GposMarkToBaseBaseAnchor,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -152,6 +164,12 @@ impl fmt::Display for LayoutTarget {
             Self::GposCursiveEntryAnchor => "cursive entry Anchor",
             Self::GposCursiveExitAnchor => "cursive exit Anchor",
             Self::GposAnchorDevice => "Anchor device",
+            Self::GposMarkToBaseMarkCoverage => "mark-to-base mark Coverage",
+            Self::GposMarkToBaseBaseCoverage => "mark-to-base base Coverage",
+            Self::GposMarkToBaseMarkArray => "mark-to-base MarkArray",
+            Self::GposMarkToBaseBaseArray => "mark-to-base BaseArray",
+            Self::GposMarkToBaseMarkAnchor => "mark-to-base mark Anchor",
+            Self::GposMarkToBaseBaseAnchor => "mark-to-base base Anchor",
         })
     }
 }
@@ -409,6 +427,32 @@ pub enum LayoutCause {
         /// The number of entry/exit records.
         records: usize,
     },
+    /// A GPOS `MarkBasePos` subtable used a format other than format 1.
+    UnsupportedGposMarkToBaseFormat {
+        /// The unrecognized `MarkBasePos` format selector.
+        format: u16,
+    },
+    /// A GPOS `MarkBasePos` `MarkArray` length disagreed with its mark Coverage length.
+    MismatchedGposMarkToBaseMarkCount {
+        /// The number of covered mark glyphs.
+        coverage: usize,
+        /// The number of mark records.
+        records: usize,
+    },
+    /// A GPOS `MarkBasePos` `BaseArray` length disagreed with its base Coverage length.
+    MismatchedGposMarkToBaseBaseCount {
+        /// The number of covered base glyphs.
+        coverage: usize,
+        /// The number of base records.
+        records: usize,
+    },
+    /// A GPOS `MarkBasePos` mark record used a class at or above `markClassCount`.
+    InvalidGposMarkToBaseClass {
+        /// The out-of-range mark class stored in the record.
+        class: u16,
+        /// The number of distinct mark classes the subtable defines.
+        mark_class_count: u16,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -523,6 +567,24 @@ impl fmt::Display for LayoutCause {
             Self::MismatchedGposEntryExitCount { inputs, records } => write!(
                 f,
                 "GPOS CursivePos has {inputs} input glyph(s) but {records} entry/exit record(s)"
+            ),
+            Self::UnsupportedGposMarkToBaseFormat { format } => {
+                write!(f, "unsupported GPOS MarkBasePos format {format}")
+            }
+            Self::MismatchedGposMarkToBaseMarkCount { coverage, records } => write!(
+                f,
+                "GPOS MarkBasePos covers {coverage} mark glyph(s) but declares {records} mark record(s)"
+            ),
+            Self::MismatchedGposMarkToBaseBaseCount { coverage, records } => write!(
+                f,
+                "GPOS MarkBasePos covers {coverage} base glyph(s) but declares {records} base record(s)"
+            ),
+            Self::InvalidGposMarkToBaseClass {
+                class,
+                mark_class_count,
+            } => write!(
+                f,
+                "GPOS MarkBasePos mark class {class} is not below markClassCount {mark_class_count}"
             ),
         }
     }
