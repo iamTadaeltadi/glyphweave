@@ -159,6 +159,22 @@ pub enum LayoutTarget {
     MarkToMarkMark1Anchor,
     /// A `MarkMarkPos` mark-2 Anchor table.
     MarkToMarkMark2Anchor,
+    /// The Coverage table selecting `ContextPos` inputs.
+    GposContextCoverage,
+    /// A `ContextPos` format 2 input glyph Class Definition table.
+    GposContextClassDefinition,
+    /// A `ContextPos` rule-set table.
+    GposContextRuleSet,
+    /// A `ContextPos` rule table.
+    GposContextRule,
+    /// The Coverage table selecting a GPOS `ChainContextPos` backtrack, input, or lookahead glyph.
+    GposChainedContextCoverage,
+    /// A GPOS `ChainContextPos` format 2 glyph Class Definition table.
+    GposChainedContextClassDefinition,
+    /// A GPOS `ChainContextPos` rule-set table.
+    GposChainedContextRuleSet,
+    /// A GPOS `ChainContextPos` rule table.
+    GposChainedContextRule,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -209,6 +225,14 @@ impl fmt::Display for LayoutTarget {
             Self::MarkToMarkMark2Array => "MarkMarkPos Mark2Array",
             Self::MarkToMarkMark1Anchor => "MarkMarkPos mark-1 Anchor",
             Self::MarkToMarkMark2Anchor => "MarkMarkPos mark-2 Anchor",
+            Self::GposContextCoverage => "ContextPos Coverage",
+            Self::GposContextClassDefinition => "ContextPos Class Definition",
+            Self::GposContextRuleSet => "ContextPos rule set",
+            Self::GposContextRule => "ContextPos rule",
+            Self::GposChainedContextCoverage => "GPOS ChainContextPos Coverage",
+            Self::GposChainedContextClassDefinition => "GPOS ChainContextPos Class Definition",
+            Self::GposChainedContextRuleSet => "GPOS ChainContextPos rule set",
+            Self::GposChainedContextRule => "GPOS ChainContextPos rule",
         })
     }
 }
@@ -544,6 +568,48 @@ pub enum LayoutCause {
         /// The number of mark-2 records.
         records: usize,
     },
+    /// A GPOS `ContextPos` (lookup type 7) subtable used an unknown format selector.
+    UnsupportedGposContextFormat {
+        /// The unrecognized format selector.
+        format: u16,
+    },
+    /// A GPOS `ContextPos` rule declared an empty input sequence.
+    EmptyGposContextInput,
+    /// A GPOS `ContextPos` format 1 rule-set array did not match its input Coverage length.
+    MismatchedGposContextCount {
+        /// The number of covered input glyphs.
+        inputs: usize,
+        /// The number of rule-set offsets.
+        records: usize,
+    },
+    /// A GPOS `ContextPos` action targeted a position outside its input sequence.
+    InvalidGposContextSequenceIndex {
+        /// The zero-based sequence index in the action record.
+        sequence_index: u16,
+        /// The contextual input sequence length.
+        input_count: u16,
+    },
+    /// A GPOS `ChainContextPos` subtable used a format outside the defined 1 through 3 enumeration.
+    UnsupportedGposChainedContextFormat {
+        /// The unrecognized `ChainContextPos` format selector.
+        format: u16,
+    },
+    /// A GPOS `ChainContextPos` format 1 rule-set array disagreed with its input Coverage length.
+    MismatchedGposChainedContextRuleSetCount {
+        /// The number of covered first-input glyphs.
+        inputs: usize,
+        /// The number of rule-set offsets.
+        sets: usize,
+    },
+    /// A GPOS `ChainContextPos` rule declared an empty input sequence.
+    EmptyGposChainedContextInput,
+    /// A GPOS `ChainContextPos` action targeted a position outside its input sequence.
+    InvalidGposChainedContextSequenceIndex {
+        /// The zero-based sequence index carried by the action record.
+        sequence_index: u16,
+        /// The contextual input sequence length.
+        input_count: u16,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -712,6 +778,40 @@ impl fmt::Display for LayoutCause {
             Self::MismatchedGposMarkToMarkMark2Count { inputs, records } => write!(
                 f,
                 "GPOS MarkMarkPos covers {inputs} mark-2 glyph(s) but declares {records} mark-2 record(s)"
+            ),
+            Self::UnsupportedGposContextFormat { format } => {
+                write!(f, "unsupported GPOS ContextPos format {format}")
+            }
+            Self::EmptyGposContextInput => {
+                write!(f, "GPOS ContextPos context has no input glyphs")
+            }
+            Self::MismatchedGposContextCount { inputs, records } => write!(
+                f,
+                "GPOS ContextPos has {inputs} input glyph(s) but {records} rule set(s)"
+            ),
+            Self::InvalidGposContextSequenceIndex {
+                sequence_index,
+                input_count,
+            } => write!(
+                f,
+                "GPOS ContextPos sequence index {sequence_index} is outside {input_count} input glyph(s)"
+            ),
+            Self::UnsupportedGposChainedContextFormat { format } => {
+                write!(f, "unsupported GPOS ChainContextPos format {format}")
+            }
+            Self::MismatchedGposChainedContextRuleSetCount { inputs, sets } => write!(
+                f,
+                "GPOS ChainContextPos covers {inputs} glyph(s) but declares {sets} rule set(s)"
+            ),
+            Self::EmptyGposChainedContextInput => {
+                write!(f, "GPOS ChainContextPos rule has no input glyphs")
+            }
+            Self::InvalidGposChainedContextSequenceIndex {
+                sequence_index,
+                input_count,
+            } => write!(
+                f,
+                "GPOS ChainContextPos sequence index {sequence_index} is outside {input_count} input glyph(s)"
             ),
         }
     }

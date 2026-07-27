@@ -1,6 +1,8 @@
 //! Supported OpenType GPOS positioning retention and remapping.
 
 mod anchor;
+mod chained_context_positioning;
+mod context_positioning;
 mod cursive_positioning;
 mod mark_to_base_positioning;
 mod mark_to_ligature_positioning;
@@ -11,6 +13,10 @@ mod value_format;
 mod value_record;
 
 pub use anchor::{Anchor, AnchorKind};
+pub use chained_context_positioning::ChainedContextPositioning;
+pub use context_positioning::{
+    ContextPositioning, ContextPositioningRecord, ContextPositioningRule,
+};
 pub use cursive_positioning::{CursivePositioning, EntryExit};
 pub use mark_to_base_positioning::{
     BaseRecord, MarkBaseAttachment, MarkRecord, MarkToBasePositioning,
