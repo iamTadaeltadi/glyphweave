@@ -412,6 +412,8 @@ pub enum LayoutCause {
 }
 
 impl fmt::Display for LayoutCause {
+    // One trivial arm per cause variant; the exhaustive match is long by construction.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Self::InvalidLayoutTag { list, tag } => {
