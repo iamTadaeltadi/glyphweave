@@ -113,6 +113,14 @@ pub enum LayoutTarget {
     PairSet,
     /// A `PairPos` format 2 glyph Class Definition table.
     PairPositioningClassDefinition,
+    /// The Coverage table selecting cursively positioned glyphs.
+    GposCursiveCoverage,
+    /// A `CursivePos` entry Anchor table.
+    GposCursiveEntryAnchor,
+    /// A `CursivePos` exit Anchor table.
+    GposCursiveExitAnchor,
+    /// A format 3 Anchor device or variation-index table.
+    GposAnchorDevice,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -140,6 +148,10 @@ impl fmt::Display for LayoutTarget {
             Self::PairPositioningCoverage => "PairPos Coverage",
             Self::PairSet => "PairSet",
             Self::PairPositioningClassDefinition => "PairPos Class Definition",
+            Self::GposCursiveCoverage => "cursive Coverage",
+            Self::GposCursiveEntryAnchor => "cursive entry Anchor",
+            Self::GposCursiveExitAnchor => "cursive exit Anchor",
+            Self::GposAnchorDevice => "Anchor device",
         })
     }
 }
@@ -380,6 +392,23 @@ pub enum LayoutCause {
         /// The number of `PairSet` offsets.
         sets: usize,
     },
+    /// A GPOS Anchor table used a format outside the defined 1 through 3 enumeration.
+    UnsupportedGposAnchorFormat {
+        /// The unrecognized anchor format selector.
+        format: u16,
+    },
+    /// A GPOS `CursivePos` subtable used a format other than format 1.
+    UnsupportedGposCursiveFormat {
+        /// The unrecognized `CursivePos` format selector.
+        format: u16,
+    },
+    /// A GPOS `CursivePos` entry/exit record array disagreed with its input Coverage length.
+    MismatchedGposEntryExitCount {
+        /// The number of covered input glyphs.
+        inputs: usize,
+        /// The number of entry/exit records.
+        records: usize,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -482,6 +511,16 @@ impl fmt::Display for LayoutCause {
             Self::MismatchedGposPairSetCount { inputs, sets } => write!(
                 f,
                 "GPOS PairPos has {inputs} covered glyph(s) but {sets} pair set(s)"
+            ),
+            Self::UnsupportedGposAnchorFormat { format } => {
+                write!(f, "unsupported GPOS Anchor format {format}")
+            }
+            Self::UnsupportedGposCursiveFormat { format } => {
+                write!(f, "unsupported GPOS CursivePos format {format}")
+            }
+            Self::MismatchedGposEntryExitCount { inputs, records } => write!(
+                f,
+                "GPOS CursivePos has {inputs} input glyph(s) but {records} entry/exit record(s)"
             ),
         }
     }
