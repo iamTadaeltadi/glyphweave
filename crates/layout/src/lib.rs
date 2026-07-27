@@ -28,8 +28,8 @@ pub use gpos::{
     ContextPositioningRecord, ContextPositioningRule, CursivePositioning, EntryExit, GposLookup,
     GposLookupList, GposSubtable, LigatureAttachment, Mark1Record, Mark2Record, MarkBaseAttachment,
     MarkLigaturePositioning, MarkLigatureRecord, MarkRecord, MarkToBasePositioning,
-    MarkToMarkPositioning, PairAdjustment, PairPositioning, PairValue, SinglePositioning,
-    ValueFormat, ValueRecord,
+    MarkToMarkPositioning, PairAdjustment, PairPositioning, PairValue, RemappedGpos,
+    RemappedGposLookup, SinglePositioning, ValueFormat, ValueRecord,
 };
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,
