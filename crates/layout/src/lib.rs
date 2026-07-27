@@ -25,10 +25,11 @@ pub use feature::Feature;
 pub use feature_list::FeatureList;
 pub use gpos::{
     Anchor, AnchorKind, BaseRecord, ChainedContextPositioning, ContextPositioning,
-    ContextPositioningRecord, ContextPositioningRule, CursivePositioning, EntryExit,
-    LigatureAttachment, Mark1Record, Mark2Record, MarkBaseAttachment, MarkLigaturePositioning,
-    MarkLigatureRecord, MarkRecord, MarkToBasePositioning, MarkToMarkPositioning, PairAdjustment,
-    PairPositioning, PairValue, SinglePositioning, ValueFormat, ValueRecord,
+    ContextPositioningRecord, ContextPositioningRule, CursivePositioning, EntryExit, GposLookup,
+    GposLookupList, GposSubtable, LigatureAttachment, Mark1Record, Mark2Record, MarkBaseAttachment,
+    MarkLigaturePositioning, MarkLigatureRecord, MarkRecord, MarkToBasePositioning,
+    MarkToMarkPositioning, PairAdjustment, PairPositioning, PairValue, SinglePositioning,
+    ValueFormat, ValueRecord,
 };
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,

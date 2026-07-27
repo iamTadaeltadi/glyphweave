@@ -610,6 +610,16 @@ pub enum LayoutCause {
         /// The contextual input sequence length.
         input_count: u16,
     },
+    /// A GPOS `ExtensionPos` wrapper named the type 9 transport type as its real lookup type.
+    RecursiveGposExtension {
+        /// The recursively declared extension lookup type.
+        lookup_type: u16,
+    },
+    /// A GPOS `ExtensionPos` wrapper named a lookup type outside the positioning 1 through 8 range.
+    UnsupportedGposExtensionType {
+        /// The unrecognized extension lookup type.
+        lookup_type: u16,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -812,6 +822,14 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "GPOS ChainContextPos sequence index {sequence_index} is outside {input_count} input glyph(s)"
+            ),
+            Self::RecursiveGposExtension { lookup_type } => write!(
+                f,
+                "GPOS extension wrapper recursively targets extension lookup type {lookup_type}"
+            ),
+            Self::UnsupportedGposExtensionType { lookup_type } => write!(
+                f,
+                "GPOS extension wrapper targets unsupported lookup type {lookup_type}"
             ),
         }
     }
