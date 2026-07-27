@@ -23,7 +23,7 @@ pub use class_definition::ClassDefinition;
 pub use coverage::Coverage;
 pub use feature::Feature;
 pub use feature_list::FeatureList;
-pub use gpos::{ValueFormat, ValueRecord};
+pub use gpos::{SinglePositioning, ValueFormat, ValueRecord};
 pub use gsub::{
     AlternateSubstitution, ChainedContextSubstitution, ContextRule, ContextSubstitution,
     GsubClosure, GsubLookup, GsubLookupList, GsubSubtable, LigatureRule, LigatureSubstitution,

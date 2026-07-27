@@ -105,6 +105,8 @@ pub enum LayoutTarget {
     Feature,
     /// A tag-specific Feature Parameters table.
     FeatureParameters,
+    /// The Coverage table selecting GPOS single-positioning inputs.
+    SinglePositioningCoverage,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -128,6 +130,7 @@ impl fmt::Display for LayoutTarget {
             Self::LanguageSystem => "Language System",
             Self::Feature => "Feature",
             Self::FeatureParameters => "Feature Parameters",
+            Self::SinglePositioningCoverage => "single positioning Coverage",
         })
     }
 }
@@ -332,6 +335,23 @@ pub enum LayoutCause {
         /// The next range's first glyph ID.
         start: crate::GlyphId,
     },
+    /// A GPOS `SinglePos` subtable used an unknown format selector.
+    UnsupportedGposSingleFormat {
+        /// The unrecognized format selector.
+        format: u16,
+    },
+    /// A GPOS `SinglePos` value format set a bit reserved by the specification.
+    ReservedGposSingleValueFormat {
+        /// The complete raw value-format word.
+        format: u16,
+    },
+    /// A GPOS `SinglePos` format 2 value-record array did not match its Coverage length.
+    MismatchedGposSingleValueCount {
+        /// The number of covered glyphs.
+        inputs: usize,
+        /// The number of encoded value records.
+        records: usize,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -412,6 +432,17 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "Class Definition range beginning at {start} overlaps preceding end {previous_end}"
+            ),
+            Self::UnsupportedGposSingleFormat { format } => {
+                write!(f, "unsupported GPOS SinglePos format {format}")
+            }
+            Self::ReservedGposSingleValueFormat { format } => write!(
+                f,
+                "GPOS SinglePos value format {format:#06x} sets a reserved bit"
+            ),
+            Self::MismatchedGposSingleValueCount { inputs, records } => write!(
+                f,
+                "GPOS SinglePos covers {inputs} glyph(s) but declares {records} value record(s)"
             ),
         }
     }
