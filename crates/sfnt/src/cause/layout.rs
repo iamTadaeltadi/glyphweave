@@ -105,6 +105,14 @@ pub enum LayoutTarget {
     Feature,
     /// A tag-specific Feature Parameters table.
     FeatureParameters,
+    /// The Coverage table selecting cursively positioned glyphs.
+    GposCursiveCoverage,
+    /// A `CursivePos` entry Anchor table.
+    GposCursiveEntryAnchor,
+    /// A `CursivePos` exit Anchor table.
+    GposCursiveExitAnchor,
+    /// A format 3 Anchor device or variation-index table.
+    GposAnchorDevice,
 }
 
 impl fmt::Display for LayoutTarget {
@@ -128,6 +136,10 @@ impl fmt::Display for LayoutTarget {
             Self::LanguageSystem => "Language System",
             Self::Feature => "Feature",
             Self::FeatureParameters => "Feature Parameters",
+            Self::GposCursiveCoverage => "cursive Coverage",
+            Self::GposCursiveEntryAnchor => "cursive entry Anchor",
+            Self::GposCursiveExitAnchor => "cursive exit Anchor",
+            Self::GposAnchorDevice => "Anchor device",
         })
     }
 }
@@ -332,6 +344,23 @@ pub enum LayoutCause {
         /// The next range's first glyph ID.
         start: crate::GlyphId,
     },
+    /// A GPOS Anchor table used a format outside the defined 1 through 3 enumeration.
+    UnsupportedGposAnchorFormat {
+        /// The unrecognized anchor format selector.
+        format: u16,
+    },
+    /// A GPOS `CursivePos` subtable used a format other than format 1.
+    UnsupportedGposCursiveFormat {
+        /// The unrecognized `CursivePos` format selector.
+        format: u16,
+    },
+    /// A GPOS `CursivePos` entry/exit record array disagreed with its input Coverage length.
+    MismatchedGposEntryExitCount {
+        /// The number of covered input glyphs.
+        inputs: usize,
+        /// The number of entry/exit records.
+        records: usize,
+    },
 }
 
 impl fmt::Display for LayoutCause {
@@ -412,6 +441,16 @@ impl fmt::Display for LayoutCause {
             } => write!(
                 f,
                 "Class Definition range beginning at {start} overlaps preceding end {previous_end}"
+            ),
+            Self::UnsupportedGposAnchorFormat { format } => {
+                write!(f, "unsupported GPOS Anchor format {format}")
+            }
+            Self::UnsupportedGposCursiveFormat { format } => {
+                write!(f, "unsupported GPOS CursivePos format {format}")
+            }
+            Self::MismatchedGposEntryExitCount { inputs, records } => write!(
+                f,
+                "GPOS CursivePos has {inputs} input glyph(s) but {records} entry/exit record(s)"
             ),
         }
     }
